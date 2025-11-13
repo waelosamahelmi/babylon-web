@@ -633,7 +633,7 @@ printer connectivity.
     receipt += 'Kotiinkuljetus: Ma-To,Pe-Su 10:00-19:30' + lineFeed;
     receipt += lineFeed;
     receipt += 'Seuraa meitä sosiaalisessa mediassa!' + lineFeed;
-    receipt += '@RavintolaU triva' + lineFeed;
+    receipt += '@pizzeriaU triva' + lineFeed;
     receipt += lineFeed;
     receipt += '==============================' + lineFeed;
     receipt += lineFeed + lineFeed + lineFeed;

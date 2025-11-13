@@ -145,7 +145,7 @@ export function StructuredAddressInput({
             {
               headers: {
                 'Accept': 'application/json',
-                'User-Agent': 'AntonioRestaurant/1.0'
+                'User-Agent': 'antonioRestaurant/1.0'
               }
             }
           );
@@ -502,7 +502,7 @@ export function StructuredAddressInput({
         {
           headers: {
             'Accept': 'application/json',
-            'User-Agent': 'AntonioRestaurant/1.0' // Required by Nominatim ToS
+            'User-Agent': 'antonioRestaurant/1.0' // Required by Nominatim ToS
           }
         }
       );

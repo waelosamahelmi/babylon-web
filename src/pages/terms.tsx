@@ -39,7 +39,7 @@ export default function Terms() {
             <CardContent className="prose dark:prose-invert max-w-none">
               <p>
                 {t(
-                  "Pizzeria Antonion verkkopalvelu on tarkoitettu ruoan tilaamiseen ja ravintolan tietojen katseluun. Käyttämällä palvelua hyväksyt nämä käyttöehdot.",
+                  "Pizzeria Antonion verkkopalvelu on tarkoitettu ruoan tilaamiseen ja pizzerian tietojen katseluun. Käyttämällä palvelua hyväksyt nämä käyttöehdot.",
                   "Pizzeria Antonio's web service is intended for food ordering and viewing restaurant information. By using the service, you accept these terms of use."
                 )}
               </p>

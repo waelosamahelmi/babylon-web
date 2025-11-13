@@ -137,7 +137,7 @@ export function ServiceHoursSection() {
             </span>
           </div>
           <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-            {t(`Ravintola: ${config.hours.general.monday.open} - ${config.hours.general.monday.close}`, `Restaurant: ${config.hours.general.monday.open} - ${config.hours.general.monday.close}`)}
+            {t(`pizzeria: ${config.hours.general.monday.open} - ${config.hours.general.monday.close}`, `Restaurant: ${config.hours.general.monday.open} - ${config.hours.general.monday.close}`)}
           </p>
         </div>
       </div>

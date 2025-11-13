@@ -197,7 +197,7 @@ export function RestaurantSettingsModal({ isOpen, onClose }: RestaurantSettingsM
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold flex items-center space-x-2">
             <Store className="w-6 h-6" />
-            <span>{t("Ravintolan asetukset", "Restaurant Settings")}</span>
+            <span>{t("pizzerian asetukset", "Restaurant Settings")}</span>
           </DialogTitle>
         </DialogHeader>
 
@@ -261,7 +261,7 @@ export function RestaurantSettingsModal({ isOpen, onClose }: RestaurantSettingsM
               icon={Store}
               hours={openingHours}
               type="opening"
-              description={t("Ravintolan yleiset aukioloajat", "General restaurant opening hours")}
+              description={t("pizzerian yleiset aukioloajat", "General restaurant opening hours")}
             />
 
             <HoursSection

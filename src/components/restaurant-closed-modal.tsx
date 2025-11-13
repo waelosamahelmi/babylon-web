@@ -25,8 +25,8 @@ export function RestaurantClosedModal({ isOpen, onClose }: RestaurantClosedModal
             <Store className="w-5 h-5" />
             <span>
               {isBusy 
-                ? t("Ravintola on kiireinen", "Restaurant is Busy")
-                : t("Ravintola suljettu", "Restaurant Closed")
+                ? t("pizzeria on kiireinen", "Restaurant is Busy")
+                : t("pizzeria suljettu", "Restaurant Closed")
               }
             </span>
           </DialogTitle>

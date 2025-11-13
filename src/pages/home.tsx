@@ -132,7 +132,7 @@ export default function Home() {
                     {t("Tilaa puhelimitse", "Order by Phone")}
                   </h3>
                   <p className="text-gray-600 dark:text-gray-400 mb-4">
-                    {t("Nopea tilaus suoraan ravintolaan", "Quick order directly to restaurant")}
+                    {t("Nopea tilaus suoraan pizzeriaan", "Quick order directly to restaurant")}
                   </p>
                   <div style={{ color: config.theme.success }} className="font-bold text-lg">
                     {config.phone}

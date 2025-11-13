@@ -241,7 +241,7 @@ export function CheckoutModal({ isOpen, onClose, onBack }: CheckoutModalProps) {
         console.log('⚠️ Checkout: Restaurant is BUSY - closing modal');
         onClose();
         toast({
-          title: t("Ravintola on kiireinen", "Restaurant is busy"),
+          title: t("pizzeria on kiireinen", "Restaurant is busy"),
           description: t("Olemme tällä hetkellä todella kiireisiä. Yritä uudelleen hetken kuluttua.", "We're very busy right now. Please try again in a moment."),
           variant: "destructive"
         });

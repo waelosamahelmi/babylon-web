@@ -80,7 +80,7 @@ If the database is unavailable, the system falls back to the hardcoded configura
 
 ```typescript
 // Fallback to hardcoded config if database fails
-const config = dbConfig || PIZZERIA_ANTONIO_CONFIG;
+const config = dbConfig || pizzeria_antonio_CONFIG;
 ```
 
 ## Switching to a New Restaurant

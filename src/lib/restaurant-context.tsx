@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
-import { type RestaurantConfig, PIZZERIA_ANTONIO_CONFIG } from "@/config/restaurant-config";
+import { type RestaurantConfig, pizzeria_antonio_CONFIG } from "@/config/restaurant-config";
 import { useRestaurantConfig } from "@/hooks/use-restaurant-config";
 
 interface RestaurantContextType {
@@ -15,7 +15,7 @@ export function RestaurantProvider({ children }: { children: React.ReactNode }) 
   const { config: dbConfig, loading, error, updateConfig: updateDbConfig } = useRestaurantConfig();
   
   // Use database config if available, otherwise fallback to hardcoded config
-  const config = dbConfig || PIZZERIA_ANTONIO_CONFIG;
+  const config = dbConfig || pizzeria_antonio_CONFIG;
 
   // Show loading state only briefly to avoid "Loading website..." getting stuck
   if (loading && !config) {
@@ -26,7 +26,7 @@ export function RestaurantProvider({ children }: { children: React.ReactNode }) 
     
     return (
       <RestaurantContext.Provider value={{ 
-        config: PIZZERIA_ANTONIO_CONFIG, 
+        config: pizzeria_antonio_CONFIG, 
         updateConfig: updateDbConfig, 
         loading: false, 
         error: null 

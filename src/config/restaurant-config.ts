@@ -271,7 +271,7 @@ export function mergeConfigWithDatabaseSettings(
 }
 
 // Default configuration for Pizzeria Antonio
-export const PIZZERIA_ANTONIO_CONFIG: RestaurantConfig = {
+export const pizzeria_antonio_CONFIG: RestaurantConfig = {
   name: "Pizzeria Antonio",
   nameEn: "Pizzeria Antonio",
   tagline: "Laadukkaita aterioita Lahden sydämessä",
@@ -456,7 +456,7 @@ export const PIZZERIA_ANTONIO_CONFIG: RestaurantConfig = {
 
 // Current active configuration - change this to switch restaurants
 // NOTE: This is now a fallback - the actual config comes from the database
-export const RESTAURANT_CONFIG = PIZZERIA_ANTONIO_CONFIG;
+export const RESTAURANT_CONFIG = pizzeria_antonio_CONFIG;
 
 // Helper functions
 export const getFullAddress = (config: RestaurantConfig) => {
