@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useCategories, useMenuItems } from "@/hooks/use-menu";
 import { useLanguage } from "@/lib/language-context";
 import { useCart } from "@/lib/cart-context";
+import { useBranches } from "@/hooks/use-branches";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +13,7 @@ import { CheckoutModal } from "@/components/checkout-modal";
 import { RestaurantClosedModal } from "@/components/restaurant-closed-modal";
 import { UniversalHeader } from "@/components/universal-header";
 import { MobileNav } from "@/components/mobile-nav";
-import { RestaurantStatusHeader } from "@/components/restaurant-status-header";
+import { MultiBranchStatusHeader } from "@/components/multi-branch-status-header";
 import { 
   Search, 
   Leaf, 
@@ -28,7 +29,9 @@ import {
   Salad,
   ChefHat,
   Sandwich,
-  AlertTriangle
+  AlertTriangle,
+  Store,
+  MapPin
 } from "lucide-react";
 import { Link } from "wouter";
 import { Input } from "@/components/ui/input";
@@ -36,12 +39,14 @@ import { isOnlineOrderingAvailable, getRestaurantStatus } from "@/lib/business-h
 import { useRestaurantSettings } from "@/hooks/use-restaurant-settings";
 
 export default function Menu() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { data: categories } = useCategories();
   const { data: menuItems, isLoading } = useMenuItems();
+  const { data: branches } = useBranches();
   const { addItem } = useCart();
   const { config } = useRestaurantSettings();
   
+  const [selectedBranch, setSelectedBranch] = useState<number | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedItem, setSelectedItem] = useState<any>(null);
@@ -116,7 +121,8 @@ export default function Menu() {
     const matchesSearch = searchTerm === "" || 
       item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.nameEn.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesCategory && matchesSearch && item.isAvailable;
+    const matchesBranch = selectedBranch === null || item.branch_id === null || item.branch_id === selectedBranch;
+    return matchesCategory && matchesSearch && matchesBranch && item.isAvailable;
   }) || [];
 
   const handleItemClick = (item: any) => {
@@ -224,7 +230,43 @@ export default function Menu() {
       </div>
 
       {/* Restaurant Status */}
-      <RestaurantStatusHeader />
+      <MultiBranchStatusHeader />
+
+      {/* Branch Selection */}
+      {branches && branches.length > 1 && (
+        <div className="bg-white dark:bg-stone-800 border-b border-gray-200 dark:border-stone-700">
+          <div className="max-w-7xl mx-auto px-4 py-4">
+            <div className="flex items-center gap-3 flex-wrap">
+              <Store className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              <span className="font-semibold text-gray-700 dark:text-gray-300">
+                {t("Valitse toimipiste:", "Select branch:")}
+              </span>
+              <div className="flex gap-2 flex-wrap">
+                <Button
+                  variant={selectedBranch === null ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setSelectedBranch(null)}
+                  className={selectedBranch === null ? "bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700" : ""}
+                >
+                  {t("Kaikki", "All")}
+                </Button>
+                {branches.map((branch) => (
+                  <Button
+                    key={branch.id}
+                    variant={selectedBranch === branch.id ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setSelectedBranch(branch.id)}
+                    className={selectedBranch === branch.id ? "bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700" : ""}
+                  >
+                    <MapPin className="w-3.5 h-3.5 mr-1.5" />
+                    {language === 'en' ? branch.name_en : branch.name}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main Content - Sidebar Layout */}
       <div className="max-w-7xl mx-auto px-4 py-10">

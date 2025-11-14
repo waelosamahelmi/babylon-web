@@ -315,8 +315,8 @@ export const ravintola_babylon_CONFIG: RestaurantConfig = {
   phone: "+35835899089",
   email: "info@ravintolababylon.fi",
   address: {
-    street: "Rauhankatu 19 c",
-    postalCode: "15110",
+    street: "Vapaudenkatu 28",
+    postalCode: "15140",
     city: "Lahti",
     country: "Finland"
   },

@@ -11,7 +11,7 @@ import { CheckoutModal } from "@/components/checkout-modal";
 import { UniversalHeader } from "@/components/universal-header";
 import { MobileNav } from "@/components/mobile-nav";
 import { HeroVideo } from "@/components/hero-video";
-import { RestaurantStatusHeader } from "@/components/restaurant-status-header";
+import { MultiBranchStatusHeader } from "@/components/multi-branch-status-header";
 import { AboutSection } from "@/components/about-section";
 import { Footer } from "@/components/footer";
 import { 
@@ -69,7 +69,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-stone-900">
       <UniversalHeader onCartClick={handleCartOpen} />
-      <RestaurantStatusHeader />
+      <MultiBranchStatusHeader />
       <HeroVideo />
 
       {/* Service Highlights */}

@@ -120,7 +120,7 @@ export default function Terms() {
               </p>
               <p>
                 <strong>Ravintola Babylon</strong><br />
-                Rauhankatu 19 c, 15110 Lahti<br />
+                Vapaudenkatu 28, 15140 Lahti<br />
                 Puhelin: +35835899089<br />
                 Sähköposti: info@ravintolababylon.fi
               </p>

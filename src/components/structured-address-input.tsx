@@ -106,6 +106,35 @@ export function StructuredAddressInput({
     }
   }, [initialAddress]);
 
+  // Recalculate delivery when branch location changes
+  useEffect(() => {
+    console.log('Branch location changed:', branchLocation);
+    console.log('Current address data:', addressData);
+    if (branchLocation && addressData.fullAddress && addressData.city) {
+      console.log('Recalculating delivery from branch:', branchLocation.name);
+      
+      // Destroy and reset map to reinitialize with new branch location
+      if (showMap && mapRef.current) {
+        const leafletMap = (mapRef.current as any)?.leafletMap;
+        if (leafletMap) {
+          console.log('Destroying old map...');
+          leafletMap.remove(); // Properly destroy Leaflet map
+          (mapRef.current as any).leafletMap = null;
+        }
+        // Clear the container
+        if (mapRef.current) {
+          mapRef.current.innerHTML = '';
+        }
+        setMapInitialized(false);
+      }
+      
+      // Delay to ensure state is updated
+      setTimeout(() => {
+        handleCalculateDelivery(addressData.fullAddress);
+      }, 100);
+    }
+  }, [branchLocation]);
+
   // Update fullAddress and notify parent when any field changes
   const updateFullAddressFromRefs = () => {
     const fullAddress = buildFullAddress(streetRef.current, postalRef.current, cityRef.current);
@@ -254,7 +283,7 @@ export function StructuredAddressInput({
     } finally {
       setIsLoading(false);
     }
-  }, [config, addressData.fullAddress, addressData.streetAddress, addressData.city, t, onDeliveryCalculated, showMap, setError, setIsLoading, setDeliveryInfo, setShowMap]);
+  }, [config, addressData.fullAddress, addressData.streetAddress, addressData.city, t, onDeliveryCalculated, showMap, setError, setIsLoading, setDeliveryInfo, setShowMap, branchLocation]);
 
   useEffect(() => {
     if (addressData.streetAddress && addressData.postalCode && addressData.city && addressData.fullAddress) {
@@ -280,7 +309,9 @@ export function StructuredAddressInput({
   useEffect(() => {
     if (!mapRef.current || !showMap || mapInitialized || !config) return;
 
-    const RESTAURANT_LOCATION = getRestaurantLocation(config);
+    const RESTAURANT_LOCATION = branchLocation 
+      ? { lat: branchLocation.lat, lng: branchLocation.lng, address: branchLocation.address, name: branchLocation.name }
+      : getRestaurantLocation(config);
     const mapContainer = mapRef.current;
     const mapId = `map-${Date.now()}`;
     
@@ -310,18 +341,19 @@ export function StructuredAddressInput({
       }).addTo(map);
       
       // Add restaurant marker
+      const branchName = branchLocation?.name || 'Ravintola Babylon';
       const restaurantIcon = L.divIcon({
-        html: `<div style="background: #ef4444; color: white; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.3); white-space: nowrap;">🍕 Ravintola Babylon</div>`,
+        html: `<div style="background: #ef4444; color: white; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.3); white-space: nowrap;">🍕 ${branchName}</div>`,
         className: 'custom-marker',
-        iconSize: [100, 25],
-        iconAnchor: [50, 25]
+        iconSize: [120, 25],
+        iconAnchor: [60, 25]
       });
       
       L.marker([RESTAURANT_LOCATION.lat, RESTAURANT_LOCATION.lng], { icon: restaurantIcon, isRestaurant: true })
         .addTo(map)
         .bindPopup(`
           <div style="text-align: center;">
-            <strong>Ravintola Babylon</strong><br>
+            <strong>${branchName}</strong><br>
             <small>${RESTAURANT_LOCATION.address}</small>
           </div>
         `);
@@ -332,7 +364,7 @@ export function StructuredAddressInput({
     
     document.head.appendChild(scriptElement);
     setMapInitialized(true);
-  }, [showMap, mapInitialized, config]);
+  }, [showMap, mapInitialized, config, branchLocation]);
 
   const parseInitialAddress = (address: string) => {
     // Enhanced address parsing for Finnish addresses
@@ -590,7 +622,9 @@ export function StructuredAddressInput({
   const updateMapWithRoute = (info: typeof deliveryInfo, customerAddress: string) => {
     if (!config) return;
     
-    const RESTAURANT_LOCATION = getRestaurantLocation(config);
+    const RESTAURANT_LOCATION = branchLocation 
+      ? { lat: branchLocation.lat, lng: branchLocation.lng }
+      : getRestaurantLocation(config);
     if (!info) return;
     
     const leafletMap = (mapRef.current as any)?.leafletMap;
@@ -876,31 +910,6 @@ export function StructuredAddressInput({
               </div>
             </div>
           )}
-
-          {/* Delivery zones info */}
-          <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-            <h4 className="font-semibold mb-2">{t("Toimitusalueet", "Delivery Zones")}</h4>
-            <div className="space-y-2 text-sm">
-              {config?.delivery?.zones?.map((zone, index) => {
-                const prevMax = index > 0 ? config.delivery.zones[index - 1].maxDistance : 0;
-                return (
-                  <div key={index} className="flex justify-between">
-                    <span>
-                      {language === 'fi' 
-                        ? `Kuljetusalue ${prevMax} - ${zone.maxDistance}km`
-                        : `Delivery zone ${prevMax} - ${zone.maxDistance}km`}
-                    </span>
-                    <span className="font-medium">{zone.fee.toFixed(2)} €</span>
-                  </div>
-                );
-              })}
-            </div>
-            {config?.delivery?.zones && config.delivery.zones.length > 1 && (
-              <div className="text-xs text-gray-600 mt-2">
-                {t("* Toimituskulut riippuvat etäisyydestä", "* Delivery fees depend on distance")}
-              </div>
-            )}
-          </div>
         </CardContent>
       </Card>
     </div>

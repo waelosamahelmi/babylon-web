@@ -180,7 +180,7 @@ export default function Privacy() {
                 <p>
                   <strong>Tietosuojavastaava / Data Protection Officer</strong><br />
                   Ravintola Babylon<br />
-                  Rauhankatu 19 c, 15110 Lahti<br />
+                  Vapaudenkatu 28, 15140 Lahti<br />
                   Sähköposti: info@ravintolababylon.fi<br />
                   Puhelin: +35835899089
                 </p>

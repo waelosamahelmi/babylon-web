@@ -33,7 +33,7 @@ INSERT INTO locations (name, address, city, postal_code, icon, region, display_o
 
 -- Osuuskauppa Hämeenmaa
 ('Wolt Market Lahti', 'Vesijärvenkatu 32', 'Lahti', '15140', 'ShoppingBag', 'Osuuskauppa Hämeenmaa', 6),
-('SM Sokos', 'Aleksanterinkatu 19', 'Lahti', '15110', 'Building2', 'Osuuskauppa Hämeenmaa', 7),
+('SM Sokos', 'Aleksanterinkatu 19', 'Lahti', '15140', 'Building2', 'Osuuskauppa Hämeenmaa', 7),
 ('Prisma Laune', 'Ajokatu 83', 'Lahti', '15610', 'ShoppingCart', 'Osuuskauppa Hämeenmaa', 8),
 
 -- Osuuskauppa Kotka

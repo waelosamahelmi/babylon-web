@@ -575,8 +575,8 @@ INSERT INTO restaurant_config (
   '+35835899089',
   'info@ravintolababylon.fi',
   '{
-    "street": "Rauhankatu 19 c",
-    "postalCode": "15110",
+    "street": "Vapaudenkatu 28",
+    "postalCode": "15140",
     "city": "Lahti",
     "country": "Finland"
   }',

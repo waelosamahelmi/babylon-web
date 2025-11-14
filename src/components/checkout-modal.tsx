@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useLanguage } from "@/lib/language-context";
 import { useCart } from "@/lib/cart-context";
 import { useCreateOrder } from "@/hooks/use-orders";
 import { useRestaurantSettings } from "@/hooks/use-restaurant-settings";
+import { useBranches } from "@/hooks/use-branches";
 import { useQuery } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -45,17 +46,9 @@ export function CheckoutModal({ isOpen, onClose, onBack }: CheckoutModalProps) {
   });
 
   // Fetch branches for branch selection
-  const { data: branches = [] } = useQuery({
-    queryKey: ['/api/branches'],
-    enabled: isOpen,
-    queryFn: async () => {
-      const response = await fetch('/api/branches');
-      if (!response.ok) throw new Error('Failed to fetch branches');
-      return response.json();
-    },
-  });
+  const { data: branches = [], isLoading: branchesLoading } = useBranches();
 
-  const activeBranches = branches?.filter((branch: any) => branch.isActive) || [];
+  const activeBranches = branches?.filter((branch: any) => branch.is_active) || [];
 
   const getToppingName = (toppingId: string) => {
     const toppings = Array.isArray(allToppings) ? allToppings : [];
@@ -86,6 +79,28 @@ export function CheckoutModal({ isOpen, onClose, onBack }: CheckoutModalProps) {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successOrderNumber, setSuccessOrderNumber] = useState<string>("");
 
+  // Compute branch location using useMemo to ensure it updates properly
+  const branchLocation = useMemo(() => {
+    if (!formData.branchId || activeBranches.length === 0) return null;
+    
+    const branch = activeBranches.find((b: any) => b.id === formData.branchId);
+    if (!branch) return null;
+    
+    return {
+      lat: parseFloat(branch.latitude),
+      lng: parseFloat(branch.longitude),
+      name: language === "fi" ? branch.name : branch.name_en,
+      address: `${branch.address}, ${branch.city}`
+    };
+  }, [formData.branchId, activeBranches, language]);
+
+  // Log branch changes for debugging
+  useEffect(() => {
+    if (branchLocation) {
+      console.log('Branch location computed:', branchLocation);
+    }
+  }, [branchLocation]);
+
   const handleAddressChange = (addressData: {
     streetAddress: string;
     postalCode: string;
@@ -99,6 +114,23 @@ export function CheckoutModal({ isOpen, onClose, onBack }: CheckoutModalProps) {
       city: addressData.city,
       deliveryAddress: addressData.fullAddress
     }));
+    
+    // Auto-detect branch based on city
+    if (addressData.city && activeBranches.length > 0) {
+      console.log('Detecting branch for city:', addressData.city);
+      console.log('Available branches:', activeBranches.map((b: any) => ({ id: b.id, city: b.city })));
+      const matchingBranch = activeBranches.find(
+        (branch: any) => branch.city.toLowerCase() === addressData.city.toLowerCase()
+      );
+      if (matchingBranch) {
+        console.log('Found matching branch:', matchingBranch.id, matchingBranch.name, matchingBranch.city);
+        setFormData(prev => ({ ...prev, branchId: matchingBranch.id }));
+      } else {
+        console.log('No match found, using first branch:', activeBranches[0].id);
+        // Default to first branch if no match
+        setFormData(prev => ({ ...prev, branchId: activeBranches[0].id }));
+      }
+    }
   };
 
   const handleDeliveryCalculated = (fee: number, distance: number, address: string) => {
@@ -451,70 +483,8 @@ export function CheckoutModal({ isOpen, onClose, onBack }: CheckoutModalProps) {
                 onAddressChange={handleAddressChange}
                 onDeliveryCalculated={handleDeliveryCalculated}
                 initialAddress={formData.deliveryAddress}
-                branchLocation={
-                  formData.branchId 
-                    ? (() => {
-                        const branch = activeBranches.find((b: any) => b.id === formData.branchId);
-                        return branch ? {
-                          lat: parseFloat(branch.latitude),
-                          lng: parseFloat(branch.longitude),
-                          name: language === "fi" ? branch.name : branch.nameEn,
-                          address: `${branch.address}, ${branch.city}`
-                        } : null;
-                      })()
-                    : null
-                }
+                branchLocation={branchLocation}
               />
-
-              {/* Delivery Summary */}
-              {deliveryInfo && (
-                <Card className="bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800">
-                  <CardContent className="p-4">
-                    <h4 className="font-semibold mb-3 text-green-800 dark:text-green-200">
-                      {t("Toimitus laskettu", "Delivery Calculated")}
-                    </h4>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span>{t("Etäisyys:", "Distance:")}</span>
-                        <span className="font-medium">{deliveryInfo.distance} km</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>{t("Toimitusmaksu:", "Delivery fee:")}</span>
-                        <span className="font-medium">{deliveryInfo.fee.toFixed(2)}€</span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Delivery Pricing Information */}
-              <Card className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
-                <CardContent className="p-4">
-                  <h4 className="font-semibold mb-3 text-blue-800 dark:text-blue-200">
-                    {t("Toimitushinnat", "Delivery Pricing")}
-                  </h4>
-                  <div className="space-y-2 text-sm">
-                    {config?.delivery?.zones?.map((zone, index) => {
-                      const prevMax = index > 0 ? config.delivery.zones[index - 1].maxDistance : 0;
-                      return (
-                        <div key={index} className="flex justify-between text-gray-700 dark:text-gray-300">
-                          <span>
-                            {language === 'fi' 
-                              ? `Kuljetusalue ${prevMax} - ${zone.maxDistance}km`
-                              : `Delivery zone ${prevMax} - ${zone.maxDistance}km`}
-                          </span>
-                          <span className="font-medium">{zone.fee.toFixed(2)} €</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  {minimumOrderAmount > 0 && totalPrice < minimumOrderAmount && (
-                    <div className="mt-3 p-2 bg-amber-100 dark:bg-amber-900/20 rounded text-amber-800 dark:text-amber-200 text-sm">
-                      {t(`Vähimmäistilaussumma: ${minimumOrderAmount.toFixed(2)} €`, `Minimum order: ${minimumOrderAmount.toFixed(2)} €`)}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
             </>
           )}
 
