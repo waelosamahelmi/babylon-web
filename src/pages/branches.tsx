@@ -12,14 +12,14 @@ const BranchCard = ({ branch }: { branch: Branch }) => {
   const formatHours = (hours: Branch['opening_hours']) => {
     if (!hours) return [];
 
-    const dayNames: Record<string, { fi: string; en: string; ar: string }> = {
-      monday: { fi: "Maanantai", en: "Monday", ar: "الاثنين" },
-      tuesday: { fi: "Tiistai", en: "Tuesday", ar: "الثلاثاء" },
-      wednesday: { fi: "Keskiviikko", en: "Wednesday", ar: "الأربعاء" },
-      thursday: { fi: "Torstai", en: "Thursday", ar: "الخميس" },
-      friday: { fi: "Perjantai", en: "Friday", ar: "الجمعة" },
-      saturday: { fi: "Lauantai", en: "Saturday", ar: "السبت" },
-      sunday: { fi: "Sunnuntai", en: "Sunday", ar: "الأحد" },
+    const dayNames: Record<string, Record<string, string>> = {
+      monday: { fi: "Maanantai", en: "Monday", ar: "الاثنين", ru: "Понедельник" },
+      tuesday: { fi: "Tiistai", en: "Tuesday", ar: "الثلاثاء", ru: "Вторник" },
+      wednesday: { fi: "Keskiviikko", en: "Wednesday", ar: "الأربعاء", ru: "Среда" },
+      thursday: { fi: "Torstai", en: "Thursday", ar: "الخميس", ru: "Четверг" },
+      friday: { fi: "Perjantai", en: "Friday", ar: "الجمعة", ru: "Пятница" },
+      saturday: { fi: "Lauantai", en: "Saturday", ar: "السبت", ru: "Суббота" },
+      sunday: { fi: "Sunnuntai", en: "Sunday", ar: "الأحد", ru: "Воскресенье" },
     };
 
     // Define explicit day order (Monday to Sunday)

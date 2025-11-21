@@ -297,7 +297,7 @@ export function CheckoutModal({ isOpen, onClose, onBack }: CheckoutModalProps) {
       }
       
       // If not available, close modal
-      if (!isOnlineOrderingAvailable(config)) {
+      if (!isOrderingAvailable) {
         onClose();
         toast({
           title: t("Tilaukset suljettu", "Orders closed"),
