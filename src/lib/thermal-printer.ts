@@ -455,6 +455,7 @@ printer connectivity.
     const escBold = '\x1B\x45\x01'; // Bold on
     const escBoldOff = '\x1B\x45\x00'; // Bold off
     const escLarge = '\x1D\x21\x11'; // Double height and width (ESC/POS GS command)
+    const escDoubleLarge = '\x1D\x21\x22'; // Quadruple size (double large)
     const escNormal = '\x1B\x21\x00'; // Normal size
     const escCut = '\x1D\x56\x42\x00'; // Cut paper
     const lineFeed = '\x0A'; // Line feed
