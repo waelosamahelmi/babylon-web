@@ -34,7 +34,14 @@ export function CheckoutModal({ isOpen, onClose, onBack }: CheckoutModalProps) {
   const createOrder = useCreateOrder();
   
   // Load payment methods from database
-  const [availablePaymentMethods, setAvailablePaymentMethods] = useState([
+  const [availablePaymentMethods, setAvailablePaymentMethods] = useState<Array<{
+    id: string;
+    nameFi: string;
+    nameEn: string;
+    enabled: boolean;
+    icon?: string;
+    requiresStripe?: boolean;
+  }>>([
     { id: 'cash', nameFi: 'Käteinen', nameEn: 'Cash', enabled: true, icon: 'banknote' },
     { id: 'card', nameFi: 'Kortti', nameEn: 'Card', enabled: true, icon: 'credit-card' },
   ]);

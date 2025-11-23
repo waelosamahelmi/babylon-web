@@ -17,6 +17,23 @@ export interface DatabaseRestaurantSettings {
   default_printer_id: string | null;
   printer_auto_reconnect: boolean;
   printer_tab_sticky: boolean;
+  payment_methods?: Array<{
+    id: string;
+    nameFi: string;
+    nameEn: string;
+    enabled: boolean;
+    icon?: string;
+    requiresStripe?: boolean;
+  }>;
+  stripe_enabled?: boolean;
+  stripe_publishable_key?: string;
+  stripe_secret_key?: string;
+  stripe_webhook_secret?: string;
+  stripe_test_mode?: boolean;
+  stripe_connect_account_id?: string;
+  stripe_account_email?: string;
+  stripe_account_country?: string;
+  stripe_payment_methods_config?: string | object;
 }
 
 // Parsed hours format from database
