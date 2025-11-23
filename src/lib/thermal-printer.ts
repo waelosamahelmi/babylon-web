@@ -461,22 +461,31 @@ printer connectivity.
     
     let receipt = escInit;
     
-    // Header
-    receipt += escCenter + escBold + escLarge;
-    receipt += 'Ravintola Babylon' + lineFeed;
+    // Logo/Header - Improved design
+    receipt += escCenter + escBold + escDoubleLarge;
+    receipt += '***  BABYLON  ***' + lineFeed;
     receipt += escNormal + escBoldOff;
+    receipt += escCenter + escLarge;
+    receipt += 'Ravintola & Pizzeria' + lineFeed;
+    receipt += escNormal;
     receipt += '==============================' + lineFeed;
+    receipt += escBold;
     receipt += 'Vapaudenkatu 28, 15140 Lahti' + lineFeed;
-    receipt += '+358-3781-2222' + lineFeed;
+    receipt += 'Puh: +358-3781-2222' + lineFeed;
+    receipt += escBoldOff;
+    receipt += 'info@ravintolababylon.fi' + lineFeed;
     receipt += 'www.ravintolababylon.fi' + lineFeed;
+    receipt += '==============================' + lineFeed;
     receipt += lineFeed;
     
     // Order info
-    receipt += escLeft + escBold;
+    receipt += escLeft + escBold + escLarge;
     receipt += 'TILAUS / ORDER' + lineFeed;
-    receipt += escBoldOff;
+    receipt += escNormal + escBoldOff;
     receipt += '------------------------------' + lineFeed;
+    receipt += escBold;
     receipt += `Tilausnro: ${order.orderNumber}` + lineFeed;
+    receipt += escBoldOff;
     receipt += `Päivämäärä: ${date.toLocaleDateString('fi-FI')}` + lineFeed;
     receipt += `Aika: ${date.toLocaleTimeString('fi-FI', { hour: '2-digit', minute: '2-digit' })}` + lineFeed;
     receipt += lineFeed;
@@ -591,13 +600,19 @@ printer connectivity.
       receipt += `Toimitus:` + ' '.repeat(deliverySpaces) + deliveryStr + lineFeed;
     }
     
+    if (order.smallOrderFee && parseFloat(order.smallOrderFee) > 0) {
+      const smallFeeStr = `€${parseFloat(order.smallOrderFee).toFixed(2)}`;
+      const smallFeeSpaces = Math.max(0, 15 - smallFeeStr.length);
+      receipt += `Pientilauslisä:` + ' '.repeat(smallFeeSpaces) + smallFeeStr + lineFeed;
+    }
+    
     if (order.discount && parseFloat(order.discount) > 0) {
       const discountStr = `-€${parseFloat(order.discount).toFixed(2)}`;
       const discountSpaces = Math.max(0, 20 - discountStr.length);
       receipt += `Alennus:` + ' '.repeat(discountSpaces) + discountStr + lineFeed;
     }
     
-    const totalAmount = parseFloat(order.totalAmount || (subtotal + parseFloat(order.deliveryFee || '0') - parseFloat(order.discount || '0')).toFixed(2));
+    const totalAmount = parseFloat(order.totalAmount || (subtotal + parseFloat(order.deliveryFee || '0') + parseFloat(order.smallOrderFee || '0') - parseFloat(order.discount || '0')).toFixed(2));
     const totalStr = `€${totalAmount.toFixed(2)}`;
     const totalSpaces = Math.max(0, 18 - totalStr.length);
     receipt += `YHTEENSÄ:` + ' '.repeat(totalSpaces) + totalStr + lineFeed;
@@ -616,23 +631,39 @@ printer connectivity.
     
     // Special instructions
     if (order.specialInstructions) {
-      receipt += escBold;
+      receipt += escBold + escLarge;
       receipt += 'ERIKOISOHJEET:' + lineFeed;
-      receipt += escBoldOff;
+      receipt += escNormal + escBoldOff;
       receipt += order.specialInstructions + lineFeed;
       receipt += lineFeed;
     }
     
-    // Footer
-    receipt += escCenter;
+    // Footer - Improved design
+    receipt += '==============================' + lineFeed;
+    receipt += escCenter + escBold + escLarge;
     receipt += 'Kiitos tilauksestasi!' + lineFeed;
     receipt += 'Thank you for your order!' + lineFeed;
+    receipt += escNormal + escBoldOff;
+    receipt += '==============================' + lineFeed;
     receipt += lineFeed;
-    receipt += 'Ravintola Babylon' + lineFeed;
-    receipt += 'Avoinna: Ma-Su 10:00-20:00' + lineFeed;
-    receipt += 'Kotiinkuljetus: Ma-To,Pe-Su 10:00-19:30' + lineFeed;
+    receipt += escBold;
+    receipt += 'RAVINTOLA BABYLON' + lineFeed;
+    receipt += escBoldOff;
+    receipt += 'Vapaudenkatu 28, 15140 Lahti' + lineFeed;
     receipt += lineFeed;
-    receipt += 'Seuraa meitä sosiaalisessa mediassa!' + lineFeed;
+    receipt += escBold;
+    receipt += 'AUKIOLOAJAT / OPENING HOURS' + lineFeed;
+    receipt += escBoldOff;
+    receipt += 'Ma-Su / Mon-Sun: 10:00-20:00' + lineFeed;
+    receipt += 'Kotiinkuljetus / Delivery:' + lineFeed;
+    receipt += 'Ma-To, Pe-Su: 10:00-19:30' + lineFeed;
+    receipt += lineFeed;
+    receipt += 'Puh / Tel: +358-3781-2222' + lineFeed;
+    receipt += 'www.ravintolababylon.fi' + lineFeed;
+    receipt += lineFeed;
+    receipt += escBold;
+    receipt += 'Seuraa meitä / Follow us:' + lineFeed;
+    receipt += escBoldOff;
     receipt += '@ravintolaU triva' + lineFeed;
     receipt += lineFeed;
     receipt += '==============================' + lineFeed;
