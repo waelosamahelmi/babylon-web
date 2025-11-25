@@ -348,8 +348,64 @@ export default function Menu() {
       {/* Main Content - Sidebar Layout */}
       <div className="max-w-7xl mx-auto px-4 py-10">
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* Sidebar Categories */}
-          <aside className="lg:w-72 flex-shrink-0">
+          {/* Mobile Horizontal Categories */}
+          <div className="lg:hidden">
+            <div className="bg-white dark:bg-stone-800 rounded-2xl shadow-xl p-4 mb-6">
+              <h2 className="text-lg font-black mb-3 text-gray-900 dark:text-white flex items-center gap-2">
+                <div className="w-1 h-6 bg-gradient-to-b from-red-600 to-orange-600 rounded-full"></div>
+                {t("Kategoriat", "Categories")}
+              </h2>
+              <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-red-500 scrollbar-track-gray-100 dark:scrollbar-track-stone-700">
+                <button
+                  onClick={() => setSelectedCategory("all")}
+                  className={`flex-shrink-0 px-4 py-2 rounded-xl font-bold transition-all duration-300 flex items-center gap-2 whitespace-nowrap ${
+                    selectedCategory === "all"
+                      ? 'bg-gradient-to-r from-red-600 to-orange-600 text-white shadow-lg'
+                      : 'bg-gray-50 dark:bg-stone-700 text-gray-700 dark:text-gray-300'
+                  }`}
+                >
+                  <UtensilsCrossed className="w-4 h-4" />
+                  {t("Kaikki", "All")}
+                  <span className={`text-xs font-black px-2 py-0.5 rounded-full ${
+                    selectedCategory === "all" 
+                      ? 'bg-white/20' 
+                      : 'bg-gray-200 dark:bg-stone-600'
+                  }`}>
+                    {menuItems?.length || 0}
+                  </span>
+                </button>
+                
+                {categories?.map((cat) => {
+                  const IconComponent = getCategoryIcon(cat.name);
+                  const categoryItems = menuItems?.filter(item => item.categoryId === cat.id) || [];
+                  return (
+                    <button
+                      key={cat.id}
+                      onClick={() => setSelectedCategory(cat.id.toString())}
+                      className={`flex-shrink-0 px-4 py-2 rounded-xl font-bold transition-all duration-300 flex items-center gap-2 whitespace-nowrap ${
+                        selectedCategory === cat.id.toString()
+                          ? 'bg-gradient-to-r from-red-600 to-orange-600 text-white shadow-lg'
+                          : 'bg-gray-50 dark:bg-stone-700 text-gray-700 dark:text-gray-300'
+                      }`}
+                    >
+                      <IconComponent className="w-4 h-4" />
+                      {cat.name.replace(/🍕😍|🥗|🍗|🍔|🥤/, '').trim()}
+                      <span className={`text-xs font-black px-2 py-0.5 rounded-full ${
+                        selectedCategory === cat.id.toString() 
+                          ? 'bg-white/20' 
+                          : 'bg-gray-200 dark:bg-stone-600'
+                      }`}>
+                        {categoryItems.length}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* Desktop Sidebar Categories */}
+          <aside className="hidden lg:block lg:w-72 flex-shrink-0">
             <div className="lg:sticky lg:top-4 space-y-6">
               <div className="bg-white dark:bg-stone-800 rounded-2xl shadow-xl p-6 animate-slide-up">
                 <h2 className="text-2xl font-black mb-6 text-gray-900 dark:text-white flex items-center gap-3">

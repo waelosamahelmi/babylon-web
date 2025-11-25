@@ -93,18 +93,22 @@ export default function Lounas() {
 
   // Get the actual date for a day of week in the selected week
   const getDateForDay = (dayOfWeek: number) => {
-    // Get first day of the year
-    const firstDayOfYear = new Date(year, 0, 1);
-    // ISO week starts on Monday, so we need to adjust
-    const daysSinceFirstMonday = (weekNumber - 1) * 7 + (dayOfWeek === 0 ? 6 : dayOfWeek - 1);
-    // Find the first Monday of the year
-    const firstMonday = new Date(firstDayOfYear);
-    const dayOfWeekJan1 = firstMonday.getDay();
-    const daysToFirstMonday = dayOfWeekJan1 === 0 ? 1 : (8 - dayOfWeekJan1);
-    firstMonday.setDate(firstMonday.getDate() + daysToFirstMonday);
-    // Calculate the target date
-    const targetDate = new Date(firstMonday);
-    targetDate.setDate(targetDate.getDate() + daysSinceFirstMonday);
+    // ISO 8601 week date calculation
+    // Week 1 is the week with the first Thursday of the year
+    const jan4 = new Date(year, 0, 4); // January 4th is always in week 1
+    const jan4DayOfWeek = jan4.getDay() || 7; // Sunday = 7, Monday = 1
+    const weekOneMonday = new Date(jan4);
+    weekOneMonday.setDate(jan4.getDate() - jan4DayOfWeek + 1);
+    
+    // Calculate the Monday of the selected week
+    const selectedWeekMonday = new Date(weekOneMonday);
+    selectedWeekMonday.setDate(weekOneMonday.getDate() + (weekNumber - 1) * 7);
+    
+    // Add days to get to the target day (Monday = 1, Sunday = 0)
+    const targetDate = new Date(selectedWeekMonday);
+    const daysToAdd = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Sunday at end of week
+    targetDate.setDate(selectedWeekMonday.getDate() + daysToAdd);
+    
     return targetDate;
   };
 
@@ -181,24 +185,28 @@ export default function Lounas() {
       <div className="bg-white dark:bg-stone-800 border-b border-gray-200 dark:border-stone-700 shadow-sm sticky top-20 z-30">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            {/* Branch Selector */}
-            <div className="flex items-center gap-3 flex-1">
+            {/* Branch Selector - Button Style like Menu Page */}
+            <div className="flex items-center gap-3 flex-wrap flex-1">
               <Store className="w-5 h-5 text-gray-600 dark:text-gray-400 flex-shrink-0" />
+              <span className="font-semibold text-gray-700 dark:text-gray-300">
+                {t("Valitse toimipiste:", "Select branch:", "اختر الفرع:", "Выберите филиал:", "Välj filial:")}
+              </span>
               {branchesLoading ? (
-                <Skeleton className="h-10 w-full max-w-xs" />
+                <Skeleton className="h-10 w-32" />
               ) : (
-                <Select value={selectedBranchId.toString()} onValueChange={(val) => setSelectedBranchId(parseInt(val))}>
-                  <SelectTrigger className="w-full max-w-xs bg-white dark:bg-stone-900 border-2 hover:border-orange-500 transition-colors">
-                    <SelectValue placeholder={t("Valitse toimipiste", "Select branch", "اختر الفرع", "Выберите филиал", "Välj filial")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {branches?.map((branch) => (
-                      <SelectItem key={branch.id} value={branch.id.toString()}>
-                        {language === "en" && branch.name_en ? branch.name_en : branch.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="flex gap-2 flex-wrap">
+                  {branches?.map((branch) => (
+                    <Button
+                      key={branch.id}
+                      variant={selectedBranchId === branch.id ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setSelectedBranchId(branch.id)}
+                      className={selectedBranchId === branch.id ? "bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700" : ""}
+                    >
+                      {language === "en" && branch.name_en ? branch.name_en : branch.name}
+                    </Button>
+                  ))}
+                </div>
               )}
             </div>
 
@@ -282,7 +290,7 @@ export default function Lounas() {
                       </div>
                       {dayMenus.length > 0 && (
                         <div className="text-3xl font-black text-white drop-shadow-lg">
-                          {dayMenus[0].price.toFixed(2)} €
+                          {dayMenus[0].price} €
                         </div>
                       )}
                     </div>

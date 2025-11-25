@@ -17,19 +17,19 @@ export function OrderSuccessModal({ isOpen, onClose, orderType, orderNumber }: O
   const getEstimatedTime = () => {
     if (orderType === "delivery") {
       return {
-        time: "1 tunti",
-        timeEn: "1 hour",
+        time: "",
+        timeEn: "",
         icon: <Truck className="w-8 h-8 text-green-600" />,
-        message: "Tilauksesi toimitetaan tunnin sisällä!",
-        messageEn: "Your order will be delivered within 1 hour!"
+        message: "Saat sähköpostin toimutusajasta kun tilaus on hyväksytty.",
+        messageEn: "You will receive an email with the delivery time once your order is approved."
       };
     } else {
       return {
-        time: "15 minuLahtia",
-        timeEn: "15 minutes", 
+        time: "",
+        timeEn: "", 
         icon: <ShoppingBag className="w-8 h-8 text-blue-600" />,
-        message: "Tilauksesi on valmis noudettavaksi 15 minuutin sisällä!",
-        messageEn: "Your order will be ready for pickup within 15 minutes!"
+        message: "Saat sähköpostin noutamisajasta kun tilaus on hyväksytty.",
+        messageEn: "You will receive an email with the pickup time once your order is approved."
       };
     }
   };
@@ -75,20 +75,9 @@ export function OrderSuccessModal({ isOpen, onClose, orderType, orderNumber }: O
                 <div className="flex flex-col items-center space-y-3">
                   {estimate.icon}
                   <div className="text-center">
-                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">
-                      {t("Arvioitu valmistumisaika", "Estimated preparation time")}
-                    </p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                      {t(estimate.time, estimate.timeEn)}
-                    </p>
-                  </div>
-                </div>
-                <div className="mt-4 p-3 bg-white dark:bg-gray-700 rounded-lg">
-                  <div className="flex items-center justify-center space-x-2 text-sm">
-                    <Clock className="w-4 h-4" />
-                    <span className="font-medium">
+                    <p className="text-base font-medium text-gray-900 dark:text-white px-4">
                       {t(estimate.message, estimate.messageEn)}
-                    </span>
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -100,16 +89,6 @@ export function OrderSuccessModal({ isOpen, onClose, orderType, orderNumber }: O
             <p>
               {t("Saat vahvistuksen sähköpostiin pian.", "You will receive an email confirmation shortly.")}
             </p>
-            {orderType === "delivery" && (
-              <p>
-                {t("Soitamme sinulle ennen toimitusta.", "We will call you before delivery.")}
-              </p>
-            )}
-            {orderType === "pickup" && (
-              <p>
-                {t("Voit tulla noutamaan tilauksesi 15 minuutin kuluttua.", "You can come to pick up your order after 15 minutes.")}
-              </p>
-            )}
           </div>
 
           {/* Restaurant Info */}
