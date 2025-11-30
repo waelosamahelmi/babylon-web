@@ -3,6 +3,7 @@ import { useLanguage } from "@/lib/language-context";
 import { useCart } from "@/lib/cart-context";
 import { useCreateOrder } from "@/hooks/use-orders";
 import { useRestaurantSettings } from "@/hooks/use-restaurant-settings";
+import { useRestaurantConfig } from "@/hooks/use-restaurant-config";
 import { useBranches } from "@/hooks/use-branches";
 import { useQuery } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -36,6 +37,7 @@ export function CheckoutModal({ isOpen, onClose, onBack }: CheckoutModalProps) {
   const { items, totalPrice, clearCart } = useCart();
   const { toast } = useToast();
   const { config, dbSettings } = useRestaurantSettings();
+  const { config: restaurantConfig } = useRestaurantConfig();
   const createOrder = useCreateOrder();
   
   // Load payment methods from database
@@ -203,9 +205,14 @@ export function CheckoutModal({ isOpen, onClose, onBack }: CheckoutModalProps) {
 
   const deliveryFee = calculateDeliveryFee();
   
-  // Calculate small order fee if total is less than 15 euros
-  const MINIMUM_ORDER = 15.00;
-  const smallOrderFee = totalPrice < MINIMUM_ORDER ? (MINIMUM_ORDER - totalPrice) : 0;
+  // Calculate small order fee if total is less than minimum for delivery
+  // Get minimum order from config for delivery only (pickup has no minimum)
+  const MINIMUM_ORDER = formData.orderType === "delivery" 
+    ? (restaurantConfig?.delivery?.minimumOrderDelivery || 15.00)
+    : 0;
+  const smallOrderFee = formData.orderType === "delivery" && totalPrice < MINIMUM_ORDER 
+    ? (MINIMUM_ORDER - totalPrice) 
+    : 0;
   
   const totalAmount = totalPrice + deliveryFee + smallOrderFee;
   const minimumOrderAmount = formData.orderType === "delivery" && 

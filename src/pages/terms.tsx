@@ -1,10 +1,15 @@
 import { useLanguage } from "@/lib/language-context";
+import { useRestaurantConfig } from "@/hooks/use-restaurant-config";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 
 export default function Terms() {
   const { t } = useLanguage();
+  const { config: restaurantConfig } = useRestaurantConfig();
+  
+  // Get minimum order from config (default to 15.00 if not set)
+  const minimumOrderDelivery = restaurantConfig?.delivery?.minimumOrderDelivery || 15.00;
 
   const goBack = () => {
     window.history.back();
@@ -60,7 +65,7 @@ export default function Terms() {
               <ul>
                 <li>{t("Kotiinkuljetus: 0-4 km ilmainen, 4-5 km 4€, 5-8 km 7€, 8-10 km 10€", "Delivery: 0-4 km free, 4-5 km €4, 5-8 km €7, 8-10 km €10")}</li>
                 <li>{t("Nouto: Ilmainen", "Pickup: Free")}</li>
-                <li>{t("Minimi tilaussumma kotiinkuljetukselle: 15€", "Minimum order for delivery: €15")}</li>
+                <li>{t(`Minimi tilaussumma kotiinkuljetukselle: ${minimumOrderDelivery.toFixed(2)}€`, `Minimum order for delivery: €${minimumOrderDelivery.toFixed(2)}`)}</li>
               </ul>
             </CardContent>
           </Card>
