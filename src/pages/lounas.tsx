@@ -341,9 +341,9 @@ export default function Lounas() {
                           {formatDate(getDateForDay(day))}
                         </div>
                       </div>
-                      {dayMenus.length > 0 && (
+                      {dayMenus.length > 0 && dayMenus[0].price && (
                         <div className="text-3xl font-black text-white drop-shadow-lg">
-                          {dayMenus[0].price} €
+                          {dayMenus[0].price}
                         </div>
                       )}
                     </div>

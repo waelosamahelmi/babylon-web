@@ -17,7 +17,7 @@ export interface LounasMenu {
   description_ar?: string;
   description_ru?: string;
   description_sv?: string;
-  price: number;
+  price: string;
   is_lactose_free: boolean;
   is_gluten_free: boolean;
   is_vegan: boolean;
