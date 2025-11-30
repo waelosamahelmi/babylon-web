@@ -47,6 +47,7 @@ export interface DatabaseRestaurantConfig {
       lat: number;
       lng: number;
     };
+    minimumOrderDelivery?: number;
   };
   theme: {
     primary: string;

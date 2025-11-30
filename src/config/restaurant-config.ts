@@ -126,6 +126,7 @@ export interface RestaurantConfig {
       lat: number;
       lng: number;
     };
+    minimumOrderDelivery?: number;
   };
   
   // Theme & Branding
