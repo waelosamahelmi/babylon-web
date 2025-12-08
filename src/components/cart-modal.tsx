@@ -53,14 +53,29 @@ export function CartModal({ isOpen, onClose, onCheckout }: CartModalProps) {
             </div>
           ) : (
             <div className="space-y-4">
-              {items.map((item) => (
+              {items.map((item) => {
+                const hasConditionalPricing = item.menuItem.hasConditionalPricing;
+                const includedToppingsCount = item.menuItem.includedToppingsCount || 0;
+                const toppingCount = item.toppings?.length || 0;
+                const extraToppings = Math.max(0, toppingCount - includedToppingsCount);
+                const basePrice = parseFloat(item.menuItem.offerPrice || item.menuItem.price);
+                const itemTotalPrice = (basePrice + (item.toppingsPrice || 0) + (item.sizePrice || 0)) * item.quantity;
+                
+                return (
                 <div key={item.id} className="flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
                   <div className="flex-1">
-                    <h4 className="font-medium text-gray-900 dark:text-gray-100">
-                      {language === "fi" ? item.menuItem.name : item.menuItem.nameEn}
-                    </h4>
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-medium text-gray-900 dark:text-gray-100">
+                        {language === "fi" ? item.menuItem.name : item.menuItem.nameEn}
+                      </h4>
+                      {hasConditionalPricing && includedToppingsCount > 0 && (
+                        <Badge className="bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100 text-xs">
+                          {includedToppingsCount} {t("täytettä", "toppings")}
+                        </Badge>
+                      )}
+                    </div>
                     <p className="text-gray-600 dark:text-gray-400 text-sm">
-                      €{parseFloat(item.menuItem.price).toFixed(2)} x {item.quantity}
+                      €{basePrice.toFixed(2)} x {item.quantity}
                     </p>
                     {item.size && (
                       <p className="text-gray-500 dark:text-gray-400 text-xs mt-1">
@@ -68,9 +83,27 @@ export function CartModal({ isOpen, onClose, onCheckout }: CartModalProps) {
                       </p>
                     )}
                     {item.toppings && item.toppings.length > 0 && (
-                      <p className="text-gray-500 dark:text-gray-400 text-xs mt-1">
-                        {t("Lisätäytteet:", "Toppings:")} {item.toppings.map(getToppingName).join(", ")}
-                      </p>
+                      <div className="mt-2 space-y-1">
+                        {hasConditionalPricing && includedToppingsCount > 0 ? (
+                          <>
+                            <p className="text-green-600 dark:text-green-400 text-xs font-medium">
+                              ✓ {t("Valitut täytteet:", "Selected toppings:")} {Math.min(toppingCount, includedToppingsCount)}/{includedToppingsCount}
+                            </p>
+                            <p className="text-gray-500 dark:text-gray-400 text-xs">
+                              {item.toppings.map(getToppingName).join(", ")}
+                            </p>
+                            {extraToppings > 0 && (
+                              <p className="text-amber-600 dark:text-amber-400 text-xs">
+                                +{extraToppings} {t("lisätäyte", "extra")} (+€{(item.toppingsPrice || 0).toFixed(2)})
+                              </p>
+                            )}
+                          </>
+                        ) : (
+                          <p className="text-gray-500 dark:text-gray-400 text-xs">
+                            {t("Lisätäytteet:", "Toppings:")} {item.toppings.map(getToppingName).join(", ")}
+                          </p>
+                        )}
+                      </div>
                     )}
                     {item.specialInstructions && (
                       <p className="text-gray-500 dark:text-gray-400 text-xs mt-1">
@@ -78,6 +111,10 @@ export function CartModal({ isOpen, onClose, onCheckout }: CartModalProps) {
                         {item.specialInstructions}
                       </p>
                     )}
+                    {/* Show item total price */}
+                    <p className="text-gray-700 dark:text-gray-300 text-sm font-medium mt-2">
+                      {t("Yhteensä:", "Total:")} €{itemTotalPrice.toFixed(2)}
+                    </p>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Button
@@ -107,7 +144,7 @@ export function CartModal({ isOpen, onClose, onCheckout }: CartModalProps) {
                     </Button>
                   </div>
                 </div>
-              ))}
+              )})}
             </div>
           )}
         </div>

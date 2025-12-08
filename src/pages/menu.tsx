@@ -207,6 +207,16 @@ export default function Menu() {
                           itemBranchId === selectedBranch;
 
     return matchesCategory && matchesSearch && matchesBranch && item.isAvailable;
+  })?.sort((a, b) => {
+    // Sort products with offers/promotions first
+    const aHasOffer = a.offerPrice || a.promotionalPrice || a.offerPercentage || a.promotionPercentage;
+    const bHasOffer = b.offerPrice || b.promotionalPrice || b.offerPercentage || b.promotionPercentage;
+    
+    if (aHasOffer && !bHasOffer) return -1;
+    if (!aHasOffer && bHasOffer) return 1;
+    
+    // If both have or don't have offers, maintain original display_order
+    return (a.displayOrder || 0) - (b.displayOrder || 0);
   }) || [];
 
   const handleItemClick = (item: any) => {

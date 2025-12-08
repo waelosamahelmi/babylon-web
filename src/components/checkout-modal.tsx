@@ -681,24 +681,63 @@ export function CheckoutModal({ isOpen, onClose, onBack }: CheckoutModalProps) {
               <h4 className="font-semibold mb-3 text-gray-900 dark:text-gray-100">
                 {t("Tilauksen yhteenveto", "Order Summary")}
               </h4>
-              <div className="space-y-2 mb-4">
+              <div className="space-y-3 mb-4">
                 {items.map((item) => {
-                  const basePrice = parseFloat(item.menuItem.price);
+                  const hasConditionalPricing = item.menuItem.hasConditionalPricing;
+                  const includedToppingsCount = item.menuItem.includedToppingsCount || 0;
+                  const toppingCount = item.toppings?.length || 0;
+                  const basePrice = parseFloat(item.menuItem.offerPrice || item.menuItem.price);
                   const toppingsPrice = item.toppingsPrice || 0;
                   const sizePrice = item.sizePrice || 0;
                   const totalItemPrice = (basePrice + toppingsPrice + sizePrice) * item.quantity;
+                  
                   return (
-                    <div key={item.id} className="flex justify-between text-sm text-gray-700 dark:text-gray-300">
-                      <span>
-                        {language === "fi" ? item.menuItem.name : item.menuItem.nameEn} x {item.quantity}
-                        {(toppingsPrice > 0 || sizePrice > 0) && (
-                          <span className="text-gray-500 dark:text-gray-400 text-xs block">
-                            {toppingsPrice > 0 && `${t("+ lisätäytteet", "+ extras")}: €${toppingsPrice.toFixed(2)}`}
-                            {sizePrice > 0 && `${t("+ koko", "+ size")}: €${sizePrice.toFixed(2)}`}
-                          </span>
-                        )}
-                      </span>
-                      <span>€{totalItemPrice.toFixed(2)}</span>
+                    <div key={item.id} className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-gray-900 dark:text-gray-100">
+                              {language === "fi" ? item.menuItem.name : item.menuItem.nameEn}
+                            </span>
+                            <span className="text-gray-500 dark:text-gray-400">x {item.quantity}</span>
+                          </div>
+                          
+                          {/* Conditional pricing breakdown */}
+                          {hasConditionalPricing && includedToppingsCount > 0 && (
+                            <div className="mt-2 text-xs space-y-1">
+                              <div className="flex items-center gap-1 text-green-600 dark:text-green-400">
+                                <span>✓</span>
+                                <span>
+                                  {t(
+                                    `${Math.min(toppingCount, includedToppingsCount)} täytettä sisältyy hintaan`,
+                                    `${Math.min(toppingCount, includedToppingsCount)} toppings included`
+                                  )}
+                                </span>
+                              </div>
+                              {toppingCount > includedToppingsCount && (
+                                <div className="text-amber-600 dark:text-amber-400">
+                                  + {toppingCount - includedToppingsCount} {t("lisätäyte", "extra topping")} (€{toppingsPrice.toFixed(2)})
+                                </div>
+                              )}
+                            </div>
+                          )}
+                          
+                          {/* Non-conditional pricing extras */}
+                          {!hasConditionalPricing && (toppingsPrice > 0 || sizePrice > 0) && (
+                            <div className="text-gray-500 dark:text-gray-400 text-xs mt-1">
+                              {toppingsPrice > 0 && <span>{t("+ lisätäytteet", "+ extras")}: €{toppingsPrice.toFixed(2)} </span>}
+                              {sizePrice > 0 && <span>{t("+ koko", "+ size")}: €{sizePrice.toFixed(2)}</span>}
+                            </div>
+                          )}
+                          
+                          {sizePrice > 0 && hasConditionalPricing && (
+                            <div className="text-gray-500 dark:text-gray-400 text-xs mt-1">
+                              {t("+ koko", "+ size")}: €{sizePrice.toFixed(2)}
+                            </div>
+                          )}
+                        </div>
+                        <span className="font-medium text-gray-900 dark:text-gray-100">€{totalItemPrice.toFixed(2)}</span>
+                      </div>
                     </div>
                   );
                 })}
