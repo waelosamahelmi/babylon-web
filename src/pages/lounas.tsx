@@ -371,6 +371,20 @@ export default function Lounas() {
                               index !== dayMenus.length - 1 ? "mb-4" : ""
                             }`}
                           >
+                            {/* Image Display */}
+                            {menu.image_url && (
+                              <div className="mb-4">
+                                <img
+                                  src={menu.image_url}
+                                  alt={getLocalizedName(menu)}
+                                  className="w-full h-48 object-cover rounded-xl shadow-md"
+                                  onError={(e) => {
+                                    e.currentTarget.style.display = 'none';
+                                  }}
+                                />
+                              </div>
+                            )}
+
                             <div className="mb-3">
                               <h3 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white mb-2">
                                 {getLocalizedName(menu)}

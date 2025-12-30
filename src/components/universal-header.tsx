@@ -6,7 +6,8 @@ import { useRestaurant } from "@/lib/restaurant-context";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Logo } from "@/components/logo";
-import { ShoppingCart, Moon, Sun, Menu, Globe, X } from "lucide-react";
+import { PhoneNumbersModal } from "@/components/phone-numbers-modal";
+import { ShoppingCart, Moon, Sun, Menu, Globe, X, Phone } from "lucide-react";
 import { Link, useLocation } from "wouter";
 
 interface UniversalHeaderProps {
@@ -25,6 +26,7 @@ export function UniversalHeader({ onCartClick }: UniversalHeaderProps) {
   const [location] = useLocation();
   const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isPhoneModalOpen, setIsPhoneModalOpen] = useState(false);
 
   // Close mobile menu when clicking outside
   useEffect(() => {
@@ -86,6 +88,20 @@ export function UniversalHeader({ onCartClick }: UniversalHeaderProps) {
 
             {/* Desktop Actions */}
             <div className="hidden md:flex items-center space-x-3">
+              {/* Call Us Button */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsPhoneModalOpen(true)}
+                className="px-4 py-3 rounded-xl hover:bg-gray-100 dark:hover:bg-stone-800 transition-all hover:scale-105 flex items-center space-x-2"
+                title={t("Soita meille", "Call us", "اتصل بنا", "Позвоните нам", "Ring oss")}
+              >
+                <Phone className="w-5 h-5 text-green-600 dark:text-green-400" />
+                <span className="text-sm font-semibold hidden lg:inline">
+                  {t("Soita", "Call", "اتصل", "Позвонить", "Ring")}
+                </span>
+              </Button>
+
               <Button
                 variant="ghost"
                 size="sm"
@@ -261,6 +277,19 @@ export function UniversalHeader({ onCartClick }: UniversalHeaderProps) {
               </div>
 
               <div className="border-t border-gray-200 dark:border-gray-700 pt-6 space-y-4">
+                {/* Mobile Call Us Button */}
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    setIsPhoneModalOpen(true);
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full justify-start py-4 rounded-xl hover:bg-gray-100 dark:hover:bg-stone-800 font-medium"
+                >
+                  <Phone className="w-5 h-5 mr-3 text-green-600 dark:text-green-400" />
+                  {t("Soita meille", "Call us", "اتصل بنا", "Позвоните нам", "Ring oss")}
+                </Button>
+
                 {/* Mobile Theme Toggle */}
                 <Button
                   variant="ghost"
@@ -319,6 +348,12 @@ export function UniversalHeader({ onCartClick }: UniversalHeaderProps) {
           </div>
         </div>
       )}
+
+      {/* Phone Numbers Modal */}
+      <PhoneNumbersModal
+        isOpen={isPhoneModalOpen}
+        onClose={() => setIsPhoneModalOpen(false)}
+      />
     </>
   );
 }

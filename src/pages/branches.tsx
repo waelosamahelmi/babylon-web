@@ -58,8 +58,8 @@ const BranchCard = ({ branch }: { branch: Branch }) => {
   }, []);
 
   return (
-    <Card className="hover:shadow-xl transition-all duration-300 border-2 hover:border-orange-500">
-      <CardHeader className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-stone-800 dark:to-stone-700">
+    <Card className="hover:shadow-xl transition-all duration-300 border-2 hover:border-orange-500 dark:border-stone-700 dark:bg-stone-800">
+      <CardHeader className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-stone-700 dark:to-stone-600">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-3 text-2xl">
             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center">
@@ -178,11 +178,11 @@ export default function Branches() {
   const { data: branches, isLoading } = useBranches();
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-stone-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-orange-50 dark:from-stone-900 dark:via-stone-800 dark:to-stone-900">
       <UniversalHeader />
 
       {/* Page Header */}
-      <div className="relative bg-gradient-to-br from-orange-600 via-red-600 to-pink-600 text-white py-24 overflow-hidden">
+      <div className="relative bg-gradient-to-br from-orange-600 via-red-600 to-pink-600 dark:from-orange-700 dark:via-red-700 dark:to-pink-700 text-white py-24 overflow-hidden">
         {/* Animated background patterns */}
         <div className="absolute inset-0 opacity-20">
           <div className="absolute top-0 right-0 w-96 h-96 bg-white rounded-full blur-3xl animate-pulse"></div>
@@ -224,8 +224,8 @@ export default function Branches() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-20">
-              <Store className="w-20 h-20 mx-auto mb-6 text-gray-400" />
+            <div className="text-center py-20 bg-white dark:bg-stone-800 rounded-2xl shadow-lg">
+              <Store className="w-20 h-20 mx-auto mb-6 text-gray-400 dark:text-gray-500" />
               <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
                 {t("Ei ravintoloita", "No branches yet", "لا توجد فروع بعد")}
               </h3>
