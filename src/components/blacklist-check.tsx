@@ -11,7 +11,7 @@ interface BlacklistCheckProps {
 
 export function BlacklistCheck({ email, phone, onBlacklistDetected }: BlacklistCheckProps) {
   const { t } = useLanguage();
-  const { isBlacklisted, reason, isLoading } = useBlacklistCheck(email, phone);
+  const { isBlacklisted, reason, isLoading } = useBlacklistCheck(email || null, phone || null);
 
   // Notify parent component when blacklist is detected
   if (isBlacklisted && onBlacklistDetected) {

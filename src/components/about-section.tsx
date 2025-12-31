@@ -16,8 +16,24 @@ import {
   Facebook
 } from "lucide-react";
 
+// Define explicit day order (Monday to Sunday)
+const DAY_ORDER = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as const;
+
+const getDayName = (day: string, language: string): string => {
+  const dayNames: Record<string, { fi: string; en: string }> = {
+    monday: { fi: 'Maanantai', en: 'Monday' },
+    tuesday: { fi: 'Tiistai', en: 'Tuesday' },
+    wednesday: { fi: 'Keskiviikko', en: 'Wednesday' },
+    thursday: { fi: 'Torstai', en: 'Thursday' },
+    friday: { fi: 'Perjantai', en: 'Friday' },
+    saturday: { fi: 'Lauantai', en: 'Saturday' },
+    sunday: { fi: 'Sunnuntai', en: 'Sunday' },
+  };
+  return dayNames[day]?.[language === 'fi' ? 'fi' : 'en'] || day;
+};
+
 export function AboutSection() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { config } = useRestaurant();
   const { data: branches } = useBranches();
 
@@ -218,14 +234,17 @@ export function AboutSection() {
                             {t("Aukioloajat", "Opening Hours")}
                           </h4>
                           <div className="text-sm font-medium space-y-1">
-                            {Object.entries(branch.opening_hours).map(([day, hours]: [string, any]) => (
-                              <div key={day} className="flex justify-between">
-                                <span className="capitalize">{t(day, day)}:</span>
-                                <span className="font-bold">
-                                  {hours.closed ? t("Suljettu", "Closed") : `${hours.open} - ${hours.close}`}
-                                </span>
-                              </div>
-                            ))}
+                            {DAY_ORDER.filter(day => branch.opening_hours![day]).map((day) => {
+                              const hours = branch.opening_hours![day] as any;
+                              return (
+                                <div key={day} className="flex justify-between">
+                                  <span>{getDayName(day, language)}:</span>
+                                  <span className="font-bold">
+                                    {hours.closed ? t("Suljettu", "Closed") : `${hours.open} - ${hours.close}`}
+                                  </span>
+                                </div>
+                              );
+                            })}
                           </div>
                         </div>
                       )}
@@ -267,12 +286,17 @@ export function AboutSection() {
                           {t("Aukioloajat", "Opening Hours")}
                         </h4>
                         <div className="text-sm font-medium space-y-1">
-                          {Object.entries(config.hours.general).map(([day, hours]: [string, any]) => (
-                            <div key={day} className="flex justify-between">
-                              <span className="capitalize">{t(day, day)}:</span>
-                              <span className="font-bold">{hours.open} - {hours.close}</span>
-                            </div>
-                          ))}
+                          {DAY_ORDER.map((day) => {
+                            const hours = config.hours.general[day] as any;
+                            return (
+                              <div key={day} className="flex justify-between">
+                                <span>{getDayName(day, language)}:</span>
+                                <span className="font-bold">
+                                  {hours?.closed ? t("Suljettu", "Closed") : `${hours?.open || ''} - ${hours?.close || ''}`}
+                                </span>
+                              </div>
+                            );
+                          })}
                         </div>
                       </div>
                     )}

@@ -201,6 +201,9 @@ export function formatBranchHours(branch: Branch, language: 'fi' | 'en' | 'ar' =
     return [];
   }
 
+  // Define explicit day order (Monday to Sunday)
+  const dayOrder = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as const;
+
   const dayNames: Record<string, { fi: string; en: string; ar: string }> = {
     monday: { fi: "Maanantai", en: "Monday", ar: "الاثنين" },
     tuesday: { fi: "Tiistai", en: "Tuesday", ar: "الثلاثاء" },
@@ -213,10 +216,15 @@ export function formatBranchHours(branch: Branch, language: 'fi' | 'en' | 'ar' =
 
   const closedText = language === 'fi' ? 'Suljettu' : language === 'ar' ? 'مغلق' : 'Closed';
 
-  return Object.entries(branch.opening_hours).map(([day, schedule]) => ({
-    day: dayNames[day]?.[language] || day,
-    hours: schedule.closed ? closedText : `${schedule.open} - ${schedule.close}`,
-  }));
+  return dayOrder
+    .filter(day => branch.opening_hours && branch.opening_hours[day]) // Only include days that exist
+    .map((day) => {
+      const schedule = branch.opening_hours![day];
+      return {
+        day: dayNames[day]?.[language] || day,
+        hours: schedule.closed ? closedText : `${schedule.open} - ${schedule.close}`,
+      };
+    });
 }
 
 /**

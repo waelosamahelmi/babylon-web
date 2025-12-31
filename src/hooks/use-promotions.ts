@@ -16,14 +16,17 @@ export interface Promotion {
   is_active: boolean;
   min_order_amount: number | null;
   max_discount_amount: number | null;
+  pickup_only: boolean;
+  delivery_only: boolean;
+  dine_in_only: boolean;
   created_at: string;
   updated_at: string;
 }
 
-// Get active promotions
-export function useActivePromotions(categoryId?: number, branchId?: number) {
+// Get active promotions with optional order type filter
+export function useActivePromotions(categoryId?: number, branchId?: number, orderType?: 'pickup' | 'delivery' | 'dine_in') {
   return useQuery({
-    queryKey: ["active-promotions", categoryId, branchId],
+    queryKey: ["active-promotions", categoryId, branchId, orderType],
     queryFn: async () => {
       const now = new Date().toISOString();
 
@@ -49,7 +52,24 @@ export function useActivePromotions(categoryId?: number, branchId?: number) {
         throw error;
       }
 
-      return (data || []) as Promotion[];
+      // Filter by order type client-side
+      let promotions = (data || []) as Promotion[];
+      
+      if (orderType) {
+        promotions = promotions.filter(promo => {
+          // If no order type restrictions, include it
+          if (!promo.pickup_only && !promo.delivery_only && !promo.dine_in_only) {
+            return true;
+          }
+          // Check specific order type
+          if (orderType === 'pickup' && promo.pickup_only) return true;
+          if (orderType === 'delivery' && promo.delivery_only) return true;
+          if (orderType === 'dine_in' && promo.dine_in_only) return true;
+          return false;
+        });
+      }
+
+      return promotions;
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
   });

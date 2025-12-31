@@ -5,6 +5,8 @@ import { useCreateOrder } from "@/hooks/use-orders";
 import { useRestaurantSettings } from "@/hooks/use-restaurant-settings";
 import { useRestaurantConfig } from "@/hooks/use-restaurant-config";
 import { useBranches } from "@/hooks/use-branches";
+import { useBlacklistCheck } from "@/hooks/use-blacklist";
+import { useCustomerAuth } from "@/hooks/use-customer-auth";
 import { useQuery } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -14,10 +16,11 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent } from "@/components/ui/card";
-import { Bike, ShoppingBag, CreditCard, Banknote, AlertTriangle, Smartphone, Wallet, Zap } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Bike, ShoppingBag, CreditCard, Banknote, AlertTriangle, Smartphone, Wallet, Zap, Tag, ShieldAlert, Gift, Check, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { DeliveryMap } from "@/components/delivery-map";
-import { StructuredAddressInput } from "@/components/structured-address-input";
+import { AddressSelector } from "@/components/address-selector";
 import { OrderSuccessModal } from "@/components/order-success-modal";
 import { isBranchOrderingAvailable, getBranchNextOpeningTime } from "@/lib/branch-business-hours";
 import { Elements } from '@stripe/react-stripe-js';
@@ -25,6 +28,7 @@ import { getStripe } from '@/lib/stripe-client';
 import { createPaymentIntent } from '@/lib/stripe-api';
 import { StripePaymentForm } from '@/components/stripe-payment-form';
 import { PaymentMethodIcon } from '@/components/payment-method-icons';
+import { supabase } from '@/lib/supabase';
 
 interface CheckoutModalProps {
   isOpen: boolean;
@@ -39,6 +43,7 @@ export function CheckoutModal({ isOpen, onClose, onBack }: CheckoutModalProps) {
   const { config, dbSettings } = useRestaurantSettings();
   const { config: restaurantConfig } = useRestaurantConfig();
   const createOrder = useCreateOrder();
+  const { customer, isAuthenticated } = useCustomerAuth();
   
   // Load payment methods from database
   const [availablePaymentMethods, setAvailablePaymentMethods] = useState<Array<{
@@ -103,6 +108,17 @@ export function CheckoutModal({ isOpen, onClose, onBack }: CheckoutModalProps) {
 
   const activeBranches = branches?.filter((branch: any) => branch.is_active) || [];
 
+  // Coupon state
+  const [couponCode, setCouponCode] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<{
+    id: string;
+    code: string;
+    discount: number;
+    discountType: 'percentage' | 'fixed' | 'free_delivery';
+  } | null>(null);
+  const [couponError, setCouponError] = useState("");
+  const [couponLoading, setCouponLoading] = useState(false);
+
   const getToppingName = (toppingId: string) => {
     const toppings = Array.isArray(allToppings) ? allToppings : [];
     const topping = toppings.find((t: any) => t.id.toString() === toppingId);
@@ -121,6 +137,55 @@ export function CheckoutModal({ isOpen, onClose, onBack }: CheckoutModalProps) {
     branchId: null as number | null,
     paymentMethod: "online",
     specialInstructions: "",
+  });
+
+  // Pre-fill form with customer data when logged in
+  useEffect(() => {
+    if (isAuthenticated && customer) {
+      const fullName = [customer.first_name, customer.last_name].filter(Boolean).join(" ");
+      setFormData(prev => ({
+        ...prev,
+        customerName: fullName || prev.customerName,
+        customerPhone: customer.phone || prev.customerPhone,
+        customerEmail: customer.email || prev.customerEmail,
+      }));
+      
+      // Also pre-fill default address if available
+      if (customer.addresses?.length > 0) {
+        const defaultAddr = customer.addresses[customer.default_address_index || 0];
+        if (defaultAddr) {
+          setFormData(prev => ({
+            ...prev,
+            streetAddress: defaultAddr.streetAddress || "",
+            postalCode: defaultAddr.postalCode || "",
+            city: defaultAddr.city || "",
+            deliveryAddress: `${defaultAddr.streetAddress || ""}, ${defaultAddr.postalCode || ""} ${defaultAddr.city || ""}`,
+          }));
+        }
+      }
+    }
+  }, [isAuthenticated, customer]);
+
+  // Blacklist check - must be after formData declaration
+  const { isBlacklisted, reason: blacklistReason, isLoading: blacklistLoading } = useBlacklistCheck(
+    formData.customerEmail || null, 
+    formData.customerPhone || null
+  );
+
+  // Branch payment methods - must be after formData declaration
+  const { data: branchPaymentMethods } = useQuery({
+    queryKey: ['branch-payment-methods', formData.branchId],
+    queryFn: async () => {
+      if (!formData.branchId) return null;
+      const { data, error } = await supabase
+        .from('branch_payment_methods')
+        .select('*')
+        .eq('branch_id', formData.branchId)
+        .eq('is_enabled', true);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!formData.branchId,
   });
 
   const [deliveryInfo, setDeliveryInfo] = useState<{
@@ -231,12 +296,36 @@ export function CheckoutModal({ isOpen, onClose, onBack }: CheckoutModalProps) {
   };
   
   const serviceFee = calculateServiceFee();
-  const totalAmount = totalPrice + deliveryFee + smallOrderFee + serviceFee;
+  
+  // Calculate coupon discount
+  const couponDiscount = useMemo(() => {
+    if (!appliedCoupon) return 0;
+    if (appliedCoupon.discountType === 'percentage') {
+      return (totalPrice * appliedCoupon.discount) / 100;
+    } else if (appliedCoupon.discountType === 'fixed') {
+      return Math.min(appliedCoupon.discount, totalPrice);
+    } else if (appliedCoupon.discountType === 'free_delivery') {
+      return deliveryFee;
+    }
+    return 0;
+  }, [appliedCoupon, totalPrice, deliveryFee]);
+  
+  const totalAmount = totalPrice + deliveryFee + smallOrderFee + serviceFee - couponDiscount;
   const minimumOrderAmount = formData.orderType === "delivery" && 
     deliveryInfo && deliveryInfo.distance > 10 ? 20.00 : 0;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Check blacklist first
+    if (isBlacklisted) {
+      toast({
+        title: t("Tilaaminen estetty", "Ordering blocked"),
+        description: blacklistReason || t("Tiliäsi ei voi käyttää tilausten tekemiseen.", "Your account cannot be used to place orders."),
+        variant: "destructive",
+      });
+      return;
+    }
 
     // Validate branch selection first
     if (activeBranches.length > 0 && !formData.branchId) {
@@ -371,6 +460,9 @@ export function CheckoutModal({ isOpen, onClose, onBack }: CheckoutModalProps) {
         subtotal: totalPrice.toFixed(2),
         deliveryFee: deliveryFee.toFixed(2),
         smallOrderFee: smallOrderFee.toFixed(2),
+        couponDiscount: couponDiscount.toFixed(2),
+        couponCode: appliedCoupon?.code || null,
+        couponId: appliedCoupon?.id || null,
         totalAmount: totalAmount.toFixed(2),
         paymentStatus: paymentStatus || (formData.paymentMethod === 'cash' ? 'pending' : 'paid'),
         stripePaymentIntentId: paymentIntentId,
@@ -412,6 +504,128 @@ export function CheckoutModal({ isOpen, onClose, onBack }: CheckoutModalProps) {
       [field]: field === "orderType" ? value as "delivery" | "pickup" : value 
     }));
   };
+
+  // Apply coupon code
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) {
+      setCouponError(t("Syötä kuponkikoodi", "Enter coupon code"));
+      return;
+    }
+
+    setCouponLoading(true);
+    setCouponError("");
+
+    try {
+      const { data: coupon, error } = await supabase
+        .from('coupon_codes')
+        .select('*')
+        .eq('code', couponCode.toUpperCase())
+        .eq('is_active', true)
+        .single();
+
+      if (error || !coupon) {
+        setCouponError(t("Virheellinen kuponkikoodi", "Invalid coupon code"));
+        return;
+      }
+
+      // Check validity dates
+      const now = new Date();
+      if (coupon.valid_from && new Date(coupon.valid_from) > now) {
+        setCouponError(t("Kuponki ei ole vielä voimassa", "Coupon not yet valid"));
+        return;
+      }
+      if (coupon.valid_until && new Date(coupon.valid_until) < now) {
+        setCouponError(t("Kuponki on vanhentunut", "Coupon has expired"));
+        return;
+      }
+
+      // Check usage limits
+      if (coupon.max_uses_total && coupon.current_uses >= coupon.max_uses_total) {
+        setCouponError(t("Kuponki on käytetty loppuun", "Coupon has been fully used"));
+        return;
+      }
+
+      // Check minimum order amount
+      if (coupon.min_order_amount && totalPrice < coupon.min_order_amount) {
+        setCouponError(t(`Vähimmäistilaus ${coupon.min_order_amount}€`, `Minimum order €${coupon.min_order_amount}`));
+        return;
+      }
+
+      // Check order type restrictions
+      if (coupon.pickup_only && formData.orderType !== 'pickup') {
+        setCouponError(t("Kuponki vain noutoihin", "Coupon only for pickup orders"));
+        return;
+      }
+      if (coupon.delivery_only && formData.orderType !== 'delivery') {
+        setCouponError(t("Kuponki vain toimituksiin", "Coupon only for delivery orders"));
+        return;
+      }
+
+      // Calculate discount
+      let discount = 0;
+      let discountType: 'percentage' | 'fixed' | 'free_delivery' = 'fixed';
+      
+      if (coupon.discount_type === 'percentage') {
+        discount = coupon.discount_value;
+        discountType = 'percentage';
+      } else if (coupon.discount_type === 'fixed') {
+        discount = coupon.discount_value;
+        discountType = 'fixed';
+      } else if (coupon.discount_type === 'free_delivery') {
+        discount = 0;
+        discountType = 'free_delivery';
+      }
+
+      setAppliedCoupon({
+        id: coupon.id,
+        code: coupon.code,
+        discount,
+        discountType,
+      });
+      setCouponCode("");
+    } catch (err) {
+      setCouponError(t("Virhe kupongin tarkistuksessa", "Error validating coupon"));
+    } finally {
+      setCouponLoading(false);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponError("");
+  };
+
+  // Filter payment methods by branch settings
+  const filteredPaymentMethods = useMemo(() => {
+    if (!branchPaymentMethods || branchPaymentMethods.length === 0) {
+      // No branch-specific settings, show all available methods
+      return availablePaymentMethods;
+    }
+    
+    const enabledMethodKeys = branchPaymentMethods.map(m => m.payment_method);
+    
+    return availablePaymentMethods.filter(method => {
+      // Map checkout modal method IDs to branch payment method keys
+      // Branch keys: cash_or_card, stripe_card, apple_pay, google_pay, klarna, etc.
+      // Checkout IDs: online, cash, card, cash_or_card
+      
+      if (method.id === 'online') {
+        // Online payment (Stripe) - check if any Stripe method is enabled
+        return enabledMethodKeys.some(key => 
+          ['stripe_card', 'apple_pay', 'google_pay', 'klarna', 'link', 'ideal', 'sepa_debit'].includes(key)
+        );
+      }
+      
+      if (method.id === 'cash' || method.id === 'card') {
+        // Cash or card payments - check for cash_or_card or exact match
+        return enabledMethodKeys.includes('cash_or_card') || 
+               enabledMethodKeys.includes(method.id);
+      }
+      
+      // Direct match for other methods
+      return enabledMethodKeys.includes(method.id);
+    });
+  }, [availablePaymentMethods, branchPaymentMethods]);
 
   useEffect(() => {
     if (isOpen && config) {
@@ -614,16 +828,32 @@ export function CheckoutModal({ isOpen, onClose, onBack }: CheckoutModalProps) {
             />
           </div>
 
-          {/* Delivery Address with Structured Input */}
+          {/* Logged-in User Indicator */}
+          {isAuthenticated && customer && (
+            <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-lg">
+              <User className="w-5 h-5 text-green-600" />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-green-700 dark:text-green-300">
+                  {t("Kirjautunut tilillä", "Logged in as")} {customer.email}
+                </p>
+                {customer.loyalty_points > 0 && (
+                  <p className="text-xs text-green-600 dark:text-green-400">
+                    {t("Kanta-asiakaspisteet", "Loyalty points")}: {customer.loyalty_points}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Delivery Address with Address Selector for logged-in users */}
           {formData.orderType === "delivery" && (
-            <>
-              <StructuredAddressInput 
-                onAddressChange={handleAddressChange}
-                onDeliveryCalculated={handleDeliveryCalculated}
-                initialAddress={formData.deliveryAddress}
-                branchLocation={branchLocation}
-              />
-            </>
+            <AddressSelector
+              onAddressSelect={(addressData) => {
+                handleAddressChange(addressData);
+              }}
+              onDeliveryCalculated={handleDeliveryCalculated}
+              branchLocation={branchLocation}
+            />
           )}
 
           {/* Special Instructions */}
@@ -651,7 +881,7 @@ export function CheckoutModal({ isOpen, onClose, onBack }: CheckoutModalProps) {
               onValueChange={(value) => handleInputChange("paymentMethod", value)}
             >
               <div className="space-y-3">
-                {availablePaymentMethods.map((method) => {
+                {filteredPaymentMethods.map((method) => {
                   const isStripeMethod = isStripePaymentMethod(method.id);
                   
                   return (
@@ -675,6 +905,81 @@ export function CheckoutModal({ isOpen, onClose, onBack }: CheckoutModalProps) {
               </div>
             </RadioGroup>
           </div>
+
+          {/* Blacklist Warning */}
+          {isBlacklisted && (
+            <Alert variant="destructive" className="border-2 border-red-500">
+              <ShieldAlert className="h-5 w-5" />
+              <AlertDescription>
+                <p className="font-bold mb-1">
+                  {t("Tilaaminen estetty", "Ordering blocked")}
+                </p>
+                <p className="text-sm">
+                  {blacklistReason || t(
+                    "Tiliäsi ei voi käyttää tilausten tekemiseen. Ota yhteyttä asiakaspalveluun.",
+                    "Your account cannot be used to place orders. Please contact customer service."
+                  )}
+                </p>
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* Coupon Code Input */}
+          <div className="space-y-3">
+            <Label className="text-base sm:text-sm font-medium flex items-center gap-2">
+              <Tag className="w-4 h-4" />
+              {t("Kuponkikoodi", "Coupon Code")}
+            </Label>
+            {appliedCoupon ? (
+              <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <Check className="w-5 h-5 text-green-600" />
+                  <span className="font-medium text-green-700 dark:text-green-300">
+                    {appliedCoupon.code}
+                  </span>
+                  <span className="text-sm text-green-600 dark:text-green-400">
+                    {appliedCoupon.discountType === 'percentage' 
+                      ? `-${appliedCoupon.discount}%`
+                      : appliedCoupon.discountType === 'free_delivery'
+                      ? t("Ilmainen toimitus", "Free delivery")
+                      : `-€${appliedCoupon.discount.toFixed(2)}`
+                    }
+                  </span>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleRemoveCoupon}
+                  className="text-red-600 hover:text-red-700"
+                >
+                  {t("Poista", "Remove")}
+                </Button>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <Input
+                  value={couponCode}
+                  onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                  placeholder={t("Syötä koodi", "Enter code")}
+                  className="h-12 sm:h-10 text-base uppercase"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleApplyCoupon}
+                  disabled={couponLoading}
+                  className="h-12 sm:h-10 px-4"
+                >
+                  {couponLoading ? "..." : t("Käytä", "Apply")}
+                </Button>
+              </div>
+            )}
+            {couponError && (
+              <p className="text-sm text-red-600 dark:text-red-400">{couponError}</p>
+            )}
+          </div>
+
           {/* Order Summary */}
           <Card className="bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700">
             <CardContent className="p-4">
@@ -757,6 +1062,15 @@ export function CheckoutModal({ isOpen, onClose, onBack }: CheckoutModalProps) {
                   <div className="flex justify-between text-sm text-blue-600 dark:text-blue-400">
                     <span>{t("Verkkomaksu palvelumaksu", "Online payment service fee")}</span>
                     <span>€{serviceFee.toFixed(2)}</span>
+                  </div>
+                )}
+                {couponDiscount > 0 && (
+                  <div className="flex justify-between text-sm text-green-600 dark:text-green-400">
+                    <span className="flex items-center gap-1">
+                      <Tag className="w-3 h-3" />
+                      {t("Kuponkialennus", "Coupon discount")} ({appliedCoupon?.code})
+                    </span>
+                    <span>-€{couponDiscount.toFixed(2)}</span>
                   </div>
                 )}
               </div>

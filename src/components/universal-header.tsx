@@ -3,11 +3,12 @@ import { useLanguage } from "@/lib/language-context";
 import { useCart } from "@/lib/cart-context";
 import { useTheme } from "@/lib/theme-context";
 import { useRestaurant } from "@/lib/restaurant-context";
+import { useCustomerAuth } from "@/hooks/use-customer-auth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Logo } from "@/components/logo";
 import { PhoneNumbersModal } from "@/components/phone-numbers-modal";
-import { ShoppingCart, Moon, Sun, Menu, Globe, X, Phone } from "lucide-react";
+import { ShoppingCart, Moon, Sun, Menu, Globe, X, Phone, User, LogIn } from "lucide-react";
 import { Link, useLocation } from "wouter";
 
 interface UniversalHeaderProps {
@@ -18,6 +19,7 @@ export function UniversalHeader({ onCartClick }: UniversalHeaderProps) {
   const { language, setLanguage, t } = useLanguage();
   const { totalItems } = useCart();
   const { theme, setTheme } = useTheme();
+  const { isAuthenticated, customer, loading: authLoading } = useCustomerAuth();
 
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark");
@@ -195,6 +197,37 @@ export function UniversalHeader({ onCartClick }: UniversalHeaderProps) {
                 )}
               </div>
 
+              {/* Login/Account Button */}
+              {!authLoading && (
+                <Link href={isAuthenticated ? "/account/profile" : "/auth/login"}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="px-4 py-3 rounded-xl hover:bg-gray-100 dark:hover:bg-stone-800 transition-all hover:scale-105 flex items-center space-x-2"
+                    title={isAuthenticated 
+                      ? t("Oma tili", "My Account", "حسابي", "Мой аккаунт", "Mitt konto")
+                      : t("Kirjaudu", "Login", "تسجيل الدخول", "Войти", "Logga in")
+                    }
+                  >
+                    {isAuthenticated ? (
+                      <>
+                        <User className="w-5 h-5 text-green-600 dark:text-green-400" />
+                        <span className="text-sm font-semibold hidden lg:inline">
+                          {customer?.first_name || t("Tili", "Account", "الحساب", "Аккаунт", "Konto")}
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <LogIn className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                        <span className="text-sm font-semibold hidden lg:inline">
+                          {t("Kirjaudu", "Login", "تسجيل الدخول", "Войти", "Logga in")}
+                        </span>
+                      </>
+                    )}
+                  </Button>
+                </Link>
+              )}
+
               {onCartClick && (
                 <Button
                   onClick={onCartClick}
@@ -277,6 +310,29 @@ export function UniversalHeader({ onCartClick }: UniversalHeaderProps) {
               </div>
 
               <div className="border-t border-gray-200 dark:border-gray-700 pt-6 space-y-4">
+                {/* Mobile Login/Account Button */}
+                {!authLoading && (
+                  <Link href={isAuthenticated ? "/account/profile" : "/auth/login"}>
+                    <Button
+                      variant="ghost"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="w-full justify-start py-4 rounded-xl hover:bg-gray-100 dark:hover:bg-stone-800 font-medium"
+                    >
+                      {isAuthenticated ? (
+                        <>
+                          <User className="w-5 h-5 mr-3 text-green-600 dark:text-green-400" />
+                          {customer?.first_name || t("Oma tili", "My Account", "حسابي", "Мой аккаунт", "Mitt konto")}
+                        </>
+                      ) : (
+                        <>
+                          <LogIn className="w-5 h-5 mr-3 text-blue-600 dark:text-blue-400" />
+                          {t("Kirjaudu sisään", "Sign In", "تسجيل الدخول", "Войти", "Logga in")}
+                        </>
+                      )}
+                    </Button>
+                  </Link>
+                )}
+
                 {/* Mobile Call Us Button */}
                 <Button
                   variant="ghost"
@@ -351,8 +407,8 @@ export function UniversalHeader({ onCartClick }: UniversalHeaderProps) {
 
       {/* Phone Numbers Modal */}
       <PhoneNumbersModal
-        isOpen={isPhoneModalOpen}
-        onClose={() => setIsPhoneModalOpen(false)}
+        open={isPhoneModalOpen}
+        onOpenChange={setIsPhoneModalOpen}
       />
     </>
   );

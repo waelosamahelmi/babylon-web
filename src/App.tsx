@@ -20,6 +20,14 @@ import Terms from "@/pages/terms";
 import Privacy from "@/pages/privacy";
 import NotFound from "@/pages/not-found";
 import HelmiesLanding from "@/pages/helmies-landing";
+// Auth pages
+import Login from "@/pages/auth/login";
+import Register from "@/pages/auth/register";
+import ForgotPassword from "@/pages/auth/forgot-password";
+import ResetPassword from "@/pages/auth/reset-password";
+// Account pages
+import Profile from "@/pages/account/profile";
+import Loyalty from "@/pages/account/loyalty";
 
 function Router() {
   return (
@@ -34,6 +42,14 @@ function Router() {
       <Route path="/lounas" component={Lounas} />
       <Route path="/terms" component={Terms} />
       <Route path="/privacy" component={Privacy} />
+      {/* Auth routes */}
+      <Route path="/auth/login" component={Login} />
+      <Route path="/auth/register" component={Register} />
+      <Route path="/auth/forgot-password" component={ForgotPassword} />
+      <Route path="/auth/reset-password" component={ResetPassword} />
+      {/* Account routes */}
+      <Route path="/account/profile" component={Profile} />
+      <Route path="/account/loyalty" component={Loyalty} />
       <Route component={NotFound} />
     </Switch>
   );

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLanguage } from "@/lib/language-context";
 import { useBranches } from "@/hooks/use-branches";
 import { useLounasMenus, getCurrentWeek } from "@/hooks/use-lounas-menus";
@@ -50,15 +50,15 @@ export default function Lounas() {
     ? lounasSettings.is_enabled 
     : true;
 
-  // Filter branches that have lunch entries for the selected week
-  const branches = allBranches?.filter(branch => 
-    menus?.some(menu => menu.branch_id === branch.id)
-  );
+  // Show all active branches (don't filter by menus - show branches even if they have no entries for this week)
+  const branches = allBranches;
 
-  // Auto-select first branch with entries if none selected
-  if (branches && branches.length > 0 && !selectedBranchId) {
-    setSelectedBranchId(branches[0].id);
-  }
+  // Auto-select first branch if none selected
+  useEffect(() => {
+    if (branches && branches.length > 0 && selectedBranchId === 0) {
+      setSelectedBranchId(branches[0].id);
+    }
+  }, [branches, selectedBranchId]);
 
   // Filter menus for selected branch
   const selectedBranchMenus = menus?.filter(m => m.branch_id === selectedBranchId);

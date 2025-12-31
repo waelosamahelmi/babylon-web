@@ -5,13 +5,11 @@ import { supabase } from "@/lib/supabase";
 import { useLanguage } from "@/lib/language-context";
 
 interface PhoneNumber {
-  id: string;
-  brand_name: string;
-  phone_number: string;
-  phone_label: string;
-  phone_label_en: string;
-  is_primary: boolean;
-  display_order: number;
+  id: string | number;
+  name: string;
+  phone: string;
+  label?: string;
+  label_en?: string;
 }
 
 interface PhoneNumbersModalProps {
@@ -23,16 +21,42 @@ export function PhoneNumbersModal({ open, onOpenChange }: PhoneNumbersModalProps
   const { t, language } = useLanguage();
 
   const { data: phoneNumbers, isLoading } = useQuery({
-    queryKey: ['brand-phone-numbers'],
+    queryKey: ['phone-numbers', language],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // First try brand_phone_numbers table
+      const { data: brandPhones } = await supabase
         .from('brand_phone_numbers')
         .select('*')
         .eq('is_active', true)
         .order('display_order', { ascending: true });
 
-      if (error) throw error;
-      return data as PhoneNumber[];
+      if (brandPhones && brandPhones.length > 0) {
+        return brandPhones.map(p => ({
+          id: p.id,
+          name: p.brand_name,
+          phone: p.phone_number,
+          label: p.phone_label,
+          label_en: p.phone_label_en,
+        })) as PhoneNumber[];
+      }
+
+      // Fallback to branches table
+      const { data: branches, error: branchError } = await supabase
+        .from('branches')
+        .select('id, name, name_en, phone')
+        .eq('is_active', true)
+        .order('display_order', { ascending: true });
+
+      if (branchError) {
+        console.error('Error fetching branches:', branchError);
+        throw branchError;
+      }
+      
+      return (branches || []).filter(b => b.phone).map(b => ({
+        id: b.id,
+        name: language === 'en' && b.name_en ? b.name_en : b.name,
+        phone: b.phone,
+      })) as PhoneNumber[];
     },
   });
 
@@ -55,22 +79,24 @@ export function PhoneNumbersModal({ open, onOpenChange }: PhoneNumbersModalProps
             {phoneNumbers?.map((phone) => (
               <a
                 key={phone.id}
-                href={`tel:${phone.phone_number}`}
+                href={`tel:${phone.phone}`}
                 className="flex items-center justify-between p-4 rounded-xl border-2 border-gray-200 dark:border-stone-700 hover:border-primary hover:bg-primary/5 transition-all group"
               >
                 <div>
                   <div className="font-bold text-gray-900 dark:text-white">
-                    {phone.brand_name}
+                    {phone.name}
                   </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">
-                    {language === 'en' && phone.phone_label_en
-                      ? phone.phone_label_en
-                      : phone.phone_label}
-                  </div>
+                  {phone.label && (
+                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                      {language === 'en' && phone.label_en
+                        ? phone.label_en
+                        : phone.label}
+                    </div>
+                  )}
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="font-mono font-bold text-primary text-lg">
-                    {phone.phone_number}
+                    {phone.phone}
                   </span>
                   <Phone className="w-5 h-5 text-primary group-hover:animate-pulse" />
                 </div>
