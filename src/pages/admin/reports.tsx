@@ -334,7 +334,7 @@ export default function Reports() {
             <CardContent>
               <div className="text-3xl font-bold text-green-600">
                 €{reportData?.totalRevenue.toFixed(2) || '0.00'}
-              </CardContent>
+              </div>
             </CardContent>
           </Card>
 
