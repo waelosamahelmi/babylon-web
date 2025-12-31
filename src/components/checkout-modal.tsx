@@ -417,6 +417,40 @@ export function CheckoutModal({ isOpen, onClose, onBack }: CheckoutModalProps) {
         },
       });
 
+      // Save pending order data to localStorage (for redirect flows like 3D Secure)
+      const pendingOrderData = {
+        paymentIntentId: paymentIntent.paymentIntentId,
+        formData: {
+          ...formData,
+        },
+        items: items.map(item => ({
+          menuItemId: item.menuItem.id,
+          menuItemName: item.menuItem.name,
+          menuItemNameEn: item.menuItem.nameEn,
+          quantity: item.quantity,
+          specialInstructions: item.specialInstructions || "",
+          toppings: item.toppings ? item.toppings.map(toppingId => {
+            const topping = Array.isArray(allToppings) ? allToppings.find((t: any) => t.id.toString() === toppingId) : null;
+            return topping ? { name: topping.name, price: topping.price } : { name: toppingId, price: "0" };
+          }) : [],
+          toppingsPrice: item.toppingsPrice || 0,
+          sizePrice: item.sizePrice || 0,
+          size: item.size || "normal",
+          unitPrice: item.menuItem.price,
+        })),
+        pricing: {
+          subtotal: totalPrice.toFixed(2),
+          deliveryFee: deliveryFee.toFixed(2),
+          smallOrderFee: smallOrderFee.toFixed(2),
+          couponDiscount: couponDiscount.toFixed(2),
+          couponCode: appliedCoupon?.code || null,
+          couponId: appliedCoupon?.id || null,
+          totalAmount: totalAmount.toFixed(2),
+        },
+        createdAt: new Date().toISOString(),
+      };
+      localStorage.setItem('pendingStripeOrder', JSON.stringify(pendingOrderData));
+
       setStripeClientSecret(paymentIntent.clientSecret);
       setStripePaymentIntentId(paymentIntent.paymentIntentId);
       setShowStripePayment(true);
@@ -434,6 +468,8 @@ export function CheckoutModal({ isOpen, onClose, onBack }: CheckoutModalProps) {
 
   const handlePaymentSuccess = async (paymentIntentId: string) => {
     // Payment successful, now create the order
+    // Clear pending order data since we're handling it here
+    localStorage.removeItem('pendingStripeOrder');
     await createOrderWithPaymentStatus('paid', paymentIntentId);
     setShowStripePayment(false);
   };
