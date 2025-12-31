@@ -202,6 +202,7 @@ export function CheckoutModal({ isOpen, onClose, onBack }: CheckoutModalProps) {
   const [stripeClientSecret, setStripeClientSecret] = useState<string>("");
   const [stripePaymentIntentId, setStripePaymentIntentId] = useState<string>("");
   const [isCreatingPaymentIntent, setIsCreatingPaymentIntent] = useState(false);
+  const [pendingOrderId, setPendingOrderId] = useState<number | null>(null);
 
   // Compute branch location using useMemo to ensure it updates properly
   const branchLocation = useMemo(() => {
@@ -405,28 +406,20 @@ export function CheckoutModal({ isOpen, onClose, onBack }: CheckoutModalProps) {
     setIsCreatingPaymentIntent(true);
 
     try {
-      // Create payment intent
-      const paymentIntent = await createPaymentIntent({
-        amount: totalAmount,
-        currency: 'eur',
-        // Not specifying paymentMethodTypes - will use Stripe Dashboard settings
-        metadata: {
-          customerName: formData.customerName,
-          customerPhone: formData.customerPhone,
-          orderType: formData.orderType,
-        },
-      });
-
-      // Save pending order data to localStorage (for redirect flows like 3D Secure)
-      const pendingOrderData = {
-        paymentIntentId: paymentIntent.paymentIntentId,
-        formData: {
-          ...formData,
-        },
+      // STEP 1: Create the order FIRST with pending_payment status
+      // This ensures the order exists before any Stripe redirects
+      const orderData = {
+        ...formData,
+        subtotal: totalPrice.toFixed(2),
+        deliveryFee: deliveryFee.toFixed(2),
+        smallOrderFee: smallOrderFee.toFixed(2),
+        couponDiscount: couponDiscount.toFixed(2),
+        couponCode: appliedCoupon?.code || null,
+        couponId: appliedCoupon?.id || null,
+        totalAmount: totalAmount.toFixed(2),
+        paymentStatus: 'pending_payment', // Will be updated to 'paid' after successful payment
         items: items.map(item => ({
           menuItemId: item.menuItem.id,
-          menuItemName: item.menuItem.name,
-          menuItemNameEn: item.menuItem.nameEn,
           quantity: item.quantity,
           specialInstructions: item.specialInstructions || "",
           toppings: item.toppings ? item.toppings.map(toppingId => {
@@ -436,42 +429,81 @@ export function CheckoutModal({ isOpen, onClose, onBack }: CheckoutModalProps) {
           toppingsPrice: item.toppingsPrice || 0,
           sizePrice: item.sizePrice || 0,
           size: item.size || "normal",
-          unitPrice: item.menuItem.price,
         })),
-        pricing: {
-          subtotal: totalPrice.toFixed(2),
-          deliveryFee: deliveryFee.toFixed(2),
-          smallOrderFee: smallOrderFee.toFixed(2),
-          couponDiscount: couponDiscount.toFixed(2),
-          couponCode: appliedCoupon?.code || null,
-          couponId: appliedCoupon?.id || null,
-          totalAmount: totalAmount.toFixed(2),
-        },
-        createdAt: new Date().toISOString(),
       };
-      localStorage.setItem('pendingStripeOrder', JSON.stringify(pendingOrderData));
+
+      const orderResult = await createOrder.mutateAsync(orderData);
+      const orderId = orderResult.id;
+      const orderNumber = orderResult.orderNumber || orderResult.order_number;
+      
+      console.log('Order created with pending_payment status:', { orderId, orderNumber });
+
+      // STEP 2: Create payment intent with order ID in metadata
+      const paymentIntent = await createPaymentIntent({
+        amount: totalAmount,
+        currency: 'eur',
+        metadata: {
+          orderId: orderId.toString(),
+          orderNumber: orderNumber || '',
+          customerName: formData.customerName,
+          customerPhone: formData.customerPhone,
+          orderType: formData.orderType,
+        },
+      });
+
+      // STEP 3: Update the order with the payment intent ID
+      await supabase
+        .from('orders')
+        .update({ stripe_payment_intent_id: paymentIntent.paymentIntentId })
+        .eq('id', orderId);
+
+      console.log('Payment intent created:', paymentIntent.paymentIntentId);
 
       setStripeClientSecret(paymentIntent.clientSecret);
       setStripePaymentIntentId(paymentIntent.paymentIntentId);
+      setPendingOrderId(orderId);
       setShowStripePayment(true);
     } catch (error: any) {
       toast({
         title: t("Virhe", "Error"),
-        description: t("Maksun luominen epäonnistui", "Failed to create payment"),
+        description: t("Tilauksen luominen epäonnistui", "Failed to create order"),
         variant: "destructive",
       });
-      console.error('Error creating payment intent:', error);
+      console.error('Error creating order or payment intent:', error);
     } finally {
       setIsCreatingPaymentIntent(false);
     }
   };
 
   const handlePaymentSuccess = async (paymentIntentId: string) => {
-    // Payment successful, now create the order
-    // Clear pending order data since we're handling it here
-    localStorage.removeItem('pendingStripeOrder');
-    await createOrderWithPaymentStatus('paid', paymentIntentId);
+    // Payment successful - update the existing order to 'paid' status
+    if (pendingOrderId) {
+      try {
+        const { data: order, error } = await supabase
+          .from('orders')
+          .update({ 
+            payment_status: 'paid',
+            stripe_payment_intent_id: paymentIntentId 
+          })
+          .eq('id', pendingOrderId)
+          .select()
+          .single();
+
+        if (error) {
+          console.error('Error updating order payment status:', error);
+        } else {
+          console.log('Order payment status updated to paid:', order);
+          setSuccessOrderNumber(order.order_number || order.id?.toString() || "");
+          setShowSuccessModal(true);
+          clearCart();
+          onClose();
+        }
+      } catch (err) {
+        console.error('Error in handlePaymentSuccess:', err);
+      }
+    }
     setShowStripePayment(false);
+    setPendingOrderId(null);
   };
 
   const handlePaymentError = (error: string) => {
@@ -480,13 +512,31 @@ export function CheckoutModal({ isOpen, onClose, onBack }: CheckoutModalProps) {
       description: error,
       variant: "destructive",
     });
+    // Mark the order as payment_failed if we have one
+    if (pendingOrderId) {
+      supabase
+        .from('orders')
+        .update({ payment_status: 'payment_failed' })
+        .eq('id', pendingOrderId)
+        .then(() => console.log('Order marked as payment_failed'));
+    }
     setShowStripePayment(false);
+    setPendingOrderId(null);
   };
 
-  const handlePaymentCancel = () => {
+  const handlePaymentCancel = async () => {
+    // If user cancels, mark order as cancelled
+    if (pendingOrderId) {
+      await supabase
+        .from('orders')
+        .update({ payment_status: 'cancelled', status: 'cancelled' })
+        .eq('id', pendingOrderId);
+      console.log('Order cancelled:', pendingOrderId);
+    }
     setShowStripePayment(false);
     setStripeClientSecret("");
     setStripePaymentIntentId("");
+    setPendingOrderId(null);
   };
 
   const createOrderWithPaymentStatus = async (paymentStatus: string = 'pending', paymentIntentId?: string) => {

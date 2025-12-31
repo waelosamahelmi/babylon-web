@@ -11,7 +11,7 @@ export default function OrderSuccess() {
   const { t } = useLanguage();
   const [, setLocation] = useLocation();
   const { clearCart } = useCart();
-  const [status, setStatus] = useState<'loading' | 'success' | 'failed' | 'creating'>('loading');
+  const [status, setStatus] = useState<'loading' | 'success' | 'failed'>('loading');
   const [orderNumber, setOrderNumber] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -27,91 +27,59 @@ export default function OrderSuccess() {
       if (redirectStatus === 'failed') {
         setStatus('failed');
         setErrorMessage(t('Maksu epäonnistui', 'Payment failed'));
+        // If payment failed, mark the order as payment_failed
+        if (paymentIntentId) {
+          await supabase
+            .from('orders')
+            .update({ payment_status: 'payment_failed' })
+            .eq('stripe_payment_intent_id', paymentIntentId);
+        }
         return;
       }
 
       if (redirectStatus === 'succeeded' && paymentIntentId) {
-        // Check if we have pending order data
-        const pendingOrderStr = localStorage.getItem('pendingStripeOrder');
-        
-        if (pendingOrderStr) {
-          try {
-            setStatus('creating');
-            const pendingOrder = JSON.parse(pendingOrderStr);
-            
-            // Verify the payment intent matches
-            if (pendingOrder.paymentIntentId !== paymentIntentId) {
-              console.error('Payment intent mismatch:', pendingOrder.paymentIntentId, paymentIntentId);
-              setStatus('failed');
-              setErrorMessage(t('Tilauksen tunniste ei täsmää', 'Order ID mismatch'));
-              return;
-            }
+        try {
+          // Look up the existing order by payment_intent_id
+          // The order was already created with pending_payment status before Stripe redirect
+          const { data: order, error: fetchError } = await supabase
+            .from('orders')
+            .select('*')
+            .eq('stripe_payment_intent_id', paymentIntentId)
+            .single();
 
-            // Create the order in the database
-            const orderData = {
-              customer_name: pendingOrder.formData.customerName,
-              customer_phone: pendingOrder.formData.customerPhone,
-              customer_email: pendingOrder.formData.customerEmail || null,
-              order_type: pendingOrder.formData.orderType,
-              delivery_address: pendingOrder.formData.orderType === 'delivery' 
-                ? pendingOrder.formData.deliveryAddress 
-                : null,
-              street_address: pendingOrder.formData.streetAddress || null,
-              postal_code: pendingOrder.formData.postalCode || null,
-              city: pendingOrder.formData.city || null,
-              floor_code: pendingOrder.formData.floorCode || null,
-              delivery_notes: pendingOrder.formData.deliveryNotes || null,
-              payment_method: pendingOrder.formData.paymentMethod,
-              special_instructions: pendingOrder.formData.specialInstructions || '',
-              scheduled_time: pendingOrder.formData.scheduledTime || null,
-              branch_id: pendingOrder.formData.branchId || null,
-              subtotal: pendingOrder.pricing.subtotal,
-              delivery_fee: pendingOrder.pricing.deliveryFee,
-              small_order_fee: pendingOrder.pricing.smallOrderFee,
-              coupon_discount: pendingOrder.pricing.couponDiscount,
-              coupon_code: pendingOrder.pricing.couponCode,
-              coupon_id: pendingOrder.pricing.couponId,
-              total_amount: pendingOrder.pricing.totalAmount,
-              status: 'pending',
-              payment_status: 'paid',
-              stripe_payment_intent_id: paymentIntentId,
-              items: pendingOrder.items,
-            };
-
-            console.log('Creating order:', orderData);
-
-            const { data: order, error } = await supabase
-              .from('orders')
-              .insert([orderData])
-              .select()
-              .single();
-
-            if (error) {
-              console.error('Error creating order:', error);
-              setStatus('failed');
-              setErrorMessage(t('Tilauksen luominen epäonnistui', 'Failed to create order'));
-              return;
-            }
-
-            console.log('Order created successfully:', order);
-
-            // Clear the pending order and cart
-            localStorage.removeItem('pendingStripeOrder');
-            clearCart();
-
-            setOrderNumber(order.order_number || order.id?.toString());
-            setStatus('success');
-          } catch (err) {
-            console.error('Error processing order:', err);
+          if (fetchError || !order) {
+            console.error('Order not found for payment intent:', paymentIntentId, fetchError);
             setStatus('failed');
-            setErrorMessage(t('Tilauksen käsittely epäonnistui', 'Failed to process order'));
+            setErrorMessage(t('Tilausta ei löytynyt', 'Order not found'));
+            return;
           }
-        } else {
-          // No pending order data - payment succeeded but order might already be created
-          // or the user refreshed the page
-          console.log('No pending order data found');
-          setOrderNumber(paymentIntentId.slice(-8).toUpperCase());
+
+          console.log('Found order:', order);
+
+          // Update payment status to paid if it's still pending_payment
+          if (order.payment_status === 'pending_payment') {
+            const { error: updateError } = await supabase
+              .from('orders')
+              .update({ payment_status: 'paid' })
+              .eq('id', order.id);
+
+            if (updateError) {
+              console.error('Error updating payment status:', updateError);
+              // Still show success since payment succeeded
+            } else {
+              console.log('Order payment status updated to paid');
+            }
+          }
+
+          // Clear cart
+          clearCart();
+
+          setOrderNumber(order.order_number || order.id?.toString());
           setStatus('success');
+        } catch (err) {
+          console.error('Error processing payment result:', err);
+          setStatus('failed');
+          setErrorMessage(t('Tilauksen käsittely epäonnistui', 'Failed to process order'));
         }
       } else {
         // Unknown state
@@ -127,15 +95,13 @@ export default function OrderSuccess() {
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          {(status === 'loading' || status === 'creating') && (
+          {status === 'loading' && (
             <>
               <div className="mx-auto w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mb-4">
                 <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
               </div>
               <CardTitle className="text-xl">
-                {status === 'creating' 
-                  ? t("Luodaan tilausta...", "Creating order...")
-                  : t("Käsitellään maksua...", "Processing payment...")}
+                {t("Vahvistetaan maksua...", "Confirming payment...")}
               </CardTitle>
             </>
           )}
