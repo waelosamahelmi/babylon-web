@@ -18,6 +18,7 @@ import Locations from "@/pages/locations";
 import Lounas from "@/pages/lounas";
 import Terms from "@/pages/terms";
 import Privacy from "@/pages/privacy";
+import OrderSuccess from "@/pages/order-success";
 import NotFound from "@/pages/not-found";
 import HelmiesLanding from "@/pages/helmies-landing";
 // Auth pages
@@ -42,6 +43,7 @@ function Router() {
       <Route path="/lounas" component={Lounas} />
       <Route path="/terms" component={Terms} />
       <Route path="/privacy" component={Privacy} />
+      <Route path="/order-success" component={OrderSuccess} />
       {/* Auth routes */}
       <Route path="/auth/login" component={Login} />
       <Route path="/auth/register" component={Register} />
