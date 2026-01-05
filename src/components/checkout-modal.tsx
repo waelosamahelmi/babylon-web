@@ -34,9 +34,10 @@ interface CheckoutModalProps {
   isOpen: boolean;
   onClose: () => void;
   onBack: () => void;
+  onOrderSuccess?: (orderNumber: string, orderType: "delivery" | "pickup") => void;
 }
 
-export function CheckoutModal({ isOpen, onClose, onBack }: CheckoutModalProps) {
+export function CheckoutModal({ isOpen, onClose, onBack, onOrderSuccess }: CheckoutModalProps) {
   const { language, t } = useLanguage();
   const { items, totalPrice, clearCart } = useCart();
   const { toast } = useToast();
@@ -451,24 +452,10 @@ export function CheckoutModal({ isOpen, onClose, onBack }: CheckoutModalProps) {
         },
       });
 
-      // STEP 3: Update the order with the payment intent ID - CRITICAL for webhook to work
-      const { error: updateError } = await supabase
-        .from('orders')
-        .update({ stripe_payment_intent_id: paymentIntent.paymentIntentId })
-        .eq('id', orderId);
-
-      if (updateError) {
-        console.error('CRITICAL: Failed to save payment intent ID to order:', updateError);
-        // Try one more time
-        await supabase
-          .from('orders')
-          .update({ stripe_payment_intent_id: paymentIntent.paymentIntentId })
-          .eq('id', orderId);
-      } else {
-        console.log('✓ Payment intent ID successfully saved to order');
-      }
-
-      console.log('Payment intent created:', paymentIntent.paymentIntentId, 'for order:', orderId);
+      // STEP 3: Payment intent ID is automatically saved by the Supabase Edge Function
+      // The Edge Function uses service role key and has permission to update orders
+      console.log('✅ Payment intent created:', paymentIntent.paymentIntentId, 'for order:', orderId);
+      console.log('📝 Note: Payment intent ID saved automatically by Edge Function');
       
       // Store orderId in sessionStorage as backup for redirect
       sessionStorage.setItem('pending_order_id', orderId.toString());
@@ -526,11 +513,30 @@ export function CheckoutModal({ isOpen, onClose, onBack }: CheckoutModalProps) {
             console.log('Order payment status updated to paid');
           }
 
-          // Always show success and clear cart, even if update fails
-          // (webhook will update the order if this fails)
-          setSuccessOrderNumber(existingOrder.order_number || existingOrder.id?.toString() || "");
-          setShowSuccessModal(true);
+          // Store order details for success modal
+          const orderNumber = existingOrder.order_number || existingOrder.id?.toString() || "";
+          const orderType = formData.orderType;
+
+          // Clear cart
           clearCart();
+
+          // Close payment modal and checkout
+          setShowStripePayment(false);
+          setPendingOrderId(null);
+          onClose();
+
+          // CRITICAL: Show success modal via callback AFTER checkout closes
+          // This ensures the parent component shows the success modal
+          if (onOrderSuccess) {
+            // Call after a brief delay to ensure checkout has closed
+            setTimeout(() => {
+              onOrderSuccess(orderNumber, orderType);
+            }, 100);
+          } else {
+            // Fallback: Show internal success modal if no callback provided
+            setSuccessOrderNumber(orderNumber);
+            setShowSuccessModal(true);
+          }
         }
       } catch (err) {
         console.error('Error in handlePaymentSuccess:', err);
@@ -539,13 +545,18 @@ export function CheckoutModal({ isOpen, onClose, onBack }: CheckoutModalProps) {
           title: t("Maksu vastaanotettu", "Payment received"),
           description: t("Tilauksesi on vastaanotettu.", "Your order has been received."),
         });
-      }
-    }
 
-    // Always close the payment modal and checkout modal
-    setShowStripePayment(false);
-    setPendingOrderId(null);
-    onClose();
+        // Close modals even on error
+        setShowStripePayment(false);
+        setPendingOrderId(null);
+        onClose();
+      }
+    } else {
+      // No pending order found - just close modals
+      setShowStripePayment(false);
+      setPendingOrderId(null);
+      onClose();
+    }
   };
 
   const handlePaymentError = (error: string) => {

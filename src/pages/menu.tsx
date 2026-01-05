@@ -13,6 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ItemDetailModal } from "@/components/item-detail-modal";
 import { CartModal } from "@/components/cart-modal";
 import { CheckoutModal } from "@/components/checkout-modal";
+import { OrderSuccessModal } from "@/components/order-success-modal";
 import { RestaurantClosedModal } from "@/components/restaurant-closed-modal";
 import { UniversalHeader } from "@/components/universal-header";
 import { MobileNav } from "@/components/mobile-nav";
@@ -59,6 +60,9 @@ export default function Menu() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [showClosedModal, setShowClosedModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successOrderNumber, setSuccessOrderNumber] = useState("");
+  const [successOrderType, setSuccessOrderType] = useState<"delivery" | "pickup">("pickup");
   const [isOrderingAvailable, setIsOrderingAvailable] = useState(true); // Start optimistic
 
   // Check ordering availability based on branch hours
@@ -634,6 +638,19 @@ export default function Menu() {
         isOpen={isCheckoutOpen}
         onClose={handleCheckoutClose}
         onBack={handleBackToCart}
+        onOrderSuccess={(orderNumber, orderType) => {
+          setSuccessOrderNumber(orderNumber);
+          setSuccessOrderType(orderType);
+          setShowSuccessModal(true);
+        }}
+      />
+
+      {/* Order Success Modal */}
+      <OrderSuccessModal
+        isOpen={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        orderType={successOrderType}
+        orderNumber={successOrderNumber}
       />
 
       {/* Closed Restaurant Modal */}

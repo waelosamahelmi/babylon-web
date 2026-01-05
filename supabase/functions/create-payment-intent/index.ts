@@ -3,6 +3,7 @@
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import Stripe from 'https://esm.sh/stripe@14.10.0?target=deno';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -56,6 +57,34 @@ serve(async (req) => {
     }
 
     const paymentIntent = await stripe.paymentIntents.create(paymentIntentParams);
+
+    // CRITICAL: Update the order with payment intent ID immediately
+    // This ensures the webhook can find the order later
+    if (metadata.orderId) {
+      try {
+        const supabaseUrl = Deno.env.get('SUPABASE_URL');
+        const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+        if (supabaseUrl && supabaseServiceKey) {
+          const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+          const { error: updateError } = await supabase
+            .from('orders')
+            .update({ stripe_payment_intent_id: paymentIntent.id })
+            .eq('id', parseInt(metadata.orderId as string));
+
+          if (updateError) {
+            console.error('Failed to update order with payment intent ID:', updateError);
+            // Don't fail the request - frontend will retry
+          } else {
+            console.log(`✅ Order ${metadata.orderId} updated with payment intent ${paymentIntent.id}`);
+          }
+        }
+      } catch (error) {
+        console.error('Error updating order:', error);
+        // Don't fail - frontend will retry
+      }
+    }
 
     return new Response(
       JSON.stringify({

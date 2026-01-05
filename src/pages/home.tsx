@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CartModal } from "@/components/cart-modal";
 import { CheckoutModal } from "@/components/checkout-modal";
+import { OrderSuccessModal } from "@/components/order-success-modal";
 import { UniversalHeader } from "@/components/universal-header";
 import { MobileNav } from "@/components/mobile-nav";
 import { HeroVideoWithPromotions } from "@/components/hero-video-with-promotions";
@@ -39,6 +40,9 @@ export default function Home() {
   
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successOrderNumber, setSuccessOrderNumber] = useState("");
+  const [successOrderType, setSuccessOrderType] = useState<"delivery" | "pickup">("pickup");
 
   const handleCartOpen = () => setIsCartOpen(true);
   const handleCartClose = () => setIsCartOpen(false);
@@ -189,6 +193,19 @@ export default function Home() {
         isOpen={isCheckoutOpen}
         onClose={handleCheckoutClose}
         onBack={handleBackToCart}
+        onOrderSuccess={(orderNumber, orderType) => {
+          setSuccessOrderNumber(orderNumber);
+          setSuccessOrderType(orderType);
+          setShowSuccessModal(true);
+        }}
+      />
+
+      {/* Order Success Modal */}
+      <OrderSuccessModal
+        isOpen={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        orderType={successOrderType}
+        orderNumber={successOrderNumber}
       />
     </div>
   );

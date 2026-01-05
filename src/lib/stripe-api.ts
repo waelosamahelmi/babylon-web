@@ -1,6 +1,10 @@
 // Backend API URL - use environment variable or default to localhost
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
+// Supabase URL for Edge Functions
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
 export interface CreatePaymentIntentRequest {
   amount: number; // Total amount in euros (will be converted to cents)
   currency?: string;
@@ -45,13 +49,29 @@ export async function createPaymentIntent(
   params: CreatePaymentIntentRequest
 ): Promise<CreatePaymentIntentResponse> {
   try {
-    const response = await fetch(`${API_URL}/api/stripe/create-payment-intent`, {
+    // Use Supabase Edge Function for payment intent creation
+    // This ensures the payment_intent_id is saved with service role permissions
+    const useEdgeFunction = SUPABASE_URL && SUPABASE_ANON_KEY;
+    const endpoint = useEdgeFunction
+      ? `${SUPABASE_URL}/functions/v1/create-payment-intent`
+      : `${API_URL}/api/stripe/create-payment-intent`;
+
+    console.log(`🔧 Using ${useEdgeFunction ? 'Supabase Edge Function' : 'Backend API'} for payment intent`);
+
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    // Add authorization header for Supabase Edge Functions
+    if (useEdgeFunction) {
+      headers['Authorization'] = `Bearer ${SUPABASE_ANON_KEY}`;
+    }
+
+    const response = await fetch(endpoint, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers,
       body: JSON.stringify({
-        amount: params.amount, // Backend will convert to cents
+        amount: useEdgeFunction ? params.amount * 100 : params.amount, // Edge function expects cents
         currency: params.currency || 'eur',
         metadata: params.metadata || {},
       }),
@@ -68,6 +88,7 @@ export async function createPaymentIntent(
       throw new Error('Invalid response from payment server');
     }
 
+    console.log('✅ Payment intent created:', data.paymentIntentId);
     return data;
   } catch (error) {
     console.error('Error creating payment intent:', error);
