@@ -17,10 +17,40 @@ serve(async (req) => {
   }
 
   try {
-    // Get Stripe secret key from environment
-    const stripeSecretKey = Deno.env.get('STRIPE_SECRET_KEY');
+    // Initialize Supabase client first to fetch Stripe keys from database
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      throw new Error('Supabase configuration missing');
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Fetch Stripe configuration from restaurant_settings table
+    const { data: settings, error: settingsError } = await supabase
+      .from('restaurant_settings')
+      .select('stripe_secret_key, stripe_enabled')
+      .single();
+
+    if (settingsError) {
+      console.error('Error fetching restaurant settings:', settingsError);
+      throw new Error('Failed to fetch Stripe configuration from database');
+    }
+
+    // Fall back to environment variables if database values are not set
+    const stripeSecretKey = settings?.stripe_secret_key || Deno.env.get('STRIPE_SECRET_KEY');
+
     if (!stripeSecretKey) {
-      throw new Error('Stripe secret key not configured');
+      throw new Error('Stripe secret key not configured - check restaurant_settings table or environment variables');
+    }
+
+    if (settings && !settings.stripe_enabled) {
+      console.log('Stripe is disabled in restaurant settings');
+      return new Response(
+        JSON.stringify({ error: 'Stripe is disabled' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     const stripe = new Stripe(stripeSecretKey, {
@@ -62,27 +92,20 @@ serve(async (req) => {
     // This ensures the webhook can find the order later
     if (metadata.orderId) {
       try {
-        const supabaseUrl = Deno.env.get('SUPABASE_URL');
-        const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+        const { error: updateError } = await supabase
+          .from('orders')
+          .update({ stripe_payment_intent_id: paymentIntent.id })
+          .eq('id', parseInt(metadata.orderId as string));
 
-        if (supabaseUrl && supabaseServiceKey) {
-          const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-          const { error: updateError } = await supabase
-            .from('orders')
-            .update({ stripe_payment_intent_id: paymentIntent.id })
-            .eq('id', parseInt(metadata.orderId as string));
-
-          if (updateError) {
-            console.error('Failed to update order with payment intent ID:', updateError);
-            // Don't fail the request - frontend will retry
-          } else {
-            console.log(`✅ Order ${metadata.orderId} updated with payment intent ${paymentIntent.id}`);
-          }
+        if (updateError) {
+          console.error('Failed to update order with payment intent ID:', updateError);
+          // Don't fail the request - webhook will handle it as fallback
+        } else {
+          console.log(`✅ Order ${metadata.orderId} updated with payment intent ${paymentIntent.id}`);
         }
       } catch (error) {
         console.error('Error updating order:', error);
-        // Don't fail - frontend will retry
+        // Don't fail - webhook will handle it as fallback
       }
     }
 

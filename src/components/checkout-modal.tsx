@@ -478,40 +478,27 @@ export function CheckoutModal({ isOpen, onClose, onBack, onOrderSuccess }: Check
   };
 
   const handlePaymentSuccess = async (paymentIntentId: string) => {
-    // Payment successful - update the existing order to 'paid' status
-    console.log('Payment succeeded! Payment Intent ID:', paymentIntentId);
+    console.log('✅ Payment succeeded! Payment Intent ID:', paymentIntentId);
+    console.log('📦 Order ID:', pendingOrderId);
 
     if (pendingOrderId) {
       try {
-        // First, get the order to show the order number
-        const { data: existingOrder } = await supabase
+        // Get the order to show the order number in success modal
+        // NOTE: We do NOT update payment status here - the webhook will handle that
+        // The Edge Function already saved the stripe_payment_intent_id with service role permissions
+        const { data: existingOrder, error: fetchError } = await supabase
           .from('orders')
           .select('*')
           .eq('id', pendingOrderId)
           .single();
 
+        if (fetchError) {
+          console.error('Error fetching order:', fetchError);
+          throw fetchError;
+        }
+
         if (existingOrder) {
           console.log('Found order:', existingOrder.order_number);
-
-          // Update order with payment status
-          const { error: updateError } = await supabase
-            .from('orders')
-            .update({
-              payment_status: 'paid',
-              stripe_payment_intent_id: paymentIntentId
-            })
-            .eq('id', pendingOrderId);
-
-          if (updateError) {
-            console.error('Error updating order payment status:', updateError);
-            // Show warning but don't fail - webhook will handle it
-            toast({
-              title: t("Maksu vastaanotettu", "Payment received"),
-              description: t("Tilauksesi on vastaanotettu ja maksu käsitellään.", "Your order has been received and payment is being processed."),
-            });
-          } else {
-            console.log('Order payment status updated to paid');
-          }
 
           // Store order details for success modal
           const orderNumber = existingOrder.order_number || existingOrder.id?.toString() || "";
@@ -528,15 +515,20 @@ export function CheckoutModal({ isOpen, onClose, onBack, onOrderSuccess }: Check
           // CRITICAL: Show success modal via callback AFTER checkout closes
           // This ensures the parent component shows the success modal
           if (onOrderSuccess) {
+            console.log('🎉 Calling onOrderSuccess callback');
             // Call after a brief delay to ensure checkout has closed
             setTimeout(() => {
               onOrderSuccess(orderNumber, orderType);
             }, 100);
           } else {
+            console.log('⚠️ No onOrderSuccess callback, using internal modal');
             // Fallback: Show internal success modal if no callback provided
             setSuccessOrderNumber(orderNumber);
             setShowSuccessModal(true);
           }
+
+          // Webhook will update the order status to 'paid' and send confirmation email
+          console.log('ℹ️ Webhook will update order status and send email');
         }
       } catch (err) {
         console.error('Error in handlePaymentSuccess:', err);
@@ -547,11 +539,13 @@ export function CheckoutModal({ isOpen, onClose, onBack, onOrderSuccess }: Check
         });
 
         // Close modals even on error
+        clearCart();
         setShowStripePayment(false);
         setPendingOrderId(null);
         onClose();
       }
     } else {
+      console.error('⚠️ No pending order ID found');
       // No pending order found - just close modals
       setShowStripePayment(false);
       setPendingOrderId(null);
