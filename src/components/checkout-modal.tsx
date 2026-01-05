@@ -451,15 +451,21 @@ export function CheckoutModal({ isOpen, onClose, onBack }: CheckoutModalProps) {
         },
       });
 
-      // STEP 3: Update the order with the payment intent ID
+      // STEP 3: Update the order with the payment intent ID - CRITICAL for webhook to work
       const { error: updateError } = await supabase
         .from('orders')
         .update({ stripe_payment_intent_id: paymentIntent.paymentIntentId })
         .eq('id', orderId);
 
       if (updateError) {
-        console.error('Failed to save payment intent ID to order:', updateError);
-        // Don't fail the flow - we'll include orderId in redirect URL as backup
+        console.error('CRITICAL: Failed to save payment intent ID to order:', updateError);
+        // Try one more time
+        await supabase
+          .from('orders')
+          .update({ stripe_payment_intent_id: paymentIntent.paymentIntentId })
+          .eq('id', orderId);
+      } else {
+        console.log('✓ Payment intent ID successfully saved to order');
       }
 
       console.log('Payment intent created:', paymentIntent.paymentIntentId, 'for order:', orderId);
@@ -486,33 +492,60 @@ export function CheckoutModal({ isOpen, onClose, onBack }: CheckoutModalProps) {
 
   const handlePaymentSuccess = async (paymentIntentId: string) => {
     // Payment successful - update the existing order to 'paid' status
+    console.log('Payment succeeded! Payment Intent ID:', paymentIntentId);
+
     if (pendingOrderId) {
       try {
-        const { data: order, error } = await supabase
+        // First, get the order to show the order number
+        const { data: existingOrder } = await supabase
           .from('orders')
-          .update({ 
-            payment_status: 'paid',
-            stripe_payment_intent_id: paymentIntentId 
-          })
+          .select('*')
           .eq('id', pendingOrderId)
-          .select()
           .single();
 
-        if (error) {
-          console.error('Error updating order payment status:', error);
-        } else {
-          console.log('Order payment status updated to paid:', order);
-          setSuccessOrderNumber(order.order_number || order.id?.toString() || "");
+        if (existingOrder) {
+          console.log('Found order:', existingOrder.order_number);
+
+          // Update order with payment status
+          const { error: updateError } = await supabase
+            .from('orders')
+            .update({
+              payment_status: 'paid',
+              stripe_payment_intent_id: paymentIntentId
+            })
+            .eq('id', pendingOrderId);
+
+          if (updateError) {
+            console.error('Error updating order payment status:', updateError);
+            // Show warning but don't fail - webhook will handle it
+            toast({
+              title: t("Maksu vastaanotettu", "Payment received"),
+              description: t("Tilauksesi on vastaanotettu ja maksu käsitellään.", "Your order has been received and payment is being processed."),
+            });
+          } else {
+            console.log('Order payment status updated to paid');
+          }
+
+          // Always show success and clear cart, even if update fails
+          // (webhook will update the order if this fails)
+          setSuccessOrderNumber(existingOrder.order_number || existingOrder.id?.toString() || "");
           setShowSuccessModal(true);
           clearCart();
-          onClose();
         }
       } catch (err) {
         console.error('Error in handlePaymentSuccess:', err);
+        // Still show success - the payment went through
+        toast({
+          title: t("Maksu vastaanotettu", "Payment received"),
+          description: t("Tilauksesi on vastaanotettu.", "Your order has been received."),
+        });
       }
     }
+
+    // Always close the payment modal and checkout modal
     setShowStripePayment(false);
     setPendingOrderId(null);
+    onClose();
   };
 
   const handlePaymentError = (error: string) => {
