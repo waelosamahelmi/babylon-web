@@ -6,9 +6,10 @@ import { supabase } from '@/lib/supabase';
 import { Check, X, Loader2, Home, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { sendOrderConfirmationEmail, OrderEmailData } from '@/lib/email-service';
 
 export default function OrderSuccess() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [, setLocation] = useLocation();
   const { clearCart } = useCart();
   const [status, setStatus] = useState<'loading' | 'success' | 'failed'>('loading');
@@ -22,42 +23,86 @@ export default function OrderSuccess() {
       const redirectStatus = params.get('redirect_status');
       const paymentIntentId = params.get('payment_intent');
       
-      console.log('Order success page loaded:', { redirectStatus, paymentIntentId });
+      // Also check sessionStorage for backup order ID (in case stripe_payment_intent_id wasn't saved)
+      const backupOrderId = sessionStorage.getItem('pending_order_id');
+      const backupOrderNumber = sessionStorage.getItem('pending_order_number');
+      
+      console.log('Order success page loaded:', { redirectStatus, paymentIntentId, backupOrderId });
 
       if (redirectStatus === 'failed') {
         setStatus('failed');
         setErrorMessage(t('Maksu epäonnistui', 'Payment failed'));
-        // If payment failed, mark the order as payment_failed
+        // If payment failed, mark the order as failed
         if (paymentIntentId) {
           await supabase
             .from('orders')
-            .update({ payment_status: 'payment_failed' })
+            .update({ payment_status: 'failed' })
             .eq('stripe_payment_intent_id', paymentIntentId);
+        } else if (backupOrderId) {
+          await supabase
+            .from('orders')
+            .update({ payment_status: 'failed' })
+            .eq('id', parseInt(backupOrderId));
         }
+        // Clear backup data
+        sessionStorage.removeItem('pending_order_id');
+        sessionStorage.removeItem('pending_order_number');
         return;
       }
 
       if (redirectStatus === 'succeeded' && paymentIntentId) {
         try {
-          // Look up the existing order by payment_intent_id
-          // The order was already created with pending_payment status before Stripe redirect
-          const { data: order, error: fetchError } = await supabase
+          // Look up the existing order by payment_intent_id first
+          let order = null;
+          let fetchError = null;
+          
+          // Try to find by stripe_payment_intent_id
+          const { data: orderByIntent, error: intentError } = await supabase
             .from('orders')
             .select('*')
             .eq('stripe_payment_intent_id', paymentIntentId)
-            .single();
+            .maybeSingle();
+          
+          if (orderByIntent) {
+            order = orderByIntent;
+            console.log('Found order by payment intent ID');
+          } else if (backupOrderId) {
+            // Fallback: find by backup order ID from sessionStorage
+            console.log('Order not found by payment intent, trying backup order ID:', backupOrderId);
+            const { data: orderById, error: idError } = await supabase
+              .from('orders')
+              .select('*')
+              .eq('id', parseInt(backupOrderId))
+              .single();
+            
+            if (orderById) {
+              order = orderById;
+              // Also update the order with the payment intent ID now
+              await supabase
+                .from('orders')
+                .update({ stripe_payment_intent_id: paymentIntentId })
+                .eq('id', order.id);
+              console.log('Found order by backup ID and updated payment intent ID');
+            } else {
+              fetchError = idError;
+            }
+          } else {
+            fetchError = intentError;
+          }
 
-          if (fetchError || !order) {
+          if (!order) {
             console.error('Order not found for payment intent:', paymentIntentId, fetchError);
             setStatus('failed');
             setErrorMessage(t('Tilausta ei löytynyt', 'Order not found'));
+            sessionStorage.removeItem('pending_order_id');
+            sessionStorage.removeItem('pending_order_number');
             return;
           }
 
           console.log('Found order:', order);
 
-          // Update payment status to paid if it's still pending_payment
-          if (order.payment_status === 'pending_payment') {
+          // Update payment status to paid if it's still pending (pending_payment or pending)
+          if (order.payment_status === 'pending_payment' || order.payment_status === 'pending') {
             const { error: updateError } = await supabase
               .from('orders')
               .update({ payment_status: 'paid' })
@@ -68,11 +113,73 @@ export default function OrderSuccess() {
               // Still show success since payment succeeded
             } else {
               console.log('Order payment status updated to paid');
+              
+              // Send order confirmation email
+              if (order.customer_email) {
+                try {
+                  // Fetch order items for the email
+                  const { data: orderItems } = await supabase
+                    .from('order_items')
+                    .select(`
+                      *,
+                      menu_item:menu_items(name, name_en)
+                    `)
+                    .eq('order_id', order.id);
+                  
+                  // Fetch branch info if available
+                  let branchInfo = null;
+                  if (order.branch_id) {
+                    const { data: branch } = await supabase
+                      .from('branches')
+                      .select('name, name_en, phone, address')
+                      .eq('id', order.branch_id)
+                      .single();
+                    branchInfo = branch;
+                  }
+                  
+                  const emailData: OrderEmailData = {
+                    customerName: order.customer_name,
+                    customerEmail: order.customer_email,
+                    orderNumber: order.order_number,
+                    orderItems: (orderItems || []).map((item: any) => ({
+                      name: language === 'en' && item.menu_item?.name_en 
+                        ? item.menu_item.name_en 
+                        : item.menu_item?.name || 'Item',
+                      quantity: item.quantity,
+                      price: parseFloat(item.total_price),
+                      toppings: item.selected_toppings || []
+                    })),
+                    subtotal: parseFloat(order.subtotal),
+                    deliveryFee: parseFloat(order.delivery_fee || '0'),
+                    smallOrderFee: order.small_order_fee ? parseFloat(order.small_order_fee) : undefined,
+                    totalAmount: parseFloat(order.total_amount),
+                    orderType: order.order_type as 'delivery' | 'pickup' | 'dine-in',
+                    deliveryAddress: order.delivery_address || undefined,
+                    branchName: branchInfo ? (language === 'en' && branchInfo.name_en ? branchInfo.name_en : branchInfo.name) : undefined,
+                    branchPhone: branchInfo?.phone,
+                    branchAddress: branchInfo?.address,
+                    specialInstructions: order.special_instructions || undefined,
+                    paymentMethod: order.payment_method || 'online'
+                  };
+                  
+                  const emailResult = await sendOrderConfirmationEmail(emailData, language === 'en' ? 'en' : 'fi');
+                  if (emailResult.success) {
+                    console.log('Order confirmation email sent successfully');
+                  } else {
+                    console.error('Failed to send order confirmation email:', emailResult.error);
+                  }
+                } catch (emailError) {
+                  console.error('Error sending order confirmation email:', emailError);
+                  // Don't fail the order success flow if email fails
+                }
+              }
             }
           }
 
-          // Clear cart
+          // Clear cart and sessionStorage backup
           clearCart();
+          sessionStorage.removeItem('pending_order_id');
+          sessionStorage.removeItem('pending_order_number');
 
           setOrderNumber(order.order_number || order.id?.toString());
           setStatus('success');

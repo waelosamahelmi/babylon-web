@@ -452,12 +452,21 @@ export function CheckoutModal({ isOpen, onClose, onBack }: CheckoutModalProps) {
       });
 
       // STEP 3: Update the order with the payment intent ID
-      await supabase
+      const { error: updateError } = await supabase
         .from('orders')
         .update({ stripe_payment_intent_id: paymentIntent.paymentIntentId })
         .eq('id', orderId);
 
-      console.log('Payment intent created:', paymentIntent.paymentIntentId);
+      if (updateError) {
+        console.error('Failed to save payment intent ID to order:', updateError);
+        // Don't fail the flow - we'll include orderId in redirect URL as backup
+      }
+
+      console.log('Payment intent created:', paymentIntent.paymentIntentId, 'for order:', orderId);
+      
+      // Store orderId in sessionStorage as backup for redirect
+      sessionStorage.setItem('pending_order_id', orderId.toString());
+      sessionStorage.setItem('pending_order_number', orderNumber || '');
 
       setStripeClientSecret(paymentIntent.clientSecret);
       setStripePaymentIntentId(paymentIntent.paymentIntentId);
@@ -512,13 +521,13 @@ export function CheckoutModal({ isOpen, onClose, onBack }: CheckoutModalProps) {
       description: error,
       variant: "destructive",
     });
-    // Mark the order as payment_failed if we have one
+    // Mark the order as failed if we have one
     if (pendingOrderId) {
       supabase
         .from('orders')
-        .update({ payment_status: 'payment_failed' })
+        .update({ payment_status: 'failed' })
         .eq('id', pendingOrderId)
-        .then(() => console.log('Order marked as payment_failed'));
+        .then(() => console.log('Order marked as failed'));
     }
     setShowStripePayment(false);
     setPendingOrderId(null);
@@ -529,7 +538,7 @@ export function CheckoutModal({ isOpen, onClose, onBack }: CheckoutModalProps) {
     if (pendingOrderId) {
       await supabase
         .from('orders')
-        .update({ payment_status: 'cancelled', status: 'cancelled' })
+        .update({ payment_status: 'failed', status: 'cancelled' })
         .eq('id', pendingOrderId);
       console.log('Order cancelled:', pendingOrderId);
     }
