@@ -89,7 +89,7 @@ serve(async (req) => {
     const paymentIntent = await stripe.paymentIntents.create(paymentIntentParams);
 
     // CRITICAL: Update the order with payment intent ID immediately
-    // This ensures the webhook can find the order later
+    // This ensures we can track and update the order
     if (metadata.orderId) {
       try {
         const { error: updateError } = await supabase
@@ -99,13 +99,11 @@ serve(async (req) => {
 
         if (updateError) {
           console.error('Failed to update order with payment intent ID:', updateError);
-          // Don't fail the request - webhook will handle it as fallback
         } else {
           console.log(`✅ Order ${metadata.orderId} updated with payment intent ${paymentIntent.id}`);
         }
       } catch (error) {
         console.error('Error updating order:', error);
-        // Don't fail - webhook will handle it as fallback
       }
     }
 
@@ -113,6 +111,7 @@ serve(async (req) => {
       JSON.stringify({
         clientSecret: paymentIntent.client_secret,
         paymentIntentId: paymentIntent.id,
+        orderId: metadata.orderId, // Include orderId in response
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

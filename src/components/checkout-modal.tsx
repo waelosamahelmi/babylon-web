@@ -478,78 +478,73 @@ export function CheckoutModal({ isOpen, onClose, onBack, onOrderSuccess }: Check
   };
 
   const handlePaymentSuccess = async (paymentIntentId: string) => {
-    console.log('✅ Payment succeeded! Payment Intent ID:', paymentIntentId);
-    console.log('📦 Order ID:', pendingOrderId);
+    console.log('✅✅✅ PAYMENT SUCCESS HANDLER CALLED');
+    console.log('Payment Intent ID:', paymentIntentId);
+    console.log('Pending Order ID:', pendingOrderId);
+    console.log('Has onOrderSuccess callback?', !!onOrderSuccess);
 
-    if (pendingOrderId) {
-      try {
-        // Get the order to show the order number in success modal
-        // NOTE: We do NOT update payment status here - the webhook will handle that
-        // The Edge Function already saved the stripe_payment_intent_id with service role permissions
-        const { data: existingOrder, error: fetchError } = await supabase
-          .from('orders')
-          .select('*')
-          .eq('id', pendingOrderId)
-          .single();
+    if (!pendingOrderId) {
+      console.error('⚠️ No pending order ID found');
+      setShowStripePayment(false);
+      onClose();
+      return;
+    }
 
-        if (fetchError) {
-          console.error('Error fetching order:', fetchError);
-          throw fetchError;
-        }
+    try {
+      // Fetch the order
+      const { data: existingOrder, error: fetchError } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('id', pendingOrderId)
+        .single();
 
-        if (existingOrder) {
-          console.log('Found order:', existingOrder.order_number);
+      if (fetchError) {
+        console.error('Error fetching order:', fetchError);
+        throw fetchError;
+      }
 
-          // Store order details for success modal
-          const orderNumber = existingOrder.order_number || existingOrder.id?.toString() || "";
-          const orderType = formData.orderType;
+      console.log('📦 Found order:', existingOrder);
 
-          console.log('🎯 Order details:', { orderNumber, orderType, hasCallback: !!onOrderSuccess });
+      const orderNumber = existingOrder.order_number || existingOrder.id?.toString() || "";
+      const orderType = formData.orderType;
 
-          // Clear cart
-          clearCart();
+      console.log('🎯 Will show success for:', { orderNumber, orderType });
 
-          // CRITICAL: Call success callback BEFORE closing modals
-          // This ensures the parent sets success modal state before checkout unmounts
-          if (onOrderSuccess) {
-            console.log('🎉 Calling onOrderSuccess callback with:', orderNumber, orderType);
-            onOrderSuccess(orderNumber, orderType);
-          } else {
-            console.log('⚠️ No onOrderSuccess callback, using internal modal');
-            // Fallback: Show internal success modal if no callback provided
-            setSuccessOrderNumber(orderNumber);
-            setShowSuccessModal(true);
-          }
+      // Clear cart first
+      clearCart();
 
-          // Close payment modal and checkout AFTER success callback
-          // Use setTimeout to ensure success modal state is set first
-          setTimeout(() => {
-            console.log('🚪 Closing payment and checkout modals');
-            setShowStripePayment(false);
-            setPendingOrderId(null);
-            onClose();
-          }, 50);
+      // Close payment modal immediately
+      setShowStripePayment(false);
+      setPendingOrderId(null);
 
-          // Webhook will update the order status to 'paid' and send confirmation email
-          console.log('ℹ️ Webhook will update order status and send email');
-        }
-      } catch (err) {
-        console.error('Error in handlePaymentSuccess:', err);
-        // Still show success - the payment went through
-        toast({
-          title: t("Maksu vastaanotettu", "Payment received"),
-          description: t("Tilauksesi on vastaanotettu.", "Your order has been received."),
-        });
+      // CRITICAL: Call the callback to show success modal
+      if (onOrderSuccess) {
+        console.log('🎉🎉🎉 CALLING onOrderSuccess NOW');
+        onOrderSuccess(orderNumber, orderType);
 
-        // Close modals even on error
-        clearCart();
-        setShowStripePayment(false);
-        setPendingOrderId(null);
+        // Close checkout modal after a delay
+        setTimeout(() => {
+          console.log('Closing checkout modal');
+          onClose();
+        }, 100);
+      } else {
+        console.error('❌ NO onOrderSuccess CALLBACK PROVIDED!');
+        // Fallback: use internal success modal
+        setSuccessOrderNumber(orderNumber);
+        setShowSuccessModal(true);
         onClose();
       }
-    } else {
-      console.error('⚠️ No pending order ID found');
-      // No pending order found - just close modals
+
+    } catch (err) {
+      console.error('❌ Error in handlePaymentSuccess:', err);
+
+      // Show toast as fallback
+      toast({
+        title: t("Maksu vastaanotettu", "Payment received"),
+        description: t("Tilauksesi on vastaanotettu.", "Your order has been received."),
+      });
+
+      clearCart();
       setShowStripePayment(false);
       setPendingOrderId(null);
       onClose();
