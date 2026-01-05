@@ -504,28 +504,31 @@ export function CheckoutModal({ isOpen, onClose, onBack, onOrderSuccess }: Check
           const orderNumber = existingOrder.order_number || existingOrder.id?.toString() || "";
           const orderType = formData.orderType;
 
+          console.log('🎯 Order details:', { orderNumber, orderType, hasCallback: !!onOrderSuccess });
+
           // Clear cart
           clearCart();
 
-          // Close payment modal and checkout
-          setShowStripePayment(false);
-          setPendingOrderId(null);
-          onClose();
-
-          // CRITICAL: Show success modal via callback AFTER checkout closes
-          // This ensures the parent component shows the success modal
+          // CRITICAL: Call success callback BEFORE closing modals
+          // This ensures the parent sets success modal state before checkout unmounts
           if (onOrderSuccess) {
-            console.log('🎉 Calling onOrderSuccess callback');
-            // Call after a brief delay to ensure checkout has closed
-            setTimeout(() => {
-              onOrderSuccess(orderNumber, orderType);
-            }, 100);
+            console.log('🎉 Calling onOrderSuccess callback with:', orderNumber, orderType);
+            onOrderSuccess(orderNumber, orderType);
           } else {
             console.log('⚠️ No onOrderSuccess callback, using internal modal');
             // Fallback: Show internal success modal if no callback provided
             setSuccessOrderNumber(orderNumber);
             setShowSuccessModal(true);
           }
+
+          // Close payment modal and checkout AFTER success callback
+          // Use setTimeout to ensure success modal state is set first
+          setTimeout(() => {
+            console.log('🚪 Closing payment and checkout modals');
+            setShowStripePayment(false);
+            setPendingOrderId(null);
+            onClose();
+          }, 50);
 
           // Webhook will update the order status to 'paid' and send confirmation email
           console.log('ℹ️ Webhook will update order status and send email');
