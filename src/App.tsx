@@ -27,6 +27,7 @@ import Register from "@/pages/auth/register";
 import ForgotPassword from "@/pages/auth/forgot-password";
 import ResetPassword from "@/pages/auth/reset-password";
 // Account pages
+import AccountIndex from "@/pages/account/index";
 import Profile from "@/pages/account/profile";
 import Loyalty from "@/pages/account/loyalty";
 
@@ -50,6 +51,7 @@ function Router() {
       <Route path="/auth/forgot-password" component={ForgotPassword} />
       <Route path="/auth/reset-password" component={ResetPassword} />
       {/* Account routes */}
+      <Route path="/account" component={AccountIndex} />
       <Route path="/account/profile" component={Profile} />
       <Route path="/account/loyalty" component={Loyalty} />
       <Route component={NotFound} />
