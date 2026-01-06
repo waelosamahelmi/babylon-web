@@ -491,22 +491,14 @@ export function CheckoutModal({ isOpen, onClose, onBack, onOrderSuccess }: Check
     }
 
     try {
-      // Fetch the order
-      const { data: existingOrder, error: fetchError } = await supabase
-        .from('orders')
-        .select('*')
-        .eq('id', pendingOrderId)
-        .single();
-
-      if (fetchError) {
-        console.error('Error fetching order:', fetchError);
-        throw fetchError;
-      }
-
-      console.log('📦 Found order:', existingOrder);
-
-      const orderNumber = existingOrder.order_number || existingOrder.id?.toString() || "";
+      // Use the order number we already have instead of fetching
+      // The order was just created, so we have all the data we need
+      const orderNumber = pendingOrderId.toString();
       const orderType = formData.orderType;
+
+      console.log('📦 Using order data from creation');
+      console.log('Order ID:', pendingOrderId);
+      console.log('Order Number:', orderNumber);
 
       console.log('🎯 Will show success for:', { orderNumber, orderType });
 

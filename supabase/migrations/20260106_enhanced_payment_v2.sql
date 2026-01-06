@@ -19,24 +19,28 @@ DROP FUNCTION IF EXISTS update_payment_analytics();
 DROP FUNCTION IF EXISTS generate_receipt_number();
 -- Note: update_updated_at_column() is shared with other tables, so we don't drop it
 
--- Drop existing tables if they exist (in correct order due to foreign keys)
+-- Drop existing payment tables if they exist (in correct order due to foreign keys)
 DROP TABLE IF EXISTS payment_receipts CASCADE;
 DROP TABLE IF EXISTS payment_attempts CASCADE;
 DROP TABLE IF EXISTS payment_analytics CASCADE;
 DROP TABLE IF EXISTS saved_payment_methods CASCADE;
-DROP TABLE IF EXISTS customers CASCADE;
 
--- Create customers table for storing Stripe customer info
-CREATE TABLE customers (
-  id SERIAL PRIMARY KEY,
-  email TEXT NOT NULL UNIQUE,
-  name TEXT,
-  phone TEXT,
-  stripe_customer_id TEXT UNIQUE,
-  metadata JSONB DEFAULT '{}'::jsonb,
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW()
-);
+-- Don't drop customers table - it already exists from fix-restaurant-config-and-features.sql
+-- Instead, add Stripe-related columns if they don't exist
+DO $$
+BEGIN
+  -- Add stripe_customer_id column if it doesn't exist
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                 WHERE table_name='customers' AND column_name='stripe_customer_id') THEN
+    ALTER TABLE customers ADD COLUMN stripe_customer_id TEXT UNIQUE;
+  END IF;
+
+  -- Add metadata column if it doesn't exist
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                 WHERE table_name='customers' AND column_name='metadata') THEN
+    ALTER TABLE customers ADD COLUMN metadata JSONB DEFAULT '{}'::jsonb;
+  END IF;
+END $$;
 
 -- Create saved_payment_methods table
 CREATE TABLE saved_payment_methods (
@@ -201,23 +205,13 @@ CREATE TRIGGER trigger_payment_attempts_updated_at
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
 
--- Enable RLS
-ALTER TABLE customers ENABLE ROW LEVEL SECURITY;
+-- Enable RLS (customers table already has RLS from fix-restaurant-config-and-features.sql)
 ALTER TABLE saved_payment_methods ENABLE ROW LEVEL SECURITY;
 ALTER TABLE payment_attempts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE payment_analytics ENABLE ROW LEVEL SECURITY;
 ALTER TABLE payment_receipts ENABLE ROW LEVEL SECURITY;
 
--- RLS Policies
-CREATE POLICY customers_select_own ON customers
-  FOR SELECT USING (email = current_setting('request.jwt.claims', true)::json->>'email');
-
-CREATE POLICY customers_insert_own ON customers
-  FOR INSERT WITH CHECK (email = current_setting('request.jwt.claims', true)::json->>'email');
-
-CREATE POLICY customers_update_own ON customers
-  FOR UPDATE USING (email = current_setting('request.jwt.claims', true)::json->>'email');
-
+-- RLS Policies (skip customers policies - they already exist)
 CREATE POLICY saved_payment_methods_select_own ON saved_payment_methods
   FOR SELECT USING (customer_id IN (SELECT id FROM customers WHERE email = current_setting('request.jwt.claims', true)::json->>'email'));
 
@@ -233,16 +227,14 @@ CREATE POLICY payment_analytics_select ON payment_analytics
 CREATE POLICY payment_receipts_select ON payment_receipts
   FOR SELECT USING (order_id::TEXT IN (SELECT id::TEXT FROM orders WHERE customer_email = current_setting('request.jwt.claims', true)::json->>'email'));
 
--- Grant permissions
-GRANT SELECT, INSERT, UPDATE ON customers TO authenticated;
+-- Grant permissions (skip customers - already has permissions from fix-restaurant-config-and-features.sql)
 GRANT SELECT, INSERT, UPDATE, DELETE ON saved_payment_methods TO authenticated;
 GRANT SELECT, INSERT, UPDATE ON payment_attempts TO authenticated;
 GRANT SELECT ON payment_analytics TO authenticated;
 GRANT SELECT, INSERT ON payment_receipts TO authenticated;
 GRANT SELECT ON payment_receipts TO anon;
 
--- Comments
-COMMENT ON TABLE customers IS 'Stores customer information and links to Stripe Customer objects';
+-- Comments (skip customers - already has comment from fix-restaurant-config-and-features.sql)
 COMMENT ON TABLE saved_payment_methods IS 'Stores saved payment methods for faster checkout';
 COMMENT ON TABLE payment_attempts IS 'Tracks all payment attempts for analytics and debugging';
 COMMENT ON TABLE payment_analytics IS 'Daily aggregated payment metrics and statistics';
