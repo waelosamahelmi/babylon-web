@@ -491,32 +491,35 @@ export function CheckoutModal({ isOpen, onClose, onBack, onOrderSuccess }: Check
     }
 
     try {
-      // Update order payment status to paid (fallback in case webhook doesn't fire)
-      console.log('💰 Updating order payment status to paid');
-      const { error: updateError } = await supabase
+      // Fetch the current order to get the order number
+      console.log(`📋 Fetching order #${pendingOrderId} for confirmation display`);
+      const { data: order, error: fetchError } = await supabase
         .from('orders')
-        .update({
-          payment_status: 'paid',
-          stripe_payment_intent_id: paymentIntentId
-        })
-        .eq('id', pendingOrderId);
+        .select('id, order_number, payment_status, stripe_payment_intent_id')
+        .eq('id', pendingOrderId)
+        .single();
 
-      if (updateError) {
-        console.error('Error updating order status:', updateError);
+      if (fetchError) {
+        console.error('Error fetching order:', fetchError);
       } else {
-        console.log('✅ Order status updated to paid');
+        console.log('📦 Order data:', order);
+        console.log(`Current payment status: ${order.payment_status}`);
+        if (order.stripe_payment_intent_id !== paymentIntentId) {
+          console.warn(`⚠️ Payment intent mismatch! Order has: ${order.stripe_payment_intent_id}, Expected: ${paymentIntentId}`);
+        }
       }
 
-      // Use the order number we already have instead of fetching
-      // The order was just created, so we have all the data we need
-      const orderNumber = pendingOrderId.toString();
+      // Use the order number from the database
+      const orderNumber = order?.order_number || pendingOrderId.toString();
       const orderType = formData.orderType;
 
-      console.log('📦 Using order data from creation');
+      console.log('📦 Order confirmation details:');
       console.log('Order ID:', pendingOrderId);
       console.log('Order Number:', orderNumber);
+      console.log('Payment Intent:', paymentIntentId);
+      console.log('Current Status (will be updated by webhook):', order?.payment_status);
 
-      console.log('🎯 Will show success for:', { orderNumber, orderType });
+      console.log('🎯 Showing success confirmation for:', { orderNumber, orderType });
 
       // Clear cart first
       clearCart();
