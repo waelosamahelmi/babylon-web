@@ -25,17 +25,95 @@ DROP TABLE IF EXISTS payment_attempts CASCADE;
 DROP TABLE IF EXISTS payment_analytics CASCADE;
 DROP TABLE IF EXISTS saved_payment_methods CASCADE;
 
--- Don't drop customers table - it already exists from fix-restaurant-config-and-features.sql
--- Instead, add Stripe-related columns if they don't exist
+-- Don't drop customers table - it already exists
+-- Instead, add missing columns if they don't exist
 DO $$
 BEGIN
-  -- Add stripe_customer_id column if it doesn't exist
+  -- Add auth_id column if it doesn't exist (needed for Supabase Auth integration)
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                 WHERE table_name='customers' AND column_name='auth_id') THEN
+    ALTER TABLE customers ADD COLUMN auth_id UUID UNIQUE;
+  END IF;
+
+  -- Add first_name if it doesn't exist
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                 WHERE table_name='customers' AND column_name='first_name') THEN
+    ALTER TABLE customers ADD COLUMN first_name VARCHAR(100);
+  END IF;
+
+  -- Add last_name if it doesn't exist
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                 WHERE table_name='customers' AND column_name='last_name') THEN
+    ALTER TABLE customers ADD COLUMN last_name VARCHAR(100);
+  END IF;
+
+  -- Add addresses if it doesn't exist
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                 WHERE table_name='customers' AND column_name='addresses') THEN
+    ALTER TABLE customers ADD COLUMN addresses JSONB DEFAULT '[]'::jsonb;
+  END IF;
+
+  -- Add default_address_index if it doesn't exist
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                 WHERE table_name='customers' AND column_name='default_address_index') THEN
+    ALTER TABLE customers ADD COLUMN default_address_index INTEGER DEFAULT 0;
+  END IF;
+
+  -- Add marketing_emails if it doesn't exist
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                 WHERE table_name='customers' AND column_name='marketing_emails') THEN
+    ALTER TABLE customers ADD COLUMN marketing_emails BOOLEAN DEFAULT false;
+  END IF;
+
+  -- Add sms_notifications if it doesn't exist
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                 WHERE table_name='customers' AND column_name='sms_notifications') THEN
+    ALTER TABLE customers ADD COLUMN sms_notifications BOOLEAN DEFAULT false;
+  END IF;
+
+  -- Add is_verified if it doesn't exist
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                 WHERE table_name='customers' AND column_name='is_verified') THEN
+    ALTER TABLE customers ADD COLUMN is_verified BOOLEAN DEFAULT false;
+  END IF;
+
+  -- Add is_active if it doesn't exist
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                 WHERE table_name='customers' AND column_name='is_active') THEN
+    ALTER TABLE customers ADD COLUMN is_active BOOLEAN DEFAULT true;
+  END IF;
+
+  -- Add total_orders if it doesn't exist
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                 WHERE table_name='customers' AND column_name='total_orders') THEN
+    ALTER TABLE customers ADD COLUMN total_orders INTEGER DEFAULT 0;
+  END IF;
+
+  -- Add total_spent if it doesn't exist
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                 WHERE table_name='customers' AND column_name='total_spent') THEN
+    ALTER TABLE customers ADD COLUMN total_spent DECIMAL(10, 2) DEFAULT 0;
+  END IF;
+
+  -- Add loyalty_points if it doesn't exist
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                 WHERE table_name='customers' AND column_name='loyalty_points') THEN
+    ALTER TABLE customers ADD COLUMN loyalty_points INTEGER DEFAULT 0;
+  END IF;
+
+  -- Add last_login_at if it doesn't exist
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                 WHERE table_name='customers' AND column_name='last_login_at') THEN
+    ALTER TABLE customers ADD COLUMN last_login_at TIMESTAMPTZ;
+  END IF;
+
+  -- Add stripe_customer_id column if it doesn't exist (for Stripe integration)
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns
                  WHERE table_name='customers' AND column_name='stripe_customer_id') THEN
     ALTER TABLE customers ADD COLUMN stripe_customer_id TEXT UNIQUE;
   END IF;
 
-  -- Add metadata column if it doesn't exist
+  -- Add metadata column if it doesn't exist (for Stripe metadata)
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns
                  WHERE table_name='customers' AND column_name='metadata') THEN
     ALTER TABLE customers ADD COLUMN metadata JSONB DEFAULT '{}'::jsonb;
@@ -122,6 +200,7 @@ BEGIN
 END $$;
 
 -- Create indexes
+CREATE INDEX IF NOT EXISTS idx_customers_auth_id ON customers(auth_id);
 CREATE INDEX IF NOT EXISTS idx_customers_email ON customers(email);
 CREATE INDEX IF NOT EXISTS idx_customers_stripe_id ON customers(stripe_customer_id);
 CREATE INDEX IF NOT EXISTS idx_saved_payment_methods_customer ON saved_payment_methods(customer_id);

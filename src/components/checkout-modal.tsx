@@ -491,6 +491,22 @@ export function CheckoutModal({ isOpen, onClose, onBack, onOrderSuccess }: Check
     }
 
     try {
+      // Update order payment status to paid (fallback in case webhook doesn't fire)
+      console.log('💰 Updating order payment status to paid');
+      const { error: updateError } = await supabase
+        .from('orders')
+        .update({
+          payment_status: 'paid',
+          stripe_payment_intent_id: paymentIntentId
+        })
+        .eq('id', pendingOrderId);
+
+      if (updateError) {
+        console.error('Error updating order status:', updateError);
+      } else {
+        console.log('✅ Order status updated to paid');
+      }
+
       // Use the order number we already have instead of fetching
       // The order was just created, so we have all the data we need
       const orderNumber = pendingOrderId.toString();
