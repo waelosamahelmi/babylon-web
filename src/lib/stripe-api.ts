@@ -9,6 +9,7 @@ export interface CreatePaymentIntentRequest {
   amount: number; // Total amount in euros (will be converted to cents)
   currency?: string;
   metadata?: Record<string, string>;
+  paymentMethodTypes?: string[]; // Explicit payment method types to enable
 }
 
 export interface CreatePaymentIntentResponse {
@@ -74,6 +75,7 @@ export async function createPaymentIntent(
         amount: useEdgeFunction ? params.amount * 100 : params.amount, // Edge function expects cents
         currency: params.currency || 'eur',
         metadata: params.metadata || {},
+        paymentMethodTypes: params.paymentMethodTypes, // Pass explicit payment method types
       }),
     });
 

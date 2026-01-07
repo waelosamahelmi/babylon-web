@@ -56,6 +56,8 @@ export default function OrderSuccess() {
           let order = null;
           let fetchError = null;
           
+          console.log('🔍 Looking for order with payment_intent:', paymentIntentId);
+          
           // Try to find by stripe_payment_intent_id
           const { data: orderByIntent, error: intentError } = await supabase
             .from('orders')
@@ -63,9 +65,11 @@ export default function OrderSuccess() {
             .eq('stripe_payment_intent_id', paymentIntentId)
             .maybeSingle();
           
+          console.log('Query result:', { orderByIntent, intentError });
+          
           if (orderByIntent) {
             order = orderByIntent;
-            console.log('Found order by payment intent ID');
+            console.log('✅ Found order by payment intent ID:', order.id);
           } else if (backupOrderId) {
             // Fallback: find by backup order ID from sessionStorage
             console.log('Order not found by payment intent, trying backup order ID:', backupOrderId);

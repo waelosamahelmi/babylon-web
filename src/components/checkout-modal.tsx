@@ -440,6 +440,7 @@ export function CheckoutModal({ isOpen, onClose, onBack, onOrderSuccess }: Check
       console.log('Order created with pending_payment status:', { orderId, orderNumber });
 
       // STEP 2: Create payment intent with order ID in metadata
+      // Request specific payment methods that are enabled in Stripe Dashboard
       const paymentIntent = await createPaymentIntent({
         amount: totalAmount,
         currency: 'eur',
@@ -450,12 +451,36 @@ export function CheckoutModal({ isOpen, onClose, onBack, onOrderSuccess }: Check
           customerPhone: formData.customerPhone,
           orderType: formData.orderType,
         },
+        paymentMethodTypes: ['card', 'klarna', 'mobilepay'],
       });
 
-      // STEP 3: Payment intent ID is automatically saved by the Supabase Edge Function
-      // The Edge Function uses service role key and has permission to update orders
+      // STEP 3: Save payment intent ID to order immediately (for redirect-based methods)
       console.log('✅ Payment intent created:', paymentIntent.paymentIntentId, 'for order:', orderId);
-      console.log('📝 Note: Payment intent ID saved automatically by Edge Function');
+      
+      // Update order with payment intent ID NOW (before showing payment form)
+      // This is critical for redirect-based payments like MobilePay, Klarna, etc.
+      // Use backend API instead of Supabase to ensure proper permissions
+      try {
+        const apiUrl = import.meta.env.VITE_API_URL || 'https://babylon-admin.fly.dev';
+        const response = await fetch(`${apiUrl}/api/orders/${orderId}/payment-intent`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            paymentIntentId: paymentIntent.paymentIntentId,
+          }),
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Failed to update payment intent ID: ${response.statusText}`);
+        }
+        
+        console.log('✅ Payment intent ID saved to order via API');
+      } catch (apiError) {
+        console.error('❌ Error saving payment intent ID via API:', apiError);
+        // Continue anyway - we have sessionStorage backup
+      }
       
       // Store orderId in sessionStorage as backup for redirect
       sessionStorage.setItem('pending_order_id', orderId.toString());
