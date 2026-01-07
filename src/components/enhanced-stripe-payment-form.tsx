@@ -278,7 +278,6 @@ export function EnhancedStripePaymentForm({
           }}
           options={{
             layout: 'tabs',
-            paymentMethodOrder: ['card', 'apple_pay', 'google_pay', 'link'],
           }}
         />
       </div>

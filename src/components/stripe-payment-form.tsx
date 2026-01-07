@@ -98,7 +98,6 @@ export function StripePaymentForm({
           onReady={() => setIsReady(true)}
           options={{
             layout: 'tabs',
-            paymentMethodOrder: ['card', 'apple_pay', 'google_pay', 'link'],
           }}
         />
       </div>
