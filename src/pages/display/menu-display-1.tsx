@@ -68,31 +68,15 @@ export default function MenuDisplay1() {
     });
   }, [menuItems, promotions]);
 
-  // First, sort all items by category order, then split into pages
+  // Group all items by category first, then assign categories to pages
   const groupedItems = useMemo(() => {
     if (!itemsWithPromotions || !categories) return [];
     
     const availableItems = itemsWithPromotions.filter((item: any) => item.isAvailable);
     
-    // Sort items by category display order first
-    const categoryOrderMap = new Map(categories.map((cat: any, idx: number) => [cat.id, idx]));
-    const sortedItems = [...availableItems].sort((a: any, b: any) => {
-      const catOrderA = categoryOrderMap.get(a.categoryId) ?? 999;
-      const catOrderB = categoryOrderMap.get(b.categoryId) ?? 999;
-      if (catOrderA !== catOrderB) return catOrderA - catOrderB;
-      return (a.displayOrder || 0) - (b.displayOrder || 0);
-    });
-    
-    // Split into pages after sorting by category
-    const totalItems = sortedItems.length;
-    const itemsPerPage = Math.ceil(totalItems / 3);
-    const pageItems = sortedItems.slice(0, itemsPerPage);
-    
-    // Group by category while preserving order
-    const grouped: { category: any; items: any[] }[] = [];
+    // Group items by category
     const categoryMap = new Map<number, any[]>();
-    
-    pageItems.forEach((item: any) => {
+    availableItems.forEach((item: any) => {
       const catId = item.categoryId || 0;
       if (!categoryMap.has(catId)) {
         categoryMap.set(catId, []);
@@ -100,14 +84,40 @@ export default function MenuDisplay1() {
       categoryMap.get(catId)!.push(item);
     });
     
-    // Build result in category order
+    // Sort items within each category by display order
+    categoryMap.forEach((items) => {
+      items.sort((a: any, b: any) => (a.displayOrder || 0) - (b.displayOrder || 0));
+    });
+    
+    // Build ordered category groups
+    const allGroups: { category: any; items: any[] }[] = [];
     categories.forEach((cat: any) => {
-      if (categoryMap.has(cat.id)) {
-        grouped.push({ category: cat, items: categoryMap.get(cat.id)! });
+      if (categoryMap.has(cat.id) && categoryMap.get(cat.id)!.length > 0) {
+        allGroups.push({ category: cat, items: categoryMap.get(cat.id)! });
       }
     });
     
-    return grouped;
+    // Calculate total items and target per page
+    const totalItems = availableItems.length;
+    const targetPerPage = Math.ceil(totalItems / 3);
+    
+    // Assign categories to pages by item count
+    const pages: { category: any; items: any[] }[][] = [[], [], []];
+    let currentPage = 0;
+    let currentPageItems = 0;
+    
+    allGroups.forEach((group) => {
+      // If current page is full, move to next (but don't exceed page 2)
+      if (currentPageItems >= targetPerPage && currentPage < 2) {
+        currentPage++;
+        currentPageItems = 0;
+      }
+      pages[currentPage].push(group);
+      currentPageItems += group.items.length;
+    });
+    
+    // Return page 1 (index 0)
+    return pages[0];
   }, [itemsWithPromotions, categories]);
 
   // Split grouped items into 3 columns
