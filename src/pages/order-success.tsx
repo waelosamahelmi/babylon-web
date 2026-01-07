@@ -52,50 +52,44 @@ export default function OrderSuccess() {
 
       if (redirectStatus === 'succeeded' && paymentIntentId) {
         try {
-          // Look up the existing order by payment_intent_id first
+          // Look up the existing order by payment_intent_id using backend API
+          // Use API instead of Supabase to avoid RLS permission issues
           let order = null;
-          let fetchError = null;
           
           console.log('🔍 Looking for order with payment_intent:', paymentIntentId);
           
-          // Try to find by stripe_payment_intent_id
-          const { data: orderByIntent, error: intentError } = await supabase
-            .from('orders')
-            .select('*')
-            .eq('stripe_payment_intent_id', paymentIntentId)
-            .maybeSingle();
+          const apiUrl = import.meta.env.VITE_API_URL || 'https://babylon-admin.fly.dev';
           
-          console.log('Query result:', { orderByIntent, intentError });
+          try {
+            const response = await fetch(`${apiUrl}/api/orders/by-payment-intent/${paymentIntentId}`);
+            if (response.ok) {
+              order = await response.json();
+              console.log('✅ Found order by payment intent ID:', order.id);
+            } else {
+              console.log('❌ Order not found by payment intent, trying backup');
+            }
+          } catch (apiError) {
+            console.error('API error:', apiError);
+          }
           
-          if (orderByIntent) {
-            order = orderByIntent;
-            console.log('✅ Found order by payment intent ID:', order.id);
-          } else if (backupOrderId) {
+          // Fallback: try backup order ID from sessionStorage
+          if (!order && backupOrderId) {
             // Fallback: find by backup order ID from sessionStorage
             console.log('Order not found by payment intent, trying backup order ID:', backupOrderId);
-            const { data: orderById, error: idError } = await supabase
-              .from('orders')
-              .select('*')
-              .eq('id', parseInt(backupOrderId))
-              .single();
             
-            if (orderById) {
-              order = orderById;
-              // Also update the order with the payment intent ID now
-              await supabase
-                .from('orders')
-                .update({ stripe_payment_intent_id: paymentIntentId })
-                .eq('id', order.id);
-              console.log('Found order by backup ID and updated payment intent ID');
-            } else {
-              fetchError = idError;
+            try {
+              const response = await fetch(`${apiUrl}/api/orders/${backupOrderId}`);
+              if (response.ok) {
+                order = await response.json();
+                console.log('✅ Found order by backup ID:', order.id);
+              }
+            } catch (apiError) {
+              console.error('Backup API error:', apiError);
             }
-          } else {
-            fetchError = intentError;
           }
 
           if (!order) {
-            console.error('Order not found for payment intent:', paymentIntentId, fetchError);
+            console.error('Order not found for payment intent:', paymentIntentId);
             setStatus('failed');
             setErrorMessage(t('Tilausta ei löytynyt', 'Order not found'));
             sessionStorage.removeItem('pending_order_id');
