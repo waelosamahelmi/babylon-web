@@ -1,5 +1,114 @@
 /* Display Pages Styles - TV Screen Displays */
 /* Updated: 720p (1280x720) for compact menu displays */
+/* Samsung/LG TV Browser Compatible - Uses CSS animations instead of JS */
+
+/* ===== TV BROWSER COMPATIBLE ANIMATIONS ===== */
+@keyframes promo-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes promo-spin-reverse {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
+}
+
+@keyframes promo-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+@keyframes promo-fade-in {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes promo-glow-pulse {
+  0%, 100% { 
+    box-shadow: 0 0 40px rgba(249, 115, 22, 0.4), 0 0 80px rgba(249, 115, 22, 0.2);
+  }
+  50% { 
+    box-shadow: 0 0 60px rgba(249, 115, 22, 0.6), 0 0 120px rgba(249, 115, 22, 0.3);
+  }
+}
+
+@keyframes promo-text-glow {
+  0%, 100% { text-shadow: 0 0 10px rgba(34, 197, 94, 0.5); }
+  50% { text-shadow: 0 0 30px rgba(34, 197, 94, 0.8); }
+}
+
+@keyframes promo-loading-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* TV Compatible Animation Classes */
+.promo-spin-slow {
+  animation: promo-spin 60s linear infinite;
+}
+
+.promo-spin-slow-reverse {
+  animation: promo-spin-reverse 80s linear infinite;
+}
+
+.promo-orbit {
+  animation: promo-spin 10s linear infinite;
+}
+
+.promo-orbit-reverse {
+  animation: promo-spin-reverse 10s linear infinite;
+}
+
+.promo-pulse {
+  animation: promo-pulse 1s ease-in-out infinite;
+}
+
+.promo-pulse-glow {
+  animation: promo-glow-pulse 2s ease-in-out infinite;
+}
+
+.promo-fade-in {
+  animation: promo-fade-in 0.5s ease-out forwards;
+}
+
+.promo-glow-text {
+  animation: promo-text-glow 1.5s ease-in-out infinite;
+}
+
+.promo-loading-spinner {
+  font-size: 80px;
+  animation: promo-loading-spin 2s linear infinite;
+  display: inline-block;
+}
+
+.promo-empty-icon {
+  font-size: 80px;
+  animation: promo-pulse 2s ease-in-out infinite;
+}
+
+.promo-circle-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.promo-circle-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 96px;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border-radius: 50%;
+}
+
+/* Progress pip active state */
+.promo-progress-pip.active {
+  width: 32px !important;
+  background-color: #f97316 !important;
+}
 
 /* ===== NEW COMPACT MENU DISPLAY - 720P ===== */
 .menu-display-page {
