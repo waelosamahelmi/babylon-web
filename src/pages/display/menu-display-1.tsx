@@ -19,6 +19,18 @@ export default function MenuDisplay1() {
   const { data: promotions } = useActivePromotions();
   const { config } = useRestaurant();
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [loadingTimeout, setLoadingTimeout] = useState(false);
+
+  // Timeout to prevent infinite loading
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (isLoading) {
+        console.warn('Menu display 1 loading timeout');
+        setLoadingTimeout(true);
+      }
+    }, 10000);
+    return () => clearTimeout(timeout);
+  }, [isLoading]);
 
   useEffect(() => {
     const interval = setInterval(() => setCurrentTime(new Date()), 60000);

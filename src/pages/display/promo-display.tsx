@@ -58,6 +58,19 @@ export default function PromoDisplay() {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [categoryImages, setCategoryImages] = useState<Record<number, string[]>>({});
   const [isLoading, setIsLoading] = useState(true);
+  const [loadingTimeout, setLoadingTimeout] = useState(false);
+
+  // Timeout to prevent infinite loading - show empty state after 10 seconds
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (isLoading) {
+        console.warn('Promo display loading timeout, showing fallback');
+        setLoadingTimeout(true);
+        setIsLoading(false);
+      }
+    }, 10000);
+    return () => clearTimeout(timeout);
+  }, [isLoading]);
 
   // Fetch menu items with offers and promotions
   const fetchData = useCallback(async () => {

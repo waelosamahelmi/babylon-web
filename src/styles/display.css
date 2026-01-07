@@ -2414,13 +2414,13 @@
 }
 
 .promo-empty-logo {
-  height: 150px;
+  height: 200px;
   width: auto;
-  filter: drop-shadow(0 0 40px rgba(249, 115, 22, 0.5));
+  filter: drop-shadow(0 0 50px rgba(249, 115, 22, 0.6));
 }
 
 .promo-empty-text {
-  font-size: 28px;
+  font-size: 32px;
   color: rgba(255, 255, 255, 0.7);
 }
 
@@ -2434,7 +2434,7 @@
 }
 
 .promo-big-logo {
-  height: 100px;
+  height: 140px;
   width: auto;
   filter: drop-shadow(0 0 40px rgba(249, 115, 22, 0.6));
 }
@@ -2461,9 +2461,9 @@
 /* Circular image container */
 .promo-circle-container {
   position: relative;
-  width: 340px;
-  height: 340px;
-  margin-bottom: 32px;
+  width: 420px;
+  height: 420px;
+  margin-bottom: 28px;
 }
 
 .promo-circle-glow {
@@ -2519,17 +2519,17 @@
 
 .promo-discount-bubble {
   position: absolute;
-  top: -20px;
+  top: -28px;
   left: 50%;
   transform: translateX(-50%);
   background: linear-gradient(135deg, #dc2626 0%, #f97316 100%);
-  padding: 16px 24px;
+  padding: 20px 32px;
   border-radius: 100px;
-  box-shadow: 0 8px 32px rgba(220, 38, 38, 0.6);
+  box-shadow: 0 10px 40px rgba(220, 38, 38, 0.6);
 }
 
 .promo-discount-text {
-  font-size: 32px;
+  font-size: 42px;
   font-weight: 900;
   color: #ffffff;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
