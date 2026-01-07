@@ -49,6 +49,7 @@ interface DisplayItem {
 // Promo Ads Display Page - REALTIME
 // Screen dimensions: 1920x1080 but content rotated -90 degrees (Portrait mode)
 // Cycles through: products with offers + active promotions
+// NEW LAYOUT: Centered circular image with info below and animated discount badge
 
 export default function PromoDisplay() {
   const { config } = useRestaurant();
@@ -226,13 +227,12 @@ export default function PromoDisplay() {
     return (
       <div className="promo-display-wrapper">
         <div className="promo-display-rotated">
-          <div className="promo-no-promos">
-            <img src="https://ravintolababylon.fi/logo.png" alt="Babylon" className="promo-logo-img-large" />
+          <div className="promo-empty-state">
+            <img src="https://ravintolababylon.fi/logo.png" alt="Babylon" className="promo-empty-logo" />
             <motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 2, repeat: Infinity }}>
-              <Gift className="w-24 h-24 text-yellow-400 mb-6" />
+              <Gift className="w-20 h-20 text-yellow-400" />
             </motion.div>
-            <h1 className="promo-no-promos-title">{config?.name || "Babylon"}</h1>
-            <p className="promo-no-promos-text">Uusia tarjouksia tulossa pian!</p>
+            <p className="promo-empty-text">Uusia tarjouksia tulossa pian!</p>
           </div>
         </div>
       </div>
@@ -243,195 +243,235 @@ export default function PromoDisplay() {
     <div className="promo-display-wrapper">
       <div className="promo-display-rotated">
         {/* Animated Background */}
-        <div className="promo-bg-animated">
-          <div className="promo-bg-gradient" />
-          <div className="promo-bg-orb promo-bg-orb-1" />
-          <div className="promo-bg-orb promo-bg-orb-2" />
-          <div className="promo-bg-orb promo-bg-orb-3" />
+        <div className="promo-centered-bg">
+          <div className="promo-centered-gradient" />
+          {/* Animated rings */}
+          <motion.div 
+            className="promo-bg-ring promo-bg-ring-1"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
+          />
+          <motion.div 
+            className="promo-bg-ring promo-bg-ring-2"
+            animate={{ rotate: -360 }}
+            transition={{ duration: 80, repeat: Infinity, ease: "linear" }}
+          />
           {/* Floating particles */}
-          {[...Array(15)].map((_, i) => (
+          {[...Array(20)].map((_, i) => (
             <motion.div
               key={i}
-              className="promo-particle"
+              className="promo-floating-particle"
               animate={{
-                y: [0, -150, 0],
-                opacity: [0, 0.8, 0],
+                y: [0, -200, 0],
+                x: [0, Math.sin(i * 0.5) * 50, 0],
+                opacity: [0, 0.6, 0],
+                scale: [0.5, 1, 0.5],
               }}
               transition={{
-                duration: 4 + Math.random() * 3,
+                duration: 5 + Math.random() * 4,
                 repeat: Infinity,
-                delay: Math.random() * 3,
+                delay: Math.random() * 4,
               }}
-              style={{ left: `${5 + Math.random() * 90}%`, bottom: 0 }}
+              style={{ 
+                left: `${5 + Math.random() * 90}%`, 
+                bottom: '-20px',
+              }}
             />
           ))}
         </div>
 
-        {/* Header with Logo */}
-        <header className="promo-header-new">
-          <div className="promo-header-inner">
-            <img 
-              src="https://ravintolababylon.fi/logo.png" 
-              alt="Babylon" 
-              className="promo-logo-img" 
-            />
-            <div className="promo-header-title">
-              <h1>{config?.name || "Babylon"}</h1>
-              <span>Erikoistarjoukset</span>
-            </div>
-            <div className="promo-header-time">
-              {currentTime.toLocaleTimeString("fi-FI", { hour: "2-digit", minute: "2-digit" })}
-            </div>
-          </div>
+        {/* Big Logo at Top */}
+        <header className="promo-centered-header">
+          <motion.img 
+            src="https://ravintolababylon.fi/logo.png" 
+            alt="Babylon" 
+            className="promo-big-logo"
+            initial={{ y: -20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.6 }}
+          />
         </header>
 
-        {/* Main Content */}
-        <main className="promo-main-new">
+        {/* Main Content - Centered Layout */}
+        <main className="promo-centered-main">
           <AnimatePresence mode="wait">
             {currentItem && (
               <motion.div
                 key={currentItem.id}
-                initial={{ opacity: 0, scale: 0.9, y: 50 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.9, y: -50 }}
-                transition={{ duration: 0.6, ease: "easeOut" }}
-                className="promo-card-new"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
+                className="promo-centered-card"
               >
-                {/* Image Section */}
-                <div className="promo-image-section">
-                  {currentItem.imageUrl ? (
-                    <motion.img
-                      src={currentItem.imageUrl}
-                      alt={currentItem.title}
-                      className="promo-image"
-                      initial={{ scale: 1.1 }}
-                      animate={{ scale: 1 }}
-                      transition={{ duration: 0.8 }}
-                    />
-                  ) : (
-                    <div className="promo-image-placeholder">
-                      <motion.div
-                        animate={{ rotate: [0, 10, -10, 0] }}
+                {/* Circular Image Container */}
+                <div className="promo-circle-container">
+                  {/* Animated glow ring */}
+                  <motion.div 
+                    className="promo-circle-glow"
+                    animate={{ 
+                      boxShadow: [
+                        "0 0 40px rgba(249, 115, 22, 0.4), 0 0 80px rgba(249, 115, 22, 0.2)",
+                        "0 0 60px rgba(249, 115, 22, 0.6), 0 0 120px rgba(249, 115, 22, 0.3)",
+                        "0 0 40px rgba(249, 115, 22, 0.4), 0 0 80px rgba(249, 115, 22, 0.2)",
+                      ]
+                    }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  />
+                  
+                  {/* Rotating border */}
+                  <motion.div 
+                    className="promo-circle-border"
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                  />
+
+                  {/* Image */}
+                  <div className="promo-circle-image">
+                    {currentItem.imageUrl ? (
+                      <motion.img
+                        src={currentItem.imageUrl}
+                        alt={currentItem.title}
+                        initial={{ scale: 1.2 }}
+                        animate={{ scale: 1 }}
+                        transition={{ duration: 0.6 }}
+                      />
+                    ) : (
+                      <motion.div 
+                        className="promo-circle-placeholder"
+                        animate={{ rotate: [0, 5, -5, 0] }}
                         transition={{ duration: 4, repeat: Infinity }}
                       >
-                        <Flame className="w-32 h-32 text-orange-400" />
+                        <Flame className="w-24 h-24 text-orange-400" />
                       </motion.div>
-                    </div>
-                  )}
-                  <div className="promo-image-overlay" />
-                  
-                  {/* Discount Badge */}
-                  <motion.div
-                    initial={{ scale: 0, rotate: -30 }}
-                    animate={{ scale: 1, rotate: 0 }}
-                    transition={{ type: "spring", stiffness: 200, delay: 0.3 }}
-                    className="promo-discount-badge-new"
-                  >
-                    <Percent className="w-8 h-8" />
-                    <span>{currentItem.discount}</span>
-                  </motion.div>
-
-                  {/* Type Badge */}
-                  <div className={`promo-type-badge ${currentItem.type}`}>
-                    {currentItem.type === 'offer' ? (
-                      <>
-                        <Tag className="w-5 h-5" />
-                        <span>Tarjous</span>
-                      </>
-                    ) : (
-                      <>
-                        <Star className="w-5 h-5" />
-                        <span>Kampanja</span>
-                      </>
                     )}
                   </div>
+
+                  {/* Animated Discount Badge - orbiting the circle */}
+                  <motion.div
+                    className="promo-orbiting-discount"
+                    animate={{ 
+                      rotate: [0, 360],
+                    }}
+                    transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+                  >
+                    <motion.div 
+                      className="promo-discount-bubble"
+                      animate={{ 
+                        scale: [1, 1.1, 1],
+                        rotate: [0, -360], // Counter-rotate to keep text upright
+                      }}
+                      transition={{ 
+                        scale: { duration: 1, repeat: Infinity },
+                        rotate: { duration: 10, repeat: Infinity, ease: "linear" }
+                      }}
+                    >
+                      <span className="promo-discount-text">{currentItem.discount}</span>
+                    </motion.div>
+                  </motion.div>
                 </div>
 
-                {/* Content Section */}
-                <div className="promo-content-section">
-                  <motion.h2
-                    initial={{ y: 20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.2 }}
-                    className="promo-item-title"
-                  >
-                    {currentItem.title}
-                  </motion.h2>
+                {/* Type Badge */}
+                <motion.div 
+                  className={`promo-type-pill ${currentItem.type}`}
+                  initial={{ y: 10, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.2 }}
+                >
+                  {currentItem.type === 'offer' ? (
+                    <>
+                      <Tag className="w-4 h-4" />
+                      <span>TARJOUS</span>
+                    </>
+                  ) : (
+                    <>
+                      <Star className="w-4 h-4" />
+                      <span>KAMPANJA</span>
+                    </>
+                  )}
+                </motion.div>
 
+                {/* Info Section */}
+                <motion.div 
+                  className="promo-info-section"
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.3 }}
+                >
+                  <h2 className="promo-centered-title">{currentItem.title}</h2>
+                  
                   {currentItem.description && (
-                    <motion.p
-                      initial={{ y: 20, opacity: 0 }}
-                      animate={{ y: 0, opacity: 1 }}
-                      transition={{ delay: 0.3 }}
-                      className="promo-item-desc"
-                    >
-                      {currentItem.description}
-                    </motion.p>
+                    <p className="promo-centered-desc">{currentItem.description}</p>
                   )}
 
                   {/* Price display for offers */}
                   {currentItem.type === 'offer' && currentItem.originalPrice && currentItem.offerPrice && (
-                    <motion.div
-                      initial={{ y: 20, opacity: 0 }}
-                      animate={{ y: 0, opacity: 1 }}
-                      transition={{ delay: 0.35 }}
-                      className="promo-price-display"
+                    <motion.div 
+                      className="promo-centered-prices"
+                      initial={{ scale: 0.9 }}
+                      animate={{ scale: 1 }}
+                      transition={{ delay: 0.4 }}
                     >
-                      <span className="promo-original-price">{parseFloat(currentItem.originalPrice).toFixed(2)}€</span>
-                      <span className="promo-arrow">→</span>
-                      <span className="promo-offer-price">{parseFloat(currentItem.offerPrice).toFixed(2)}€</span>
+                      <span className="promo-old-price">{parseFloat(currentItem.originalPrice).toFixed(2)}€</span>
+                      <motion.span 
+                        className="promo-new-price"
+                        animate={{ 
+                          textShadow: [
+                            "0 0 10px rgba(34, 197, 94, 0.5)",
+                            "0 0 30px rgba(34, 197, 94, 0.8)",
+                            "0 0 10px rgba(34, 197, 94, 0.5)",
+                          ]
+                        }}
+                        transition={{ duration: 1.5, repeat: Infinity }}
+                      >
+                        {parseFloat(currentItem.offerPrice).toFixed(2)}€
+                      </motion.span>
                     </motion.div>
                   )}
 
                   {currentItem.validUntil && (
-                    <motion.div
-                      initial={{ y: 20, opacity: 0 }}
-                      animate={{ y: 0, opacity: 1 }}
-                      transition={{ delay: 0.4 }}
-                      className="promo-valid-until"
-                    >
-                      <Clock className="w-6 h-6" />
+                    <div className="promo-centered-validity">
+                      <Clock className="w-5 h-5" />
                       <span>Voimassa {formatDate(currentItem.validUntil)} asti</span>
-                    </motion.div>
+                    </div>
                   )}
+                </motion.div>
 
-                  {/* CTA */}
+                {/* Animated CTA */}
+                <motion.div
+                  className="promo-centered-cta"
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.5 }}
+                >
                   <motion.div
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ delay: 0.5 }}
-                    className="promo-cta-new"
+                    className="promo-cta-pulse"
+                    animate={{ 
+                      scale: [1, 1.05, 1],
+                      boxShadow: [
+                        "0 0 0 0 rgba(249, 115, 22, 0.4)",
+                        "0 0 0 20px rgba(249, 115, 22, 0)",
+                      ]
+                    }}
+                    transition={{ duration: 1.5, repeat: Infinity }}
                   >
-                    <motion.div
-                      animate={{ 
-                        boxShadow: [
-                          "0 0 20px rgba(251, 146, 60, 0.4)",
-                          "0 0 40px rgba(251, 146, 60, 0.7)",
-                          "0 0 20px rgba(251, 146, 60, 0.4)",
-                        ]
-                      }}
-                      transition={{ duration: 2, repeat: Infinity }}
-                      className="promo-cta-button-new"
-                    >
-                      <Flame className="w-8 h-8" />
-                      <span>Tilaa Nyt!</span>
-                    </motion.div>
+                    <Flame className="w-6 h-6" />
+                    <span>TILAA NYT!</span>
                   </motion.div>
-                </div>
+                </motion.div>
               </motion.div>
             )}
           </AnimatePresence>
         </main>
 
         {/* Progress Indicators */}
-        <div className="promo-progress-new">
+        <div className="promo-centered-progress">
           {displayItems.map((_, index) => (
             <motion.div
               key={index}
-              className={`promo-progress-item ${index === currentIndex ? "active" : ""}`}
-              initial={false}
+              className="promo-progress-pip"
               animate={{
-                width: index === currentIndex ? 40 : 12,
+                width: index === currentIndex ? 32 : 10,
                 backgroundColor: index === currentIndex ? "#f97316" : "rgba(255,255,255,0.3)",
               }}
               transition={{ duration: 0.3 }}
@@ -439,19 +479,11 @@ export default function PromoDisplay() {
           ))}
         </div>
 
-        {/* Footer */}
-        <footer className="promo-footer-new">
-          <motion.div
-            animate={{ opacity: [0.6, 1, 0.6] }}
-            transition={{ duration: 3, repeat: Infinity }}
-            className="promo-footer-content"
-          >
-            <Sparkles className="w-5 h-5" />
-            <span>{config?.website || "ravintolababylon.fi"}</span>
-            <span className="promo-footer-divider">|</span>
-            <span>{config?.phone || ""}</span>
-            <Sparkles className="w-5 h-5" />
-          </motion.div>
+        {/* Footer with time */}
+        <footer className="promo-centered-footer">
+          <div className="promo-footer-time">
+            {currentTime.toLocaleTimeString("fi-FI", { hour: "2-digit", minute: "2-digit" })}
+          </div>
         </footer>
       </div>
     </div>

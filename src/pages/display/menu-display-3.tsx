@@ -56,16 +56,27 @@ export default function MenuDisplay3() {
     });
   }, [menuItems, promotions]);
 
-  // Get last third of available items grouped by category
+  // First, sort all items by category order, then split into pages
   const groupedItems = useMemo(() => {
     if (!itemsWithPromotions || !categories) return [];
     
     const availableItems = itemsWithPromotions.filter((item: any) => item.isAvailable);
-    const totalItems = availableItems.length;
-    const itemsPerPage = Math.ceil(totalItems / 3);
-    const pageItems = availableItems.slice(itemsPerPage * 2);
     
-    // Group by category
+    // Sort items by category display order first
+    const categoryOrderMap = new Map(categories.map((cat: any, idx: number) => [cat.id, idx]));
+    const sortedItems = [...availableItems].sort((a: any, b: any) => {
+      const catOrderA = categoryOrderMap.get(a.categoryId) ?? 999;
+      const catOrderB = categoryOrderMap.get(b.categoryId) ?? 999;
+      if (catOrderA !== catOrderB) return catOrderA - catOrderB;
+      return (a.displayOrder || 0) - (b.displayOrder || 0);
+    });
+    
+    // Split into pages after sorting by category - get last third
+    const totalItems = sortedItems.length;
+    const itemsPerPage = Math.ceil(totalItems / 3);
+    const pageItems = sortedItems.slice(itemsPerPage * 2);
+    
+    // Group by category while preserving order
     const grouped: { category: any; items: any[] }[] = [];
     const categoryMap = new Map<number, any[]>();
     
@@ -77,7 +88,7 @@ export default function MenuDisplay3() {
       categoryMap.get(catId)!.push(item);
     });
     
-    // Sort by category order and build result
+    // Build result in category order
     categories.forEach((cat: any) => {
       if (categoryMap.has(cat.id)) {
         grouped.push({ category: cat, items: categoryMap.get(cat.id)! });
