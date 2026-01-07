@@ -1,40 +1,25 @@
 import { useEffect, useState, useMemo } from "react";
-import { useCategories, useMenuItems } from "@/hooks/use-menu";
+import { useRealtimeMenu } from "@/hooks/use-realtime-menu";
 import { useActivePromotions, calculatePromotionDiscount } from "@/hooks/use-promotions";
 import { useRestaurant } from "@/lib/restaurant-context";
-import { motion, AnimatePresence } from "framer-motion";
-import { Leaf, Wheat, Heart, Flame, Star, Sparkles } from "lucide-react";
+import { motion } from "framer-motion";
+import { Leaf, Wheat, Heart, Flame, Star } from "lucide-react";
 import "@/styles/display.css";
 
 // Menu Display Page 1 - First third of menu items
-// Screen dimensions: 1920x1080 (Full HD Landscape)
+// Screen dimensions: 1280x720 (HD 720p)
+// Category-grouped layout with category headers
+// REALTIME: Auto-updates when prices/items change in database
 
-interface MenuItemDisplay {
-  id: number;
-  name: string;
-  nameEn: string;
-  description: string | null;
-  descriptionEn: string | null;
-  price: string;
-  offerPrice?: string | null;
-  offerPercentage?: number | null;
-  promotionalPrice?: string;
-  promotionPercentage?: number;
-  isVegetarian?: boolean;
-  isVegan?: boolean;
-  isGlutenFree?: boolean;
-  imageUrl?: string | null;
-  categoryId?: number | null;
-}
+const PIZZA_CATEGORY_ID = 1; // Pizzas category
+const PERHE_EXTRA = 8; // Family size costs +8€
 
 export default function MenuDisplay1() {
-  const { data: categories } = useCategories();
-  const { data: menuItems } = useMenuItems();
+  const { menuItems, categories, isLoading } = useRealtimeMenu();
   const { data: promotions } = useActivePromotions();
   const { config } = useRestaurant();
   const [currentTime, setCurrentTime] = useState(new Date());
 
-  // Update time every minute
   useEffect(() => {
     const interval = setInterval(() => setCurrentTime(new Date()), 60000);
     return () => clearInterval(interval);
@@ -71,218 +56,162 @@ export default function MenuDisplay1() {
     });
   }, [menuItems, promotions]);
 
-  // Get first third of items (sorted by category and display order)
-  const displayItems = useMemo(() => {
-    if (!itemsWithPromotions) return [];
+  // Get first third of available items grouped by category
+  const groupedItems = useMemo(() => {
+    if (!itemsWithPromotions || !categories) return [];
+    
     const availableItems = itemsWithPromotions.filter((item: any) => item.isAvailable);
     const totalItems = availableItems.length;
     const itemsPerPage = Math.ceil(totalItems / 3);
-    return availableItems.slice(0, itemsPerPage);
-  }, [itemsWithPromotions]);
-
-  // Group items by category
-  const groupedItems = useMemo(() => {
-    const groups: Record<string, MenuItemDisplay[]> = {};
-    displayItems.forEach((item: MenuItemDisplay) => {
-      const category = categories?.find((c) => c.id === item.categoryId);
-      const categoryName = category?.name || "Muut";
-      if (!groups[categoryName]) groups[categoryName] = [];
-      groups[categoryName].push(item);
+    const pageItems = availableItems.slice(0, itemsPerPage);
+    
+    // Group by category
+    const grouped: { category: any; items: any[] }[] = [];
+    const categoryMap = new Map<number, any[]>();
+    
+    pageItems.forEach((item: any) => {
+      const catId = item.categoryId || 0;
+      if (!categoryMap.has(catId)) {
+        categoryMap.set(catId, []);
+      }
+      categoryMap.get(catId)!.push(item);
     });
-    return groups;
-  }, [displayItems, categories]);
+    
+    // Sort by category order and build result
+    categories.forEach((cat: any) => {
+      if (categoryMap.has(cat.id)) {
+        grouped.push({ category: cat, items: categoryMap.get(cat.id)! });
+      }
+    });
+    
+    return grouped;
+  }, [itemsWithPromotions, categories]);
 
-  const formatPrice = (price: string) => `${parseFloat(price).toFixed(2)} €`;
+  // Split grouped items into 3 columns
+  const columns = useMemo(() => {
+    const cols: { category: any; items: any[] }[][] = [[], [], []];
+    let colIdx = 0;
+    
+    groupedItems.forEach((group) => {
+      cols[colIdx % 3].push(group);
+      colIdx++;
+    });
+    
+    return cols;
+  }, [groupedItems]);
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.1 },
-    },
-  };
+  const formatPrice = (price: string | number) => `${parseFloat(String(price)).toFixed(2)}€`;
 
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.5, ease: "easeOut" },
-    },
-  };
+  const isPizzaCategory = (categoryId: number | null | undefined) => categoryId === PIZZA_CATEGORY_ID;
 
   return (
-    <div className="display-container">
+    <div className="menu-display-page">
       {/* Animated Background */}
-      <div className="display-background">
-        <div className="display-gradient-orb display-gradient-orb-1" />
-        <div className="display-gradient-orb display-gradient-orb-2" />
-        <div className="display-gradient-orb display-gradient-orb-3" />
+      <div className="menu-display-bg">
+        <div className="menu-display-orb menu-display-orb-1" />
+        <div className="menu-display-orb menu-display-orb-2" />
+        <div className="menu-display-orb menu-display-orb-3" />
       </div>
 
       {/* Header */}
-      <motion.header
-        initial={{ y: -100, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
-        className="display-header"
-      >
-        <div className="display-header-content">
-          <div className="display-logo-section">
-            <motion.div
-              animate={{ rotate: [0, 5, -5, 0] }}
-              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-            >
-              <Flame className="display-logo-icon" />
-            </motion.div>
-            <div>
-              <h1 className="display-restaurant-name">{config?.name || "Babylon"}</h1>
-              <p className="display-tagline">{config?.tagline || "Tuoretta ja maukasta"}</p>
-            </div>
+      <header className="menu-display-header">
+        <div className="menu-display-header-inner">
+          <div className="menu-display-logo">
+            <img src="https://ravintolababylon.fi/logo.png" alt="Logo" className="menu-display-logo-img" />
+            <span className="menu-display-name">{config?.name || "Babylon"}</span>
           </div>
-          <div className="display-page-indicator">
-            <Sparkles className="w-6 h-6" />
-            <span>Ruokalista 1/3</span>
+          <div className="menu-display-page-num page-1">
+            <Star className="w-5 h-5" />
+            <span>1 / 3</span>
           </div>
-          <div className="display-time">
+          <div className="menu-display-time">
             {currentTime.toLocaleTimeString("fi-FI", { hour: "2-digit", minute: "2-digit" })}
           </div>
         </div>
-      </motion.header>
+      </header>
 
-      {/* Menu Content */}
-      <main className="display-main">
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          className="display-menu-grid"
-        >
-          {Object.entries(groupedItems).map(([categoryName, items], categoryIndex) => (
-            <motion.section
-              key={categoryName}
-              variants={itemVariants}
-              className="display-category-section"
-            >
-              <motion.h2
-                initial={{ x: -50, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ delay: categoryIndex * 0.2, duration: 0.5 }}
-                className="display-category-title"
-              >
-                <Star className="w-8 h-8 text-yellow-400" />
-                {categoryName}
-              </motion.h2>
-
-              <div className="display-items-grid">
-                <AnimatePresence>
-                  {items.map((item, itemIndex) => (
+      {/* Menu Content - 3 Column Layout */}
+      <main className="menu-display-main">
+        <div className="menu-display-grid">
+          {columns.map((column, colIdx) => (
+            <div key={colIdx} className="menu-display-column">
+              {column.map((group) => (
+                <div key={group.category.id} className="menu-category-group">
+                  {/* Category Header */}
+                  <div className="menu-category-header">
+                    <span className="menu-category-name">{group.category.name}</span>
+                    {isPizzaCategory(group.category.id) && (
+                      <div className="menu-category-prices">
+                        <span className="menu-price-label">Norm</span>
+                        <span className="menu-price-label">Perhe</span>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Category Items */}
+                  {group.items.map((item: any, itemIdx: number) => (
                     <motion.div
                       key={item.id}
-                      variants={itemVariants}
-                      initial="hidden"
-                      animate="visible"
-                      transition={{ delay: itemIndex * 0.05 }}
-                      whileHover={{ scale: 1.02, y: -5 }}
-                      className="display-menu-item"
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: itemIdx * 0.02 }}
+                      className={`menu-item-row ${isPizzaCategory(item.categoryId) ? 'has-perhe' : ''}`}
                     >
-                      {/* Discount Badge */}
-                      {(item.offerPercentage || item.promotionPercentage) && (
-                        <motion.div
-                          initial={{ scale: 0, rotate: -180 }}
-                          animate={{ scale: 1, rotate: 0 }}
-                          transition={{ type: "spring", stiffness: 200 }}
-                          className="display-discount-badge"
-                        >
-                          <Flame className="w-4 h-4" />
-                          -{item.promotionPercentage || item.offerPercentage}%
-                        </motion.div>
-                      )}
-
-                      {/* Item Image */}
-                      {item.imageUrl && (
-                        <div className="display-item-image-container">
-                          <img
-                            src={item.imageUrl}
-                            alt={item.name}
-                            className="display-item-image"
-                          />
-                          <div className="display-item-image-overlay" />
-                        </div>
-                      )}
-
-                      {/* Item Details */}
-                      <div className="display-item-content">
-                        <div className="display-item-header">
-                          <h3 className="display-item-name">{item.name}</h3>
-                          <div className="display-item-badges">
-                            {item.isVegetarian && (
-                              <span className="display-badge display-badge-vegetarian">
-                                <Leaf className="w-4 h-4" />
-                              </span>
-                            )}
-                            {item.isVegan && (
-                              <span className="display-badge display-badge-vegan">
-                                <Heart className="w-4 h-4" />
-                              </span>
-                            )}
-                            {item.isGlutenFree && (
-                              <span className="display-badge display-badge-glutenfree">
-                                <Wheat className="w-4 h-4" />
-                              </span>
-                            )}
-                          </div>
-                        </div>
-
-                        {item.description && (
-                          <p className="display-item-description">{item.description}</p>
-                        )}
-
-                        <div className="display-item-price-section">
-                          {parseFloat(item.price) === 0 ? (
-                            <span className="display-price-request">Hinta pyynnöstä</span>
-                          ) : item.promotionalPrice || item.offerPrice ? (
-                            <div className="display-price-group">
-                              <span className="display-price-current">
-                                {formatPrice(item.promotionalPrice || item.offerPrice!)}
-                              </span>
-                              <span className="display-price-original">
-                                {formatPrice(item.price)}
-                              </span>
-                            </div>
-                          ) : (
-                            <span className="display-price-normal">{formatPrice(item.price)}</span>
+                      {/* Item Info */}
+                      <div className="menu-item-info">
+                        <div className="menu-item-name">
+                          {item.name}
+                          {item.isVegetarian && <Leaf className="menu-badge green" />}
+                          {item.isVegan && <Heart className="menu-badge emerald" />}
+                          {item.isGlutenFree && <Wheat className="menu-badge amber" />}
+                          {(item.offerPercentage || item.promotionPercentage) && (
+                            <span className="menu-discount-badge">
+                              <Flame className="w-3 h-3" />
+                              -{item.promotionPercentage || item.offerPercentage}%
+                            </span>
                           )}
                         </div>
+                        {item.description && (
+                          <div className="menu-item-desc">{item.description}</div>
+                        )}
+                      </div>
+
+                      {/* Price Column(s) */}
+                      <div className="menu-item-prices">
+                        {parseFloat(item.price) === 0 ? (
+                          <span className="menu-price-ask">Kysy</span>
+                        ) : item.promotionalPrice || item.offerPrice ? (
+                          <>
+                            <span className="menu-price-offer">
+                              {formatPrice(item.promotionalPrice || item.offerPrice!)}
+                            </span>
+                            {isPizzaCategory(item.categoryId) && (
+                              <span className="menu-price-perhe">
+                                {formatPrice(parseFloat(item.promotionalPrice || item.offerPrice!) + PERHE_EXTRA)}
+                              </span>
+                            )}
+                          </>
+                        ) : (
+                          <>
+                            <span className="menu-price-normal">
+                              {formatPrice(item.price)}
+                            </span>
+                            {isPizzaCategory(item.categoryId) && (
+                              <span className="menu-price-perhe">
+                                {formatPrice(parseFloat(item.price) + PERHE_EXTRA)}
+                              </span>
+                            )}
+                          </>
+                        )}
                       </div>
                     </motion.div>
                   ))}
-                </AnimatePresence>
-              </div>
-            </motion.section>
+                </div>
+              ))}
+            </div>
           ))}
-        </motion.div>
-      </main>
-
-      {/* Footer */}
-      <motion.footer
-        initial={{ y: 100, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.8, delay: 0.5 }}
-        className="display-footer"
-      >
-        <div className="display-footer-content">
-          <motion.div
-            animate={{ opacity: [0.5, 1, 0.5] }}
-            transition={{ duration: 2, repeat: Infinity }}
-            className="display-footer-hint"
-          >
-            <Sparkles className="w-5 h-5" />
-            <span>Lisää vaihtoehtoja seuraavilla näytöillä</span>
-            <Sparkles className="w-5 h-5" />
-          </motion.div>
         </div>
-      </motion.footer>
+      </main>
     </div>
   );
 }

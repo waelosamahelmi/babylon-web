@@ -64,6 +64,11 @@ function Router() {
       <Route path="/display/menu-2" component={MenuDisplay2} />
       <Route path="/display/menu-3" component={MenuDisplay3} />
       <Route path="/display/promos" component={PromoDisplay} />
+      {/* Display routes (TV screens - not indexed) */}
+      <Route path="/display/menu-1" component={MenuDisplay1} />
+      <Route path="/display/menu-2" component={MenuDisplay2} />
+      <Route path="/display/menu-3" component={MenuDisplay3} />
+      <Route path="/display/promos" component={PromoDisplay} />
       <Route component={NotFound} />
     </Switch>
   );

@@ -1,40 +1,25 @@
 import { useEffect, useState, useMemo } from "react";
-import { useCategories, useMenuItems } from "@/hooks/use-menu";
+import { useRealtimeMenu } from "@/hooks/use-realtime-menu";
 import { useActivePromotions, calculatePromotionDiscount } from "@/hooks/use-promotions";
 import { useRestaurant } from "@/lib/restaurant-context";
-import { motion, AnimatePresence } from "framer-motion";
-import { Leaf, Wheat, Heart, Flame, Star, Sparkles, UtensilsCrossed, Coffee } from "lucide-react";
+import { motion } from "framer-motion";
+import { Leaf, Wheat, Heart, Flame, Star } from "lucide-react";
 import "@/styles/display.css";
 
 // Menu Display Page 3 - Last third of menu items
-// Screen dimensions: 1920x1080 (Full HD Landscape)
+// Screen dimensions: 1280x720 (HD 720p)
+// Category-grouped layout with category headers
+// REALTIME: Auto-updates when prices/items change in database
 
-interface MenuItemDisplay {
-  id: number;
-  name: string;
-  nameEn: string;
-  description: string | null;
-  descriptionEn: string | null;
-  price: string;
-  offerPrice?: string | null;
-  offerPercentage?: number | null;
-  promotionalPrice?: string;
-  promotionPercentage?: number;
-  isVegetarian?: boolean;
-  isVegan?: boolean;
-  isGlutenFree?: boolean;
-  imageUrl?: string | null;
-  categoryId?: number | null;
-}
+const PIZZA_CATEGORY_ID = 1; // Pizzas category
+const PERHE_EXTRA = 8; // Family size costs +8€
 
 export default function MenuDisplay3() {
-  const { data: categories } = useCategories();
-  const { data: menuItems } = useMenuItems();
+  const { menuItems, categories, isLoading } = useRealtimeMenu();
   const { data: promotions } = useActivePromotions();
   const { config } = useRestaurant();
   const [currentTime, setCurrentTime] = useState(new Date());
 
-  // Update time every minute
   useEffect(() => {
     const interval = setInterval(() => setCurrentTime(new Date()), 60000);
     return () => clearInterval(interval);
@@ -71,240 +56,162 @@ export default function MenuDisplay3() {
     });
   }, [menuItems, promotions]);
 
-  // Get last third of items
-  const displayItems = useMemo(() => {
-    if (!itemsWithPromotions) return [];
+  // Get last third of available items grouped by category
+  const groupedItems = useMemo(() => {
+    if (!itemsWithPromotions || !categories) return [];
+    
     const availableItems = itemsWithPromotions.filter((item: any) => item.isAvailable);
     const totalItems = availableItems.length;
     const itemsPerPage = Math.ceil(totalItems / 3);
-    const startIndex = itemsPerPage * 2;
-    return availableItems.slice(startIndex);
-  }, [itemsWithPromotions]);
-
-  // Group items by category
-  const groupedItems = useMemo(() => {
-    const groups: Record<string, MenuItemDisplay[]> = {};
-    displayItems.forEach((item: MenuItemDisplay) => {
-      const category = categories?.find((c) => c.id === item.categoryId);
-      const categoryName = category?.name || "Muut";
-      if (!groups[categoryName]) groups[categoryName] = [];
-      groups[categoryName].push(item);
+    const pageItems = availableItems.slice(itemsPerPage * 2);
+    
+    // Group by category
+    const grouped: { category: any; items: any[] }[] = [];
+    const categoryMap = new Map<number, any[]>();
+    
+    pageItems.forEach((item: any) => {
+      const catId = item.categoryId || 0;
+      if (!categoryMap.has(catId)) {
+        categoryMap.set(catId, []);
+      }
+      categoryMap.get(catId)!.push(item);
     });
-    return groups;
-  }, [displayItems, categories]);
+    
+    // Sort by category order and build result
+    categories.forEach((cat: any) => {
+      if (categoryMap.has(cat.id)) {
+        grouped.push({ category: cat, items: categoryMap.get(cat.id)! });
+      }
+    });
+    
+    return grouped;
+  }, [itemsWithPromotions, categories]);
 
-  const formatPrice = (price: string) => `${parseFloat(price).toFixed(2)} €`;
+  // Split grouped items into 3 columns
+  const columns = useMemo(() => {
+    const cols: { category: any; items: any[] }[][] = [[], [], []];
+    let colIdx = 0;
+    
+    groupedItems.forEach((group) => {
+      cols[colIdx % 3].push(group);
+      colIdx++;
+    });
+    
+    return cols;
+  }, [groupedItems]);
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.08 },
-    },
-  };
+  const formatPrice = (price: string | number) => `${parseFloat(String(price)).toFixed(2)}€`;
 
-  const itemVariants = {
-    hidden: { opacity: 0, scale: 0.9 },
-    visible: {
-      opacity: 1,
-      scale: 1,
-      transition: { duration: 0.4, ease: "easeOut" },
-    },
-  };
+  const isPizzaCategory = (categoryId: number | null | undefined) => categoryId === PIZZA_CATEGORY_ID;
 
   return (
-    <div className="display-container display-container-final">
-      {/* Animated Background - Premium Look */}
-      <div className="display-background">
-        <div className="display-gradient-orb display-gradient-orb-7" />
-        <div className="display-gradient-orb display-gradient-orb-8" />
-        <div className="display-shimmer-effect" />
-        <div className="display-pattern-overlay" />
+    <div className="menu-display-page page-3">
+      {/* Animated Background */}
+      <div className="menu-display-bg">
+        <div className="menu-display-orb menu-display-orb-1" />
+        <div className="menu-display-orb menu-display-orb-2" />
+        <div className="menu-display-orb menu-display-orb-3" />
       </div>
 
       {/* Header */}
-      <motion.header
-        initial={{ y: -100, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
-        className="display-header display-header-final"
-      >
-        <div className="display-header-content">
-          <div className="display-logo-section">
-            <motion.div
-              animate={{ 
-                rotate: [0, 10, -10, 0],
-                scale: [1, 1.05, 1]
-              }}
-              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-            >
-              <UtensilsCrossed className="display-logo-icon" />
-            </motion.div>
-            <div>
-              <h1 className="display-restaurant-name">{config?.name || "Babylon"}</h1>
-              <p className="display-tagline">{config?.tagline || "Tuoretta ja maukasta"}</p>
-            </div>
+      <header className="menu-display-header">
+        <div className="menu-display-header-inner">
+          <div className="menu-display-logo">
+            <img src="https://ravintolababylon.fi/logo.png" alt="Logo" className="menu-display-logo-img" />
+            <span className="menu-display-name">{config?.name || "Babylon"}</span>
           </div>
-          <div className="display-page-indicator display-page-indicator-final">
-            <Coffee className="w-6 h-6" />
-            <span>Ruokalista 3/3</span>
+          <div className="menu-display-page-num page-3">
+            <Star className="w-5 h-5" />
+            <span>3 / 3</span>
           </div>
-          <div className="display-time">
+          <div className="menu-display-time">
             {currentTime.toLocaleTimeString("fi-FI", { hour: "2-digit", minute: "2-digit" })}
           </div>
         </div>
-      </motion.header>
+      </header>
 
-      {/* Menu Content */}
-      <main className="display-main">
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          className="display-menu-masonry"
-        >
-          {Object.entries(groupedItems).map(([categoryName, items], categoryIndex) => (
-            <motion.section
-              key={categoryName}
-              variants={itemVariants}
-              className="display-category-section display-category-section-final"
-            >
-              <motion.h2
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: categoryIndex * 0.15, duration: 0.5 }}
-                className="display-category-title display-category-title-final"
-              >
-                <motion.span
-                  animate={{ rotate: [0, 360] }}
-                  transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-                >
-                  <Star className="w-8 h-8 text-amber-300" />
-                </motion.span>
-                {categoryName}
-              </motion.h2>
-
-              <div className="display-items-cards">
-                <AnimatePresence>
-                  {items.map((item, itemIndex) => (
+      {/* Menu Content - 3 Column Layout */}
+      <main className="menu-display-main">
+        <div className="menu-display-grid">
+          {columns.map((column, colIdx) => (
+            <div key={colIdx} className="menu-display-column">
+              {column.map((group) => (
+                <div key={group.category.id} className="menu-category-group">
+                  {/* Category Header */}
+                  <div className="menu-category-header">
+                    <span className="menu-category-name">{group.category.name}</span>
+                    {isPizzaCategory(group.category.id) && (
+                      <div className="menu-category-prices">
+                        <span className="menu-price-label">Norm</span>
+                        <span className="menu-price-label">Perhe</span>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Category Items */}
+                  {group.items.map((item: any, itemIdx: number) => (
                     <motion.div
                       key={item.id}
-                      variants={itemVariants}
-                      initial="hidden"
-                      animate="visible"
-                      transition={{ delay: itemIndex * 0.04 }}
-                      whileHover={{ 
-                        y: -8, 
-                        boxShadow: "0 20px 40px rgba(0,0,0,0.3)",
-                        transition: { duration: 0.2 }
-                      }}
-                      className="display-menu-card"
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: itemIdx * 0.02 }}
+                      className={`menu-item-row ${isPizzaCategory(item.categoryId) ? 'has-perhe' : ''}`}
                     >
-                      {/* Discount Badge */}
-                      {(item.offerPercentage || item.promotionPercentage) && (
-                        <motion.div
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          transition={{ type: "spring", stiffness: 300, delay: 0.2 }}
-                          className="display-card-badge"
-                        >
-                          <Flame className="w-3 h-3" />
-                          <span>-{item.promotionPercentage || item.offerPercentage}%</span>
-                        </motion.div>
-                      )}
-
-                      {/* Card Image */}
-                      {item.imageUrl && (
-                        <div className="display-card-image-wrapper">
-                          <img
-                            src={item.imageUrl}
-                            alt={item.name}
-                            className="display-card-image"
-                          />
-                          <div className="display-card-image-shine" />
-                        </div>
-                      )}
-
-                      {/* Card Content */}
-                      <div className="display-card-content">
-                        <div className="display-card-header">
-                          <h3 className="display-card-name">{item.name}</h3>
-                          <div className="display-card-badges">
-                            {item.isVegetarian && (
-                              <span className="display-micro-badge green">
-                                <Leaf className="w-3 h-3" />
-                              </span>
-                            )}
-                            {item.isVegan && (
-                              <span className="display-micro-badge emerald">
-                                <Heart className="w-3 h-3" />
-                              </span>
-                            )}
-                            {item.isGlutenFree && (
-                              <span className="display-micro-badge amber">
-                                <Wheat className="w-3 h-3" />
-                              </span>
-                            )}
-                          </div>
-                        </div>
-
-                        {item.description && (
-                          <p className="display-card-description">{item.description}</p>
-                        )}
-
-                        <div className="display-card-footer">
-                          {parseFloat(item.price) === 0 ? (
-                            <span className="display-card-price-request">Hinta pyynnöstä</span>
-                          ) : item.promotionalPrice || item.offerPrice ? (
-                            <div className="display-card-price-group">
-                              <span className="display-card-price-sale">
-                                {formatPrice(item.promotionalPrice || item.offerPrice!)}
-                              </span>
-                              <span className="display-card-price-old">
-                                {formatPrice(item.price)}
-                              </span>
-                            </div>
-                          ) : (
-                            <span className="display-card-price">{formatPrice(item.price)}</span>
+                      {/* Item Info */}
+                      <div className="menu-item-info">
+                        <div className="menu-item-name">
+                          {item.name}
+                          {item.isVegetarian && <Leaf className="menu-badge green" />}
+                          {item.isVegan && <Heart className="menu-badge emerald" />}
+                          {item.isGlutenFree && <Wheat className="menu-badge amber" />}
+                          {(item.offerPercentage || item.promotionPercentage) && (
+                            <span className="menu-discount-badge">
+                              <Flame className="w-3 h-3" />
+                              -{item.promotionPercentage || item.offerPercentage}%
+                            </span>
                           )}
                         </div>
+                        {item.description && (
+                          <div className="menu-item-desc">{item.description}</div>
+                        )}
+                      </div>
+
+                      {/* Price Column(s) */}
+                      <div className="menu-item-prices">
+                        {parseFloat(item.price) === 0 ? (
+                          <span className="menu-price-ask">Kysy</span>
+                        ) : item.promotionalPrice || item.offerPrice ? (
+                          <>
+                            <span className="menu-price-offer">
+                              {formatPrice(item.promotionalPrice || item.offerPrice!)}
+                            </span>
+                            {isPizzaCategory(item.categoryId) && (
+                              <span className="menu-price-perhe">
+                                {formatPrice(parseFloat(item.promotionalPrice || item.offerPrice!) + PERHE_EXTRA)}
+                              </span>
+                            )}
+                          </>
+                        ) : (
+                          <>
+                            <span className="menu-price-normal">
+                              {formatPrice(item.price)}
+                            </span>
+                            {isPizzaCategory(item.categoryId) && (
+                              <span className="menu-price-perhe">
+                                {formatPrice(parseFloat(item.price) + PERHE_EXTRA)}
+                              </span>
+                            )}
+                          </>
+                        )}
                       </div>
                     </motion.div>
                   ))}
-                </AnimatePresence>
-              </div>
-            </motion.section>
+                </div>
+              ))}
+            </div>
           ))}
-        </motion.div>
-      </main>
-
-      {/* Footer with Call to Action */}
-      <motion.footer
-        initial={{ y: 100, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.8, delay: 0.5 }}
-        className="display-footer display-footer-final"
-      >
-        <div className="display-footer-content">
-          <motion.div
-            animate={{ 
-              scale: [1, 1.05, 1],
-              opacity: [0.8, 1, 0.8]
-            }}
-            transition={{ duration: 2, repeat: Infinity }}
-            className="display-footer-cta"
-          >
-            <Sparkles className="w-6 h-6" />
-            <span>Tilaa nyt verkosta tai soita meille!</span>
-            <Sparkles className="w-6 h-6" />
-          </motion.div>
-          <div className="display-footer-info">
-            <span>{config?.phone || ""}</span>
-            <span className="display-footer-divider">•</span>
-            <span>{config?.website || "babylon.fi"}</span>
-          </div>
         </div>
-      </motion.footer>
+      </main>
     </div>
   );
 }
