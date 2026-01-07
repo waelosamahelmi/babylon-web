@@ -2018,3 +2018,339 @@
   font-size: 24px;
   color: rgba(255, 255, 255, 0.7);
 }
+
+/* ===== NEW PROMO DISPLAY STYLES (WITH IMAGES) ===== */
+
+/* Logo image for promo */
+.promo-logo-img {
+  height: 70px;
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 0 20px rgba(249, 115, 22, 0.5));
+}
+
+.promo-logo-img-large {
+  height: 120px;
+  width: auto;
+  object-fit: contain;
+  margin-bottom: 32px;
+  filter: drop-shadow(0 0 30px rgba(249, 115, 22, 0.5));
+}
+
+/* New animated background */
+.promo-bg-animated {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.promo-bg-gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #0a0a0f 0%, #1a0a0a 50%, #0f0f18 100%);
+}
+
+.promo-bg-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  animation: promo-orb-pulse 8s ease-in-out infinite;
+}
+
+.promo-bg-orb-1 {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(220, 38, 38, 0.4) 0%, transparent 70%);
+  top: -200px;
+  left: -150px;
+}
+
+.promo-bg-orb-2 {
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(249, 115, 22, 0.3) 0%, transparent 70%);
+  bottom: -150px;
+  right: -100px;
+  animation-delay: -3s;
+}
+
+.promo-bg-orb-3 {
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(234, 179, 8, 0.25) 0%, transparent 70%);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation-delay: -5s;
+}
+
+@keyframes promo-orb-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.2); opacity: 0.8; }
+}
+
+/* New header */
+.promo-header-new {
+  position: relative;
+  z-index: 10;
+  padding: 24px 48px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.7) 0%, transparent 100%);
+}
+
+.promo-header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.promo-header-title {
+  text-align: center;
+  flex: 1;
+}
+
+.promo-header-title h1 {
+  font-size: 42px;
+  font-weight: 900;
+  background: linear-gradient(135deg, #ffffff 0%, #f97316 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0;
+}
+
+.promo-header-title span {
+  font-size: 20px;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 500;
+}
+
+.promo-header-time {
+  font-size: 32px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.8);
+  font-variant-numeric: tabular-nums;
+}
+
+/* New main content area */
+.promo-main-new {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 48px;
+  position: relative;
+  z-index: 5;
+}
+
+/* New promo card with image */
+.promo-card-new {
+  display: flex;
+  width: 100%;
+  max-width: 1000px;
+  height: 500px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+  backdrop-filter: blur(20px);
+  border: 2px solid rgba(249, 115, 22, 0.3);
+  border-radius: 32px;
+  overflow: hidden;
+  box-shadow: 
+    0 0 80px rgba(249, 115, 22, 0.2),
+    inset 0 0 60px rgba(249, 115, 22, 0.03);
+}
+
+/* Image section */
+.promo-image-section {
+  position: relative;
+  width: 45%;
+  overflow: hidden;
+}
+
+.promo-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.promo-image-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.2) 0%, rgba(220, 38, 38, 0.1) 100%);
+}
+
+.promo-image-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 50%, rgba(0, 0, 0, 0.6) 100%);
+  pointer-events: none;
+}
+
+/* New discount badge */
+.promo-discount-badge-new {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #dc2626 0%, #f97316 100%);
+  border-radius: 100px;
+  box-shadow: 0 8px 32px rgba(220, 38, 38, 0.5);
+}
+
+.promo-discount-badge-new span {
+  font-size: 32px;
+  font-weight: 900;
+  color: #ffffff;
+}
+
+/* Type badge */
+.promo-type-badge {
+  position: absolute;
+  bottom: 24px;
+  left: 24px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 100px;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.promo-type-badge.offer {
+  background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%);
+  color: #ffffff;
+}
+
+.promo-type-badge.promotion {
+  background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+  color: #ffffff;
+}
+
+/* Content section */
+.promo-content-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 40px 48px;
+}
+
+.promo-item-title {
+  font-size: 48px;
+  font-weight: 900;
+  color: #ffffff;
+  margin: 0 0 16px 0;
+  line-height: 1.1;
+  text-shadow: 0 0 30px rgba(249, 115, 22, 0.3);
+}
+
+.promo-item-desc {
+  font-size: 22px;
+  color: rgba(255, 255, 255, 0.75);
+  margin: 0 0 24px 0;
+  line-height: 1.4;
+}
+
+/* Price display for offers */
+.promo-price-display {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.promo-original-price {
+  font-size: 28px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.5);
+  text-decoration: line-through;
+}
+
+.promo-arrow {
+  font-size: 24px;
+  color: #f97316;
+}
+
+.promo-offer-price {
+  font-size: 42px;
+  font-weight: 900;
+  color: #22c55e;
+  text-shadow: 0 0 20px rgba(34, 197, 94, 0.4);
+}
+
+/* Valid until */
+.promo-valid-until {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 32px;
+}
+
+.promo-valid-until svg {
+  color: #f97316;
+}
+
+/* New CTA */
+.promo-cta-new {
+  margin-top: auto;
+}
+
+.promo-cta-button-new {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 48px;
+  background: linear-gradient(135deg, #dc2626 0%, #f97316 100%);
+  border-radius: 100px;
+  font-size: 26px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+/* New progress indicators */
+.promo-progress-new {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  padding: 16px;
+  position: relative;
+  z-index: 10;
+}
+
+.promo-progress-item {
+  height: 8px;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+/* New footer */
+.promo-footer-new {
+  position: relative;
+  z-index: 10;
+  padding: 20px 48px;
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.6) 0%, transparent 100%);
+}
+
+.promo-footer-new .promo-footer-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-size: 20px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.promo-footer-divider {
+  color: rgba(255, 255, 255, 0.3);
+}
