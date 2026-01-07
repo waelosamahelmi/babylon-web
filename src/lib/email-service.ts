@@ -28,6 +28,7 @@ export interface OrderEmailData {
   subtotal: number;
   deliveryFee: number;
   smallOrderFee?: number;
+  serviceFee?: number;
   totalAmount: number;
   orderType: 'delivery' | 'pickup' | 'dine-in';
   deliveryAddress?: string;
@@ -64,6 +65,7 @@ export function generateOrderConfirmationHTML(data: OrderEmailData, language: 'f
       subtotal: 'Välisumma',
       deliveryFee: 'Toimituskulut',
       smallOrderFee: 'Pienkäsittelymaksu',
+      serviceFee: 'Palvelumaksu',
       total: 'Yhteensä',
       deliveryAddress: 'Toimitusosoite',
       branch: 'Ravintola',
@@ -92,6 +94,7 @@ export function generateOrderConfirmationHTML(data: OrderEmailData, language: 'f
       subtotal: 'Subtotal',
       deliveryFee: 'Delivery Fee',
       smallOrderFee: 'Small Order Fee',
+      serviceFee: 'Service Fee',
       total: 'Total',
       deliveryAddress: 'Delivery Address',
       branch: 'Restaurant',
@@ -318,6 +321,12 @@ export function generateOrderConfirmationHTML(data: OrderEmailData, language: 'f
           <tr>
             <td class="summary-label">${text.smallOrderFee}:</td>
             <td>${data.smallOrderFee.toFixed(2)} €</td>
+          </tr>
+        ` : ''}
+        ${data.serviceFee && data.serviceFee > 0 ? `
+          <tr>
+            <td class="summary-label">${text.serviceFee}:</td>
+            <td>${data.serviceFee.toFixed(2)} €</td>
           </tr>
         ` : ''}
         <tr>

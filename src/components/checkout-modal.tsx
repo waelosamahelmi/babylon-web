@@ -627,6 +627,7 @@ export function CheckoutModal({ isOpen, onClose, onBack, onOrderSuccess }: Check
         subtotal: totalPrice.toFixed(2),
         deliveryFee: deliveryFee.toFixed(2),
         smallOrderFee: smallOrderFee.toFixed(2),
+        serviceFee: serviceFee.toFixed(2),
         couponDiscount: couponDiscount.toFixed(2),
         couponCode: appliedCoupon?.code || null,
         couponId: appliedCoupon?.id || null,

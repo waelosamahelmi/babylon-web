@@ -52,30 +52,16 @@ export default function OrderSuccess() {
 
       if (redirectStatus === 'succeeded' && paymentIntentId) {
         try {
-          // Look up the existing order by payment_intent_id using backend API
-          // Use API instead of Supabase to avoid RLS permission issues
+          // Look up the existing order - prioritize sessionStorage backup due to potential timing issues
           let order = null;
           
           console.log('🔍 Looking for order with payment_intent:', paymentIntentId);
           
           const apiUrl = import.meta.env.VITE_API_URL || 'https://babylon-admin.fly.dev';
           
-          try {
-            const response = await fetch(`${apiUrl}/api/orders/by-payment-intent/${paymentIntentId}`);
-            if (response.ok) {
-              order = await response.json();
-              console.log('✅ Found order by payment intent ID:', order.id);
-            } else {
-              console.log('❌ Order not found by payment intent, trying backup');
-            }
-          } catch (apiError) {
-            console.error('API error:', apiError);
-          }
-          
-          // Fallback: try backup order ID from sessionStorage
-          if (!order && backupOrderId) {
-            // Fallback: find by backup order ID from sessionStorage
-            console.log('Order not found by payment intent, trying backup order ID:', backupOrderId);
+          // Try backup order ID from sessionStorage FIRST (more reliable)
+          if (backupOrderId) {
+            console.log('Trying backup order ID first:', backupOrderId);
             
             try {
               const response = await fetch(`${apiUrl}/api/orders/${backupOrderId}`);
@@ -85,6 +71,21 @@ export default function OrderSuccess() {
               }
             } catch (apiError) {
               console.error('Backup API error:', apiError);
+            }
+          }
+          
+          // Fallback: try payment intent lookup
+          if (!order) {
+            try {
+              const response = await fetch(`${apiUrl}/api/orders/by-payment-intent/${paymentIntentId}`);
+              if (response.ok) {
+                order = await response.json();
+                console.log('✅ Found order by payment intent ID:', order.id);
+              } else {
+                console.log('❌ Order not found by payment intent');
+              }
+            } catch (apiError) {
+              console.error('Payment intent API error:', apiError);
             }
           }
 
@@ -150,6 +151,7 @@ export default function OrderSuccess() {
                     subtotal: parseFloat(order.subtotal),
                     deliveryFee: parseFloat(order.delivery_fee || '0'),
                     smallOrderFee: order.small_order_fee ? parseFloat(order.small_order_fee) : undefined,
+                    serviceFee: order.service_fee ? parseFloat(order.service_fee) : undefined,
                     totalAmount: parseFloat(order.total_amount),
                     orderType: order.order_type as 'delivery' | 'pickup' | 'dine-in',
                     deliveryAddress: order.delivery_address || undefined,
