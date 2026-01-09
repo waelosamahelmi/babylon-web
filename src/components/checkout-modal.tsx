@@ -29,6 +29,7 @@ import { createPaymentIntent } from '@/lib/stripe-api';
 import { StripePaymentForm } from '@/components/stripe-payment-form';
 import { PaymentMethodIcon } from '@/components/payment-method-icons';
 import { supabase } from '@/lib/supabase';
+import { calculateDistance } from '@/lib/map-utils';
 
 interface CheckoutModalProps {
   isOpen: boolean;
@@ -227,7 +228,53 @@ export function CheckoutModal({ isOpen, onClose, onBack, onOrderSuccess }: Check
     }
   }, [branchLocation]);
 
-  const handleAddressChange = (addressData: {
+  // Helper function to find nearest branch based on coordinates
+  const findNearestBranch = async (address: string) => {
+    if (activeBranches.length === 0) return null;
+    
+    try {
+      // Geocode the address to get coordinates
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1&countrycodes=fi`
+      );
+      const data = await response.json();
+      
+      if (data && data.length > 0) {
+        const { lat, lon } = data[0];
+        const customerLat = parseFloat(lat);
+        const customerLng = parseFloat(lon);
+        
+        console.log('Customer coordinates:', customerLat, customerLng);
+        
+        // Calculate distance to all branches and find the nearest
+        let nearestBranch = null;
+        let nearestDistance = Infinity;
+        
+        for (const branch of activeBranches) {
+          const branchLat = parseFloat(branch.latitude);
+          const branchLng = parseFloat(branch.longitude);
+          
+          if (!isNaN(branchLat) && !isNaN(branchLng)) {
+            const distance = calculateDistance(customerLat, customerLng, branchLat, branchLng);
+            console.log(`Distance to ${branch.name} (${branch.city}): ${distance.toFixed(2)} km`);
+            
+            if (distance < nearestDistance) {
+              nearestDistance = distance;
+              nearestBranch = branch;
+            }
+          }
+        }
+        
+        return nearestBranch;
+      }
+    } catch (error) {
+      console.error('Error geocoding address:', error);
+    }
+    
+    return null;
+  };
+
+  const handleAddressChange = async (addressData: {
     streetAddress: string;
     postalCode: string;
     city: string;
@@ -241,20 +288,32 @@ export function CheckoutModal({ isOpen, onClose, onBack, onOrderSuccess }: Check
       deliveryAddress: addressData.fullAddress
     }));
     
-    // Auto-detect branch based on city
+    // Auto-detect branch based on city first, then use distance as fallback
     if (addressData.city && activeBranches.length > 0) {
       console.log('Detecting branch for city:', addressData.city);
       console.log('Available branches:', activeBranches.map((b: any) => ({ id: b.id, city: b.city })));
+      
+      // First try exact city match
       const matchingBranch = activeBranches.find(
         (branch: any) => branch.city.toLowerCase() === addressData.city.toLowerCase()
       );
+      
       if (matchingBranch) {
-        console.log('Found matching branch:', matchingBranch.id, matchingBranch.name, matchingBranch.city);
+        console.log('Found matching branch by city:', matchingBranch.id, matchingBranch.name, matchingBranch.city);
         setFormData(prev => ({ ...prev, branchId: matchingBranch.id }));
       } else {
-        console.log('No match found, using first branch:', activeBranches[0].id);
-        // Default to first branch if no match
-        setFormData(prev => ({ ...prev, branchId: activeBranches[0].id }));
+        // No exact city match - find nearest branch by distance
+        console.log('No exact city match, finding nearest branch by distance...');
+        const nearestBranch = await findNearestBranch(addressData.fullAddress);
+        
+        if (nearestBranch) {
+          console.log('Found nearest branch:', nearestBranch.id, nearestBranch.name, nearestBranch.city);
+          setFormData(prev => ({ ...prev, branchId: nearestBranch.id }));
+        } else {
+          // Fallback to first branch if geocoding fails
+          console.log('Geocoding failed, using first branch:', activeBranches[0].id);
+          setFormData(prev => ({ ...prev, branchId: activeBranches[0].id }));
+        }
       }
     }
   };
