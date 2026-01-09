@@ -330,24 +330,28 @@
 
     /* Night menu styles - bigger text due to fewer categories */
     body.night-menu .menu-category-name {
-      font-size: 18px;
+      font-size: 15px;
     }
     body.night-menu .menu-item-name {
-      font-size: 18px;
+      font-size: 15px;
     }
     body.night-menu .menu-item-desc {
-      font-size: 14px;
+      font-size: 12px;
     }
     body.night-menu .menu-price-normal,
     body.night-menu .menu-price-perhe,
     body.night-menu .menu-price-offer {
-      font-size: 18px;
+      font-size: 15px;
     }
     body.night-menu .menu-item-row {
-      padding: 5px 10px;
+      padding: 3px 10px;
     }
     body.night-menu .menu-toppings-list {
-      font-size: 13px;
+      font-size: 11px;
+    }
+    body.night-menu .menu-toppings-section {
+      margin-top: 5px;
+      padding: 5px 10px;
     }
   </style>
 </head>
@@ -388,7 +392,7 @@
     // Night menu settings (after 10 PM)
     const NIGHT_MENU_START_HOUR = 22; // 10 PM
     const NIGHT_MENU_PRICE_INCREASE = 1.5;
-    const NIGHT_MENU_CATEGORIES = ['PIZZAT', 'RULLAT', 'PITAT', 'KEBAB', 'KANA FILE', 'KANA DONER', 'JUOMAT', 'BAKLAVA'];
+    const NIGHT_MENU_CATEGORIES = ['PIZZAT', 'RULLAT', 'PITAT', 'KEBAB', 'KANA FILE', 'KANA DONER', 'JUOMAT', 'BAKLAVA', 'LISÄTÄYTTEET'];
 
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     

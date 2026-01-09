@@ -37,49 +37,52 @@
       height: 1920px;
       position: relative;
       overflow: hidden;
-      background: #1a0a0a;
+      background: #2d0a0a;
+      background: -webkit-linear-gradient(160deg, #1a0505 0%, #2d0a0a 25%, #3d1010 50%, #2d0a0a 75%, #1a0505 100%);
+      background: -moz-linear-gradient(160deg, #1a0505 0%, #2d0a0a 25%, #3d1010 50%, #2d0a0a 75%, #1a0505 100%);
+      background: linear-gradient(160deg, #1a0505 0%, #2d0a0a 25%, #3d1010 50%, #2d0a0a 75%, #1a0505 100%);
     }
 
     .bg-glow {
       position: absolute;
-      width: 500px;
-      height: 500px;
-      top: -150px;
-      left: -100px;
+      width: 700px;
+      height: 700px;
+      top: -200px;
+      left: -150px;
       background: #dc2626;
-      opacity: 0.2;
+      opacity: 0.4;
       -webkit-border-radius: 50%;
       -moz-border-radius: 50%;
       border-radius: 50%;
-      -webkit-filter: blur(80px);
-      filter: blur(80px);
-      -webkit-animation: glow-pulse 8s ease-in-out infinite;
-      -moz-animation: glow-pulse 8s ease-in-out infinite;
-      animation: glow-pulse 8s ease-in-out infinite;
+      -webkit-filter: blur(100px);
+      filter: blur(100px);
     }
 
     .bg-glow-2 {
       top: auto;
       left: auto;
-      bottom: -100px;
-      right: -100px;
+      bottom: -150px;
+      right: -150px;
       background: #ea580c;
-      -webkit-animation-delay: 2s;
-      -moz-animation-delay: 2s;
-      animation-delay: 2s;
+      width: 600px;
+      height: 600px;
     }
 
-    @-webkit-keyframes glow-pulse {
-      0%, 100% { opacity: 0.2; -webkit-transform: scale(1); }
-      50% { opacity: 0.35; -webkit-transform: scale(1.15); }
-    }
-    @-moz-keyframes glow-pulse {
-      0%, 100% { opacity: 0.2; -moz-transform: scale(1); }
-      50% { opacity: 0.35; -moz-transform: scale(1.15); }
-    }
-    @keyframes glow-pulse {
-      0%, 100% { opacity: 0.2; transform: scale(1); }
-      50% { opacity: 0.35; transform: scale(1.15); }
+    .bg-glow-3 {
+      position: absolute;
+      width: 500px;
+      height: 500px;
+      top: 50%;
+      left: 50%;
+      margin-top: -250px;
+      margin-left: -250px;
+      background: #f59e0b;
+      opacity: 0.25;
+      -webkit-border-radius: 50%;
+      -moz-border-radius: 50%;
+      border-radius: 50%;
+      -webkit-filter: blur(120px);
+      filter: blur(120px);
     }
 
     .header {
@@ -92,22 +95,6 @@
     .logo-img {
       width: 350px;
       height: 350px;
-      -webkit-animation: logo-glow 3s ease-in-out infinite;
-      -moz-animation: logo-glow 3s ease-in-out infinite;
-      animation: logo-glow 3s ease-in-out infinite;
-    }
-
-    @-webkit-keyframes logo-glow {
-      0%, 100% { -webkit-filter: drop-shadow(0 0 40px rgba(220, 38, 38, 0.6)); }
-      50% { -webkit-filter: drop-shadow(0 0 70px rgba(220, 38, 38, 0.9)); }
-    }
-    @-moz-keyframes logo-glow {
-      0%, 100% { filter: drop-shadow(0 0 40px rgba(220, 38, 38, 0.6)); }
-      50% { filter: drop-shadow(0 0 70px rgba(220, 38, 38, 0.9)); }
-    }
-    @keyframes logo-glow {
-      0%, 100% { filter: drop-shadow(0 0 40px rgba(220, 38, 38, 0.6)); }
-      50% { filter: drop-shadow(0 0 70px rgba(220, 38, 38, 0.9)); }
     }
 
     .main-content {
@@ -140,43 +127,6 @@
       -moz-border-radius: 50%;
       border-radius: 50%;
       border: 8px solid #dc2626;
-      -webkit-box-shadow: 0 0 50px rgba(220, 38, 38, 0.5);
-      -moz-box-shadow: 0 0 50px rgba(220, 38, 38, 0.5);
-      box-shadow: 0 0 50px rgba(220, 38, 38, 0.5);
-    }
-
-    .image-border {
-      position: absolute;
-      top: -12px;
-      left: -12px;
-      right: -12px;
-      bottom: -12px;
-      -webkit-border-radius: 50%;
-      -moz-border-radius: 50%;
-      border-radius: 50%;
-      border: 4px solid #f59e0b;
-      -webkit-animation: border-rotate 6s linear infinite;
-      -moz-animation: border-rotate 6s linear infinite;
-      animation: border-rotate 6s linear infinite;
-    }
-
-    @-webkit-keyframes border-rotate {
-      0% { -webkit-transform: rotate(0deg); border-color: #dc2626; }
-      33% { border-color: #ea580c; }
-      66% { border-color: #f59e0b; }
-      100% { -webkit-transform: rotate(360deg); border-color: #dc2626; }
-    }
-    @-moz-keyframes border-rotate {
-      0% { -moz-transform: rotate(0deg); border-color: #dc2626; }
-      33% { border-color: #ea580c; }
-      66% { border-color: #f59e0b; }
-      100% { -moz-transform: rotate(360deg); border-color: #dc2626; }
-    }
-    @keyframes border-rotate {
-      0% { transform: rotate(0deg); border-color: #dc2626; }
-      33% { border-color: #ea580c; }
-      66% { border-color: #f59e0b; }
-      100% { transform: rotate(360deg); border-color: #dc2626; }
     }
 
     .discount-badge {
@@ -191,25 +141,6 @@
       -webkit-border-radius: 15px;
       -moz-border-radius: 15px;
       border-radius: 15px;
-      -webkit-box-shadow: 0 8px 30px rgba(220, 38, 38, 0.6);
-      -moz-box-shadow: 0 8px 30px rgba(220, 38, 38, 0.6);
-      box-shadow: 0 8px 30px rgba(220, 38, 38, 0.6);
-      -webkit-animation: badge-bounce 2s ease-in-out infinite;
-      -moz-animation: badge-bounce 2s ease-in-out infinite;
-      animation: badge-bounce 2s ease-in-out infinite;
-    }
-
-    @-webkit-keyframes badge-bounce {
-      0%, 100% { -webkit-transform: scale(1) rotate(-3deg); }
-      50% { -webkit-transform: scale(1.1) rotate(3deg); }
-    }
-    @-moz-keyframes badge-bounce {
-      0%, 100% { -moz-transform: scale(1) rotate(-3deg); }
-      50% { -moz-transform: scale(1.1) rotate(3deg); }
-    }
-    @keyframes badge-bounce {
-      0%, 100% { transform: scale(1) rotate(-3deg); }
-      50% { transform: scale(1.1) rotate(3deg); }
     }
 
     .promo-info {
@@ -258,32 +189,12 @@
       -moz-border-radius: 15px;
       border-radius: 15px;
       margin-top: 20px;
-      -webkit-box-shadow: 0 10px 40px rgba(220, 38, 38, 0.6);
-      -moz-box-shadow: 0 10px 40px rgba(220, 38, 38, 0.6);
-      box-shadow: 0 10px 40px rgba(220, 38, 38, 0.6);
-      -webkit-animation: price-pulse 2s ease-in-out infinite;
-      -moz-animation: price-pulse 2s ease-in-out infinite;
-      animation: price-pulse 2s ease-in-out infinite;
-    }
-
-    @-webkit-keyframes price-pulse {
-      0%, 100% { -webkit-transform: scale(1); }
-      50% { -webkit-transform: scale(1.05); }
-    }
-    @-moz-keyframes price-pulse {
-      0%, 100% { -moz-transform: scale(1); }
-      50% { -moz-transform: scale(1.05); }
-    }
-    @keyframes price-pulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.05); }
     }
 
     .new-price {
       font-size: 90px;
       font-weight: bold;
       color: #fff;
-      text-shadow: 0 3px 0 rgba(0,0,0,0.3);
     }
 
     .promo-badge-big {
@@ -294,12 +205,6 @@
       -moz-border-radius: 20px;
       border-radius: 20px;
       text-align: center;
-      -webkit-box-shadow: 0 12px 40px rgba(220, 38, 38, 0.6);
-      -moz-box-shadow: 0 12px 40px rgba(220, 38, 38, 0.6);
-      box-shadow: 0 12px 40px rgba(220, 38, 38, 0.6);
-      -webkit-animation: price-pulse 2s ease-in-out infinite;
-      -moz-animation: price-pulse 2s ease-in-out infinite;
-      animation: price-pulse 2s ease-in-out infinite;
     }
 
     .promo-badge-value {
@@ -333,22 +238,6 @@
       color: #fbbf24;
       text-transform: uppercase;
       letter-spacing: 3px;
-      -webkit-animation: cta-glow 2s ease-in-out infinite;
-      -moz-animation: cta-glow 2s ease-in-out infinite;
-      animation: cta-glow 2s ease-in-out infinite;
-    }
-
-    @-webkit-keyframes cta-glow {
-      0%, 100% { text-shadow: 0 0 10px rgba(251, 191, 36, 0.4); opacity: 0.85; }
-      50% { text-shadow: 0 0 20px rgba(251, 191, 36, 0.7); opacity: 1; }
-    }
-    @-moz-keyframes cta-glow {
-      0%, 100% { text-shadow: 0 0 10px rgba(251, 191, 36, 0.4); opacity: 0.85; }
-      50% { text-shadow: 0 0 20px rgba(251, 191, 36, 0.7); opacity: 1; }
-    }
-    @keyframes cta-glow {
-      0%, 100% { text-shadow: 0 0 10px rgba(251, 191, 36, 0.4); opacity: 0.85; }
-      50% { text-shadow: 0 0 20px rgba(251, 191, 36, 0.7); opacity: 1; }
     }
 
     .progress-dots {
@@ -402,6 +291,107 @@
       font-size: 32px;
       color: #888;
     }
+
+    /* Legacy-compatible animations */
+    @-webkit-keyframes pulse {
+      0%, 100% { -webkit-transform: scale(1); opacity: 1; }
+      50% { -webkit-transform: scale(1.05); opacity: 0.9; }
+    }
+    @-moz-keyframes pulse {
+      0%, 100% { -moz-transform: scale(1); opacity: 1; }
+      50% { -moz-transform: scale(1.05); opacity: 0.9; }
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.05); opacity: 0.9; }
+    }
+
+    @-webkit-keyframes glow {
+      0%, 100% { opacity: 0.2; }
+      50% { opacity: 0.35; }
+    }
+    @-moz-keyframes glow {
+      0%, 100% { opacity: 0.2; }
+      50% { opacity: 0.35; }
+    }
+    @keyframes glow {
+      0%, 100% { opacity: 0.2; }
+      50% { opacity: 0.35; }
+    }
+
+    @-webkit-keyframes bounce {
+      0%, 100% { -webkit-transform: translateY(0); }
+      50% { -webkit-transform: translateY(-10px); }
+    }
+    @-moz-keyframes bounce {
+      0%, 100% { -moz-transform: translateY(0); }
+      50% { -moz-transform: translateY(-10px); }
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    @-webkit-keyframes wiggle {
+      0%, 100% { -webkit-transform: rotate(-3deg); }
+      50% { -webkit-transform: rotate(3deg); }
+    }
+    @-moz-keyframes wiggle {
+      0%, 100% { -moz-transform: rotate(-3deg); }
+      50% { -moz-transform: rotate(3deg); }
+    }
+    @keyframes wiggle {
+      0%, 100% { transform: rotate(-3deg); }
+      50% { transform: rotate(3deg); }
+    }
+
+    .bg-glow {
+      -webkit-animation: glow 4s ease-in-out infinite;
+      -moz-animation: glow 4s ease-in-out infinite;
+      animation: glow 4s ease-in-out infinite;
+    }
+
+    .bg-glow-2 {
+      -webkit-animation-delay: 2s;
+      -moz-animation-delay: 2s;
+      animation-delay: 2s;
+    }
+
+    .logo-img {
+      -webkit-animation: pulse 3s ease-in-out infinite;
+      -moz-animation: pulse 3s ease-in-out infinite;
+      animation: pulse 3s ease-in-out infinite;
+    }
+
+    .discount-badge {
+      -webkit-animation: wiggle 1s ease-in-out infinite;
+      -moz-animation: wiggle 1s ease-in-out infinite;
+      animation: wiggle 1s ease-in-out infinite;
+    }
+
+    .new-price-wrapper {
+      -webkit-animation: pulse 2s ease-in-out infinite;
+      -moz-animation: pulse 2s ease-in-out infinite;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .promo-badge-big {
+      -webkit-animation: pulse 2s ease-in-out infinite;
+      -moz-animation: pulse 2s ease-in-out infinite;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .promo-card.active .promo-image {
+      -webkit-animation: pulse 4s ease-in-out infinite;
+      -moz-animation: pulse 4s ease-in-out infinite;
+      animation: pulse 4s ease-in-out infinite;
+    }
+
+    .cta-text {
+      -webkit-animation: pulse 2s ease-in-out infinite;
+      -moz-animation: pulse 2s ease-in-out infinite;
+      animation: pulse 2s ease-in-out infinite;
+    }
   </style>
 </head>
 <body>
@@ -409,6 +399,7 @@
     <div class="promo-display">
       <div class="bg-glow"></div>
       <div class="bg-glow bg-glow-2"></div>
+      <div class="bg-glow-3"></div>
 
       <div class="header">
         <img src="https://ravintolababylon.fi/logo.png" alt="Logo" class="logo-img">
@@ -435,7 +426,6 @@
     var promotions = [];
     var currentIndex = 0;
     var rotationTimer = null;
-    var categoryImages = {};
 
     function formatPrice(price) {
       return parseFloat(price).toFixed(2) + '€';
@@ -480,107 +470,105 @@
     }
 
     function fetchPromotions() {
-      // Fetch menu items with offers
-      makeRequest('GET', 'menu_items?is_available=eq.true&or=(offer_price.not.is.null,offer_percentage.gt.0)&select=*', function(err, offerItems) {
+      // Fetch menu items with offers - simpler query for legacy compatibility
+      makeRequest('GET', 'menu_items?is_available=eq.true&select=*', function(err, allMenuItems) {
         if (err) {
-          console.log('Error fetching offers:', err);
-          offerItems = [];
+          console.log('Error fetching menu items:', err);
+          allMenuItems = [];
         }
 
-        // Fetch all items for fallback images
-        makeRequest('GET', 'menu_items?is_available=eq.true&image_url=not.is.null&select=category_id,image_url', function(err2, allItems) {
-          if (err2) {
-            console.log('Error fetching all items:', err2);
-            allItems = [];
+        // Filter offer items manually (more compatible than complex OR queries)
+        var offerItems = [];
+        for (var x = 0; x < allMenuItems.length; x++) {
+          var mi = allMenuItems[x];
+          if (mi.offer_price || (mi.offer_percentage && mi.offer_percentage > 0)) {
+            offerItems.push(mi);
+          }
+        }
+
+        // Filter items with images for fallbacks
+        var allItems = [];
+        for (var y = 0; y < allMenuItems.length; y++) {
+          if (allMenuItems[y].image_url && allMenuItems[y].category_id) {
+            allItems.push(allMenuItems[y]);
+          }
+        }
+
+        // Build category image map
+        var categoryImages = {};
+        for (var i = 0; i < allItems.length; i++) {
+          var item = allItems[i];
+          if (item.image_url && item.category_id) {
+            if (!categoryImages[item.category_id]) {
+              categoryImages[item.category_id] = [];
+            }
+            categoryImages[item.category_id].push(item.image_url);
+          }
+        }
+
+        function getFallbackImage(categoryId) {
+          var images = categoryImages[categoryId];
+          if (images && images.length > 0) {
+            return images[Math.floor(Math.random() * images.length)];
+          }
+          var allImagesArr = [];
+          for (var key in categoryImages) {
+            if (categoryImages.hasOwnProperty(key)) {
+              for (var z = 0; z < categoryImages[key].length; z++) {
+                allImagesArr.push(categoryImages[key][z]);
+              }
+            }
+          }
+          if (allImagesArr.length > 0) {
+            return allImagesArr[Math.floor(Math.random() * allImagesArr.length)];
+          }
+          return 'https://placehold.co/500x500/1a0a0a/dc2626?text=Tarjous';
+        }
+
+        // Fetch promotions - simpler query
+        makeRequest('GET', 'promotions?is_active=eq.true&select=*', function(err3, allPromos) {
+          if (err3) {
+            console.log('Error fetching promotions:', err3);
+            allPromos = [];
           }
 
-          // Build category image map (global)
-          categoryImages = {};
-          for (var i = 0; i < allItems.length; i++) {
-            var item = allItems[i];
-            if (item.image_url && item.category_id) {
-              if (!categoryImages[item.category_id]) {
-                categoryImages[item.category_id] = [];
-              }
-              categoryImages[item.category_id].push(item.image_url);
+          // Filter promotions by date manually
+          var now = new Date();
+          var promos = [];
+          for (var p = 0; p < allPromos.length; p++) {
+            var pr = allPromos[p];
+            var startOk = !pr.start_date || new Date(pr.start_date) <= now;
+            var endOk = !pr.end_date || new Date(pr.end_date) >= now;
+            if (startOk && endOk) {
+              promos.push(pr);
             }
           }
 
-          function getCategoryImage(categoryId) {
-            // Always get a random image from the category
-            var images = categoryImages[categoryId];
-            if (images && images.length > 0) {
-              return images[Math.floor(Math.random() * images.length)];
-            }
-            // Fallback to any random image
-            var allImages = [];
-            for (var key in categoryImages) {
-              allImages = allImages.concat(categoryImages[key]);
-            }
-            if (allImages.length > 0) {
-              return allImages[Math.floor(Math.random() * allImages.length)];
-            }
-            return 'https://placehold.co/500x500/1a0a0a/dc2626?text=🍕';
-          }
+          promotions = [];
 
-          // Fetch promotions
-          var now = new Date().toISOString();
-          makeRequest('GET', 'promotions?is_active=eq.true&start_date=lte.' + now + '&end_date=gte.' + now + '&select=*', function(err3, promos) {
-            if (err3) {
-              console.log('Error fetching promotions:', err3);
-              promos = [];
+          // Process offer items only (no category promotions)
+          for (var j = 0; j < offerItems.length; j++) {
+            var oItem = offerItems[j];
+            var discountPercent = oItem.offer_percentage;
+            if (!discountPercent && oItem.offer_price && oItem.price) {
+              discountPercent = Math.round((1 - oItem.offer_price / oItem.price) * 100);
             }
-
-            promotions = [];
-
-            // Process offer items
-            for (var j = 0; j < offerItems.length; j++) {
-              var item = offerItems[j];
-              var discountPercent = item.offer_percentage;
-              if (!discountPercent && item.offer_price && item.price) {
-                discountPercent = Math.round((1 - item.offer_price / item.price) * 100);
-              }
-              
-              if (item.offer_price || discountPercent > 0) {
-                promotions.push({
-                  type: 'offer',
-                  id: item.id,
-                  name: item.name,
-                  description: item.description,
-                  image: item.image_url || getCategoryImage(item.category_id),
-                  originalPrice: item.price,
-                  offerPrice: item.offer_price || (item.price * (1 - discountPercent / 100)),
-                  discountPercent: discountPercent,
-                  categoryId: item.category_id
-                });
-              }
-            }
-
-            // Process promotions - always use a random category image
-            for (var k = 0; k < promos.length; k++) {
-              var promo = promos[k];
-              var discountDisplay = null;
-              if (promo.discount_type === 'percentage') {
-                discountDisplay = promo.discount_value;
-              }
-              
+            
+            if (oItem.offer_price || discountPercent > 0) {
               promotions.push({
-                type: 'promotion',
-                id: promo.id,
-                name: promo.name,
-                description: promo.description,
-                image: getCategoryImage(promo.category_id),
-                discountPercent: discountDisplay,
-                discountType: promo.discount_type,
-                discountValue: promo.discount_value,
-                originalPrice: null,
-                offerPrice: promo.discount_type === 'fixed' ? promo.discount_value : null,
-                categoryId: promo.category_id
+                type: 'offer',
+                id: oItem.id,
+                name: oItem.name,
+                description: oItem.description,
+                image: oItem.image_url || getFallbackImage(oItem.category_id),
+                originalPrice: oItem.price,
+                offerPrice: oItem.offer_price || (oItem.price * (1 - discountPercent / 100)),
+                discountPercent: discountPercent
               });
             }
+          }
 
-            renderPromotions();
-          });
+          renderPromotions();
         });
       });
     }
@@ -639,7 +627,6 @@
 
         html += '<div class="promo-card" data-index="' + i + '">' +
           '<div class="image-wrapper">' +
-          '<div class="image-border"></div>' +
           '<img src="' + escapeHtml(promo.image) + '" alt="' + escapeHtml(promo.name) + '" class="promo-image" onerror="this.src=\'https://placehold.co/500x500/1a0a0a/dc2626?text=🍕\'">' +
           discountBadge +
           '</div>' +

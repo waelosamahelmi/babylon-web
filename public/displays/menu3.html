@@ -322,6 +322,36 @@
     body.night-menu .menu-item-row {
       padding: 5px 10px;
     }
+
+    /* Empty state - big centered logo */
+    .empty-state {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .empty-state-logo {
+      width: 550px;
+      height: 550px;
+      object-fit: contain;
+      filter: drop-shadow(0 0 60px rgba(251, 191, 36, 0.6));
+      animation: logo-pulse 3s ease-in-out infinite;
+    }
+    @keyframes logo-pulse {
+      0%, 100% { transform: scale(1); filter: drop-shadow(0 0 60px rgba(251, 191, 36, 0.6)); }
+      50% { transform: scale(1.05); filter: drop-shadow(0 0 80px rgba(251, 191, 36, 0.8)); }
+    }
+    .empty-state-text {
+      margin-top: 30px;
+      font-size: 36px;
+      font-weight: 700;
+      color: #fbbf24;
+      text-shadow: 0 0 30px rgba(251, 191, 36, 0.5);
+    }
   </style>
 </head>
 <body>
@@ -458,6 +488,15 @@
     function renderMenu(groups, nightMode = false) {
       const grid = document.getElementById('menu-grid');
       let html = '';
+
+      // If no groups (empty page), show big centered logo
+      if (!groups || groups.length === 0) {
+        html = '<div class="empty-state">';
+        html += '<img src="https://ravintolababylon.fi/logo.png" alt="Babylon" class="empty-state-logo">';
+        html += '</div>';
+        grid.innerHTML = html;
+        return;
+      }
 
       groups.forEach(group => {
         html += '<div class="menu-category-group">';

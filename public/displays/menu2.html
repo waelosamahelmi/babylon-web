@@ -357,6 +357,9 @@
     const PIZZA_CATEGORY_ID = 1;
     const PERHE_EXTRA = 8;
     
+    // Categories to exclude from display
+    const EXCLUDED_CATEGORIES = ['SISÄÄNLEIVOTUT KEBAB'];
+    
     // Night menu settings (after 10 PM)
     const NIGHT_MENU_START_HOUR = 22;
     const NIGHT_MENU_PRICE_INCREASE = 1.5;
@@ -409,9 +412,12 @@
         }
         
         let filteredCategories = categories;
+        
         if (nightMode) {
+          // Night menu: filter to allowed categories and exclude specific ones
           filteredCategories = categories.filter(cat => 
-            NIGHT_MENU_CATEGORIES.some(nc => cat.name.toUpperCase().includes(nc.toUpperCase()))
+            NIGHT_MENU_CATEGORIES.some(nc => cat.name.toUpperCase().includes(nc.toUpperCase())) &&
+            !EXCLUDED_CATEGORIES.some(exc => cat.name.toUpperCase().includes(exc.toUpperCase()))
           );
         }
 
