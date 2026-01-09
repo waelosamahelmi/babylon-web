@@ -120,19 +120,6 @@ export default function MenuDisplay3() {
     return pages[2];
   }, [itemsWithPromotions, categories]);
 
-  // Split grouped items into 3 columns
-  const columns = useMemo(() => {
-    const cols: { category: any; items: any[] }[][] = [[], [], []];
-    let colIdx = 0;
-    
-    groupedItems.forEach((group) => {
-      cols[colIdx % 3].push(group);
-      colIdx++;
-    });
-    
-    return cols;
-  }, [groupedItems]);
-
   const formatPrice = (price: string | number) => `${parseFloat(String(price)).toFixed(2)}€`;
 
   const isPizzaCategory = (categoryId: number | null | undefined) => categoryId === PIZZA_CATEGORY_ID;
@@ -166,80 +153,76 @@ export default function MenuDisplay3() {
       {/* Menu Content - 3 Column Layout */}
       <main className="menu-display-main">
         <div className="menu-display-grid">
-          {columns.map((column, colIdx) => (
-            <div key={colIdx} className="menu-display-column">
-              {column.map((group) => (
-                <div key={group.category.id} className="menu-category-group">
-                  {/* Category Header */}
-                  <div className="menu-category-header">
-                    <span className="menu-category-name">{group.category.name}</span>
-                    {isPizzaCategory(group.category.id) && (
-                      <div className="menu-category-prices">
-                        <span className="menu-price-label">Norm</span>
-                        <span className="menu-price-label">Perhe</span>
-                      </div>
+          {groupedItems.map((group) => (
+            <div key={group.category.id} className="menu-category-group">
+              {/* Category Header */}
+              <div className="menu-category-header">
+                <span className="menu-category-name">{group.category.name}</span>
+                {isPizzaCategory(group.category.id) && (
+                  <div className="menu-category-prices">
+                    <span className="menu-price-label">Norm</span>
+                    <span className="menu-price-label">Perhe</span>
+                  </div>
+                )}
+              </div>
+              
+              {/* Category Items */}
+              {group.items.map((item: any, itemIdx: number) => (
+                <motion.div
+                  key={item.id}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: itemIdx * 0.02 }}
+                  className={`menu-item-row ${isPizzaCategory(item.categoryId) ? 'has-perhe' : ''}`}
+                >
+                  {/* Item Info */}
+                  <div className="menu-item-info">
+                    <div className="menu-item-name">
+                      {item.name}
+                      {item.isVegetarian && <Leaf className="menu-badge green" />}
+                      {item.isVegan && <Heart className="menu-badge emerald" />}
+                      {item.isGlutenFree && <Wheat className="menu-badge amber" />}
+                      {(item.offerPercentage || item.promotionPercentage) && (
+                        <span className="menu-discount-badge">
+                          <Flame className="w-3 h-3" />
+                          -{item.promotionPercentage || item.offerPercentage}%
+                        </span>
+                      )}
+                    </div>
+                    {item.description && (
+                      <div className="menu-item-desc">{item.description}</div>
                     )}
                   </div>
-                  
-                  {/* Category Items */}
-                  {group.items.map((item: any, itemIdx: number) => (
-                    <motion.div
-                      key={item.id}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: itemIdx * 0.02 }}
-                      className={`menu-item-row ${isPizzaCategory(item.categoryId) ? 'has-perhe' : ''}`}
-                    >
-                      {/* Item Info */}
-                      <div className="menu-item-info">
-                        <div className="menu-item-name">
-                          {item.name}
-                          {item.isVegetarian && <Leaf className="menu-badge green" />}
-                          {item.isVegan && <Heart className="menu-badge emerald" />}
-                          {item.isGlutenFree && <Wheat className="menu-badge amber" />}
-                          {(item.offerPercentage || item.promotionPercentage) && (
-                            <span className="menu-discount-badge">
-                              <Flame className="w-3 h-3" />
-                              -{item.promotionPercentage || item.offerPercentage}%
-                            </span>
-                          )}
-                        </div>
-                        {item.description && (
-                          <div className="menu-item-desc">{item.description}</div>
-                        )}
-                      </div>
 
-                      {/* Price Column(s) */}
-                      <div className="menu-item-prices">
-                        {parseFloat(item.price) === 0 ? (
-                          <span className="menu-price-ask">Kysy</span>
-                        ) : item.promotionalPrice || item.offerPrice ? (
-                          <>
-                            <span className="menu-price-offer">
-                              {formatPrice(item.promotionalPrice || item.offerPrice!)}
-                            </span>
-                            {isPizzaCategory(item.categoryId) && (
-                              <span className="menu-price-perhe">
-                                {formatPrice(parseFloat(item.promotionalPrice || item.offerPrice!) + PERHE_EXTRA)}
-                              </span>
-                            )}
-                          </>
-                        ) : (
-                          <>
-                            <span className="menu-price-normal">
-                              {formatPrice(item.price)}
-                            </span>
-                            {isPizzaCategory(item.categoryId) && (
-                              <span className="menu-price-perhe">
-                                {formatPrice(parseFloat(item.price) + PERHE_EXTRA)}
-                              </span>
-                            )}
-                          </>
+                  {/* Price Column(s) */}
+                  <div className="menu-item-prices">
+                    {parseFloat(item.price) === 0 ? (
+                      <span className="menu-price-ask">Kysy</span>
+                    ) : item.promotionalPrice || item.offerPrice ? (
+                      <>
+                        <span className="menu-price-offer">
+                          {formatPrice(item.promotionalPrice || item.offerPrice!)}
+                        </span>
+                        {isPizzaCategory(item.categoryId) && (
+                          <span className="menu-price-perhe">
+                            {formatPrice(parseFloat(item.promotionalPrice || item.offerPrice!) + PERHE_EXTRA)}
+                          </span>
                         )}
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
+                      </>
+                    ) : (
+                      <>
+                        <span className="menu-price-normal">
+                          {formatPrice(item.price)}
+                        </span>
+                        {isPizzaCategory(item.categoryId) && (
+                          <span className="menu-price-perhe">
+                            {formatPrice(parseFloat(item.price) + PERHE_EXTRA)}
+                          </span>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </motion.div>
               ))}
             </div>
           ))}

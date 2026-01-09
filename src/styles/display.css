@@ -205,7 +205,7 @@
 .menu-display-header {
   position: relative;
   z-index: 10;
-  height: 56px;
+  height: 40px;
   background: linear-gradient(180deg, rgba(0,0,0,0.7) 0%, transparent 100%);
   border-bottom: 1px solid rgba(255,255,255,0.08);
 }
@@ -215,7 +215,7 @@
   align-items: center;
   justify-content: space-between;
   height: 100%;
-  padding: 0 28px;
+  padding: 0 16px;
 }
 
 .menu-display-logo {
@@ -225,8 +225,8 @@
 }
 
 .menu-display-logo-img {
-  width: 40px;
-  height: 40px;
+  width: 28px;
+  height: 28px;
   object-fit: contain;
   filter: drop-shadow(0 2px 8px rgba(220, 38, 38, 0.4));
 }
@@ -238,7 +238,7 @@
 }
 
 .menu-display-name {
-  font-size: 24px;
+  font-size: 18px;
   font-weight: 700;
   letter-spacing: -0.02em;
   background: linear-gradient(135deg, #fff 0%, #fca5a5 100%);
@@ -250,10 +250,10 @@
 .menu-display-page-num {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 16px;
-  border-radius: 20px;
-  font-size: 14px;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 11px;
   font-weight: 600;
   background: rgba(220, 38, 38, 0.2);
   border: 1px solid rgba(220, 38, 38, 0.3);
@@ -273,7 +273,7 @@
 }
 
 .menu-display-time {
-  font-size: 18px;
+  font-size: 14px;
   font-weight: 600;
   color: rgba(255,255,255,0.7);
   font-variant-numeric: tabular-nums;
@@ -283,15 +283,14 @@
 .menu-display-main {
   position: relative;
   z-index: 5;
-  height: calc(720px - 56px);
-  padding: 10px 16px;
+  height: calc(720px - 40px);
+  padding: 6px 12px;
 }
 
-/* 3-column grid */
+/* 3-column flowing layout */
 .menu-display-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
+  column-count: 3;
+  column-gap: 10px;
   height: 100%;
 }
 
@@ -302,12 +301,9 @@
   overflow: hidden;
 }
 
-/* Category Group */
+/* Category Group - allows content to flow across columns */
 .menu-category-group {
-  background: rgba(0,0,0,0.3);
-  border-radius: 10px;
-  border: 1px solid rgba(255,255,255,0.06);
-  overflow: hidden;
+  display: contents;
 }
 
 /* Category Header */
@@ -315,23 +311,26 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 12px;
+  padding: 4px 8px;
   background: linear-gradient(135deg, rgba(220, 38, 38, 0.25) 0%, rgba(220, 38, 38, 0.1) 100%);
-  border-bottom: 1px solid rgba(220, 38, 38, 0.2);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  border-radius: 6px 6px 0 0;
+  margin-top: 6px;
+  break-after: avoid-column;
 }
 
 .page-2 .menu-category-header {
   background: linear-gradient(135deg, rgba(234, 88, 12, 0.25) 0%, rgba(234, 88, 12, 0.1) 100%);
-  border-bottom-color: rgba(234, 88, 12, 0.2);
+  border-color: rgba(234, 88, 12, 0.2);
 }
 
 .page-3 .menu-category-header {
   background: linear-gradient(135deg, rgba(124, 58, 237, 0.25) 0%, rgba(124, 58, 237, 0.1) 100%);
-  border-bottom-color: rgba(124, 58, 237, 0.2);
+  border-color: rgba(124, 58, 237, 0.2);
 }
 
 .menu-category-name {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -344,12 +343,12 @@
 }
 
 .menu-price-label {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   color: rgba(255,255,255,0.5);
   text-transform: uppercase;
   letter-spacing: 0.03em;
-  min-width: 50px;
+  min-width: 45px;
   text-align: right;
 }
 
@@ -358,14 +357,19 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 10px;
-  padding: 6px 12px;
+  gap: 6px;
+  padding: 3px 8px;
+  background: rgba(0,0,0,0.3);
+  border-left: 1px solid rgba(255,255,255,0.06);
+  border-right: 1px solid rgba(255,255,255,0.06);
   border-bottom: 1px solid rgba(255,255,255,0.04);
   transition: all 0.2s ease;
+  break-inside: avoid-column;
 }
 
 .menu-item-row:last-child {
-  border-bottom: none;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  border-radius: 0 0 6px 6px;
 }
 
 .menu-item-row:hover {
@@ -382,14 +386,14 @@
 }
 
 .menu-item-name {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   color: #ffffff;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   flex-wrap: wrap;
-  line-height: 1.3;
+  line-height: 1.2;
 }
 
 .menu-badge {
@@ -410,57 +414,78 @@
   font-weight: 700;
   color: #fef08a;
   background: linear-gradient(135deg, #dc2626 0%, #ea580c 100%);
-  padding: 2px 6px;
-  border-radius: 4px;
+  padding: 2px 5px;
+  border-radius: 3px;
   animation: menu-pulse 2s ease-in-out infinite;
 }
 
 .menu-item-desc {
-  font-size: 11px;
+  font-size: 12px;
   color: rgba(255,255,255,0.5);
+  line-height: 1.2;
+}
+
+/* Pizza toppings section */
+.menu-toppings-section {
+  padding: 5px 8px;
+  background: rgba(0,0,0,0.3);
+  border-left: 1px solid rgba(255,255,255,0.06);
+  border-right: 1px solid rgba(255,255,255,0.06);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  border-radius: 0 0 6px 6px;
+}
+
+.menu-toppings-header {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #fbbf24;
+  margin-bottom: 3px;
+}
+
+.menu-toppings-list {
+  font-size: 11px;
+  color: rgba(255,255,255,0.6);
   line-height: 1.3;
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 
 /* Price section - Updated for perhe column */
 .menu-item-prices {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   flex-shrink: 0;
 }
 
 .menu-price-ask {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   color: rgba(255,255,255,0.5);
   font-style: italic;
 }
 
 .menu-price-offer {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   color: #4ade80;
-  min-width: 50px;
+  min-width: 48px;
   text-align: right;
 }
 
 .menu-price-normal {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   color: #ffffff;
-  min-width: 50px;
+  min-width: 48px;
   text-align: right;
 }
 
 .menu-price-perhe {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   color: #fbbf24;
-  min-width: 50px;
+  min-width: 48px;
   text-align: right;
 }
 
