@@ -303,6 +303,25 @@
       font-size: 24px;
       color: rgba(255,255,255,0.5);
     }
+
+    /* Night menu styles - bigger text due to fewer categories */
+    body.night-menu .menu-category-name {
+      font-size: 18px;
+    }
+    body.night-menu .menu-item-name {
+      font-size: 18px;
+    }
+    body.night-menu .menu-item-desc {
+      font-size: 14px;
+    }
+    body.night-menu .menu-price-normal,
+    body.night-menu .menu-price-perhe,
+    body.night-menu .menu-price-offer {
+      font-size: 18px;
+    }
+    body.night-menu .menu-item-row {
+      padding: 5px 10px;
+    }
   </style>
 </head>
 <body>
@@ -337,8 +356,18 @@
     const PAGE_NUMBER = 2;
     const PIZZA_CATEGORY_ID = 1;
     const PERHE_EXTRA = 8;
+    
+    // Night menu settings (after 10 PM)
+    const NIGHT_MENU_START_HOUR = 22;
+    const NIGHT_MENU_PRICE_INCREASE = 1.5;
+    const NIGHT_MENU_CATEGORIES = ['PIZZAT', 'RULLAT', 'PITAT', 'KEBAB', 'KANA FILE', 'KANA DONER', 'JUOMAT', 'BAKLAVA'];
 
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+    function isNightMenu() {
+      const hour = new Date().getHours();
+      return hour >= NIGHT_MENU_START_HOUR;
+    }
 
     function updateClock() {
       const now = new Date();
@@ -371,6 +400,21 @@
 
         if (catError) throw catError;
 
+        const nightMode = isNightMenu();
+        
+        if (nightMode) {
+          document.body.classList.add('night-menu');
+        } else {
+          document.body.classList.remove('night-menu');
+        }
+        
+        let filteredCategories = categories;
+        if (nightMode) {
+          filteredCategories = categories.filter(cat => 
+            NIGHT_MENU_CATEGORIES.some(nc => cat.name.toUpperCase().includes(nc.toUpperCase()))
+          );
+        }
+
         const categoryMap = new Map();
         menuItems.forEach(item => {
           const catId = item.category_id || 0;
@@ -381,7 +425,7 @@
         });
 
         const allGroups = [];
-        categories.forEach(cat => {
+        filteredCategories.forEach(cat => {
           if (categoryMap.has(cat.id) && categoryMap.get(cat.id).length > 0) {
             allGroups.push({ category: cat, items: categoryMap.get(cat.id) });
           }
@@ -403,7 +447,7 @@
           currentPageItems += group.items.length;
         });
 
-        renderMenu(pages[PAGE_NUMBER - 1]);
+        renderMenu(pages[PAGE_NUMBER - 1], nightMode);
 
       } catch (err) {
         console.error('Error fetching menu:', err);
@@ -411,7 +455,7 @@
       }
     }
 
-    function renderMenu(groups) {
+    function renderMenu(groups, nightMode = false) {
       const grid = document.getElementById('menu-grid');
       let html = '';
 
@@ -435,7 +479,7 @@
           if (item.is_vegetarian) html += '<span class="menu-badge green">🌿</span>';
           if (item.is_vegan) html += '<span class="menu-badge emerald">💚</span>';
           if (item.is_gluten_free) html += '<span class="menu-badge amber">🌾</span>';
-          if (item.offer_percentage) {
+          if (!nightMode && item.offer_percentage) {
             html += '<span class="menu-discount-badge">🔥 -' + item.offer_percentage + '%</span>';
           }
           html += '</div>';
@@ -445,16 +489,18 @@
           html += '</div>';
 
           html += '<div class="menu-item-prices">';
-          const price = parseFloat(item.price);
-          if (price === 0) {
+          let price = parseFloat(item.price);
+          if (nightMode) price += NIGHT_MENU_PRICE_INCREASE;
+          
+          if (price === 0 || (parseFloat(item.price) === 0)) {
             html += '<span class="menu-price-ask">Kysy</span>';
-          } else if (item.offer_price) {
+          } else if (!nightMode && item.offer_price) {
             html += '<span class="menu-price-offer">' + formatPrice(item.offer_price) + '</span>';
             if (isPizzaCategory(item.category_id)) {
               html += '<span class="menu-price-perhe">' + formatPrice(parseFloat(item.offer_price) + PERHE_EXTRA) + '</span>';
             }
           } else {
-            html += '<span class="menu-price-normal">' + formatPrice(item.price) + '</span>';
+            html += '<span class="menu-price-normal">' + formatPrice(price) + '</span>';
             if (isPizzaCategory(item.category_id)) {
               html += '<span class="menu-price-perhe">' + formatPrice(price + PERHE_EXTRA) + '</span>';
             }
