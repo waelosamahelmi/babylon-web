@@ -117,13 +117,8 @@
     /* Full image slide */
     .full-image-card {
       display: none;
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 1080px;
-      height: 1920px;
-      z-index: 1000;
-      background: #000;
+      width: 100%;
+      height: 100%;
     }
     
     .full-image-card.active {
@@ -133,9 +128,9 @@
     }
     
     .full-image-card img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
     }
 
     .image-wrapper {
@@ -459,7 +454,7 @@
       <div class="bg-glow bg-glow-2"></div>
       <div class="bg-glow-3"></div>
 
-      <div class="header" id="header">
+      <div class="header">
         <img src="https://ravintolababylon.fi/logo.png" alt="Logo" class="logo-img">
       </div>
 
@@ -469,13 +464,10 @@
         </div>
       </div>
 
-      <div class="footer" id="footer">
+      <div class="footer">
         <div class="cta-text">🔥 Tarjoukset voimassa rajoitetun ajan! 🔥</div>
         <div class="progress-dots" id="progress-dots"></div>
       </div>
-      
-      <!-- Full screen image container -->
-      <div id="fullscreen-container"></div>
     </div>
   </div>
 
@@ -484,9 +476,8 @@
     var SUPABASE_URL = 'https://ssyhpqfdzbvrkvqdnxyy.supabase.co';
     var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNzeWhwcWZkemJ2cmt2cWRueHl5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNTQ0ODcsImV4cCI6MjA3ODYzMDQ4N30.rplVZXLXaMl3x8e6UftdooztYVWFs6v91DLmg3jrorQ';
     
-    // Admin API URL - auto-detect based on current location
-    var currentPath = window.location.pathname.replace(/\/[^\/]*$/, '');
-    var ADMIN_API_URL = currentPath + '/admin/api.php';
+    // Admin API URL - adjust this to your hosting
+    var ADMIN_API_URL = 'admin/api.php';
     
     // Default values
     var ROTATION_INTERVAL = 6000;
@@ -545,10 +536,9 @@
 
     // Fetch admin configuration
     function fetchAdminConfig(callback) {
-      console.log('Fetching admin config from:', ADMIN_API_URL);
       makeRequest('GET', ADMIN_API_URL, function(err, data) {
         if (err) {
-          console.log('Admin config not available, using defaults. Error:', err);
+          console.log('Admin config not available, using defaults');
           callback(null);
           return;
         }
@@ -557,11 +547,6 @@
         showOffers = data.show_offers !== false;
         ROTATION_INTERVAL = data.rotation_interval || 6000;
         console.log('Admin config loaded:', data);
-        console.log('Display mode:', displayMode);
-        console.log('Slides count:', data.slides ? data.slides.length : 0);
-        if (data.slides && data.slides.length > 0) {
-          console.log('First slide:', data.slides[0]);
-        }
         callback(data);
       }, true);
     }
@@ -686,7 +671,6 @@
     function renderPromotions() {
       var content = document.getElementById('main-content');
       var dotsContainer = document.getElementById('progress-dots');
-      var fullscreenContainer = document.getElementById('fullscreen-container');
 
       if (allSlides.length === 0) {
         content.innerHTML = '<div class="no-promos">' +
@@ -695,19 +679,16 @@
           '<div class="no-promos-subtitle">Tutustu maukkaisiin ruokiimme</div>' +
           '</div>';
         dotsContainer.innerHTML = '';
-        fullscreenContainer.innerHTML = '';
         return;
       }
 
       var html = '';
-      var fullscreenHtml = '';
-      
       for (var i = 0; i < allSlides.length; i++) {
         var slide = allSlides[i];
         
-        // Custom image-only slide - goes to fullscreen container
+        // Custom image-only slide
         if (slide.type === 'custom' && slide.slideType === 'image' && slide.image) {
-          fullscreenHtml += '<div class="full-image-card" data-index="' + i + '" data-fullscreen="true">' +
+          html += '<div class="full-image-card" data-index="' + i + '">' +
             '<img src="' + escapeHtml(slide.image) + '" alt="Slide" onerror="this.src=\'https://placehold.co/1080x1920/1a0a0a/dc2626?text=Kuva\'">' +
             '</div>';
           continue;
@@ -759,7 +740,6 @@
       }
 
       content.innerHTML = html;
-      fullscreenContainer.innerHTML = fullscreenHtml;
 
       var dotsHtml = '';
       for (var d = 0; d < allSlides.length; d++) {
@@ -789,27 +769,16 @@
     function showSlide(index) {
       var cards = document.querySelectorAll('.promo-card, .full-image-card');
       var dots = document.getElementsByClassName('progress-dot');
-      var header = document.getElementById('header');
-      var footer = document.getElementById('footer');
-      var isFullscreen = false;
 
       for (var i = 0; i < cards.length; i++) {
         var card = cards[i];
         var cardIndex = parseInt(card.getAttribute('data-index'));
         if (cardIndex === index) {
           card.className = card.className.replace(' active', '') + ' active';
-          // Check if this is a fullscreen slide
-          if (card.getAttribute('data-fullscreen') === 'true') {
-            isFullscreen = true;
-          }
         } else {
           card.className = card.className.replace(' active', '');
         }
       }
-
-      // Hide header and footer for fullscreen images
-      if (header) header.style.display = isFullscreen ? 'none' : 'block';
-      if (footer) footer.style.display = isFullscreen ? 'none' : 'block';
 
       for (var j = 0; j < dots.length; j++) {
         if (j === index) {

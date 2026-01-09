@@ -30,11 +30,6 @@ import ResetPassword from "@/pages/auth/reset-password";
 import AccountIndex from "@/pages/account/index";
 import Profile from "@/pages/account/profile";
 import Loyalty from "@/pages/account/loyalty";
-// Display pages (for TV screens - not in sitemap)
-import MenuDisplay1 from "@/pages/display/menu-display-1";
-import MenuDisplay2 from "@/pages/display/menu-display-2";
-import MenuDisplay3 from "@/pages/display/menu-display-3";
-import PromoDisplay from "@/pages/display/promo-display";
 
 function Router() {
   return (
@@ -59,11 +54,6 @@ function Router() {
       <Route path="/account" component={AccountIndex} />
       <Route path="/account/profile" component={Profile} />
       <Route path="/account/loyalty" component={Loyalty} />
-      {/* Display routes (TV screens - not indexed) */}
-      <Route path="/display/menu-1" component={MenuDisplay1} />
-      <Route path="/display/menu-2" component={MenuDisplay2} />
-      <Route path="/display/menu-3" component={MenuDisplay3} />
-      <Route path="/display/promos" component={PromoDisplay} />
       <Route component={NotFound} />
     </Switch>
   );
