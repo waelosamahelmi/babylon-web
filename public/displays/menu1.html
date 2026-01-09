@@ -389,8 +389,9 @@
     const PERHE_EXTRA = 8;
     const PIZZA_TOPPINGS = "Kebab, Kinkku, Salami, Pekoni, Pepperonimakkara, Jauheliha, Kana, Aurajuusto, Fetajuusto, Mozzarella, Vuohijuusto, Cheddar, Salaattijuusto, Tuplajuusto, Tomaatti, Kirsikkatomaatti, Sipuli, Tuoreherkkusieni, Herkkusieni, Vihreä paprika, Tuore paprika, Jäävuorisalaatti, Kurkku, Oliivi, Rucola, Ananas, Jalapeno, Katkarapu, Simpukka, Tonnikala, Smetana, Majoneesi, BBQ-kastike, Tacokastike, Voikastike, Pesto, Curry-mangokastike, Kanamuna, Ranskalaiset";
     
-    // Night menu settings (after 10 PM)
+    // Night menu settings (10 PM to 5 AM)
     const NIGHT_MENU_START_HOUR = 22; // 10 PM
+    const NIGHT_MENU_END_HOUR = 5; // 5 AM
     const NIGHT_MENU_PRICE_INCREASE = 1.5;
     const NIGHT_MENU_CATEGORIES = ['PIZZAT', 'RULLAT', 'PITAT', 'KEBAB', 'KANA FILE', 'KANA DONER', 'JUOMAT', 'BAKLAVA', 'LISÄTÄYTTEET'];
 
@@ -398,7 +399,7 @@
     
     function isNightMenu() {
       const hour = new Date().getHours();
-      return hour >= NIGHT_MENU_START_HOUR;
+      return hour >= NIGHT_MENU_START_HOUR || hour < NIGHT_MENU_END_HOUR;
     }
 
     function updateClock() {
