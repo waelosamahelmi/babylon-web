@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1280, height=720">
+  <title>Babylon - Menu 3/3</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      width: 1280px;
+      height: 720px;
+      overflow: hidden;
+      font-family: 'Inter', system-ui, sans-serif;
+      background: #000;
+    }
+
+    @keyframes menu-orb-float {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(20px, -15px) scale(1.05); }
+      66% { transform: translate(-15px, 10px) scale(0.95); }
+    }
+
+    @keyframes menu-pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.8; }
+    }
+
+    .menu-display-page {
+      width: 1280px;
+      height: 720px;
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(135deg, #0a0a14 0%, #12121a 50%, #0d0d14 100%);
+      color: #ffffff;
+    }
+
+    .menu-display-bg {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .menu-display-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.25;
+      animation: menu-orb-float 20s ease-in-out infinite;
+    }
+
+    .menu-display-orb-1 {
+      width: 350px;
+      height: 350px;
+      background: radial-gradient(circle, #7c3aed 0%, transparent 70%);
+      top: -150px;
+      left: -100px;
+    }
+
+    .menu-display-orb-2 {
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, #a855f7 0%, transparent 70%);
+      bottom: -120px;
+      right: -80px;
+      animation-delay: -7s;
+    }
+
+    .menu-display-orb-3 {
+      width: 250px;
+      height: 250px;
+      background: radial-gradient(circle, #c084fc 0%, transparent 70%);
+      top: 40%;
+      left: 45%;
+      animation-delay: -14s;
+    }
+
+    .menu-display-header {
+      position: relative;
+      z-index: 10;
+      height: 40px;
+      background: linear-gradient(180deg, rgba(0,0,0,0.7) 0%, transparent 100%);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .menu-display-header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 100%;
+      padding: 0 16px;
+    }
+
+    .menu-display-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .menu-display-logo-img {
+      width: 28px;
+      height: 28px;
+      object-fit: contain;
+      filter: drop-shadow(0 2px 8px rgba(124, 58, 237, 0.4));
+    }
+
+    .menu-display-name {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #fff 0%, #c4b5fd 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .menu-display-page-num {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      background: rgba(124, 58, 237, 0.2);
+      border: 1px solid rgba(124, 58, 237, 0.3);
+      color: #c4b5fd;
+    }
+
+    .menu-display-time {
+      font-size: 14px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.7);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .menu-display-main {
+      position: relative;
+      z-index: 5;
+      height: calc(720px - 40px);
+      padding: 6px 12px;
+    }
+
+    .menu-display-grid {
+      column-count: 3;
+      column-gap: 10px;
+      height: 100%;
+    }
+
+    .menu-category-group {
+      display: contents;
+    }
+
+    .menu-category-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 8px;
+      background: linear-gradient(135deg, rgba(124, 58, 237, 0.25) 0%, rgba(124, 58, 237, 0.1) 100%);
+      border: 1px solid rgba(124, 58, 237, 0.2);
+      border-radius: 6px 6px 0 0;
+      margin-top: 6px;
+      break-after: avoid-column;
+    }
+
+    .menu-category-name {
+      font-size: 15px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #ffffff;
+    }
+
+    .menu-category-prices {
+      display: flex;
+      gap: 16px;
+    }
+
+    .menu-price-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.5);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      min-width: 45px;
+      text-align: right;
+    }
+
+    .menu-item-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 6px;
+      padding: 3px 8px;
+      background: rgba(0,0,0,0.3);
+      border-left: 1px solid rgba(255,255,255,0.06);
+      border-right: 1px solid rgba(255,255,255,0.06);
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      break-inside: avoid-column;
+    }
+
+    .menu-item-row.last-item {
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      border-radius: 0 0 6px 6px;
+    }
+
+    .menu-item-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .menu-item-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      flex-wrap: wrap;
+      line-height: 1.2;
+    }
+
+    .menu-badge {
+      width: 12px;
+      height: 12px;
+      flex-shrink: 0;
+    }
+
+    .menu-badge.green { color: #22c55e; }
+    .menu-badge.emerald { color: #10b981; }
+    .menu-badge.amber { color: #f59e0b; }
+
+    .menu-discount-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      font-size: 10px;
+      font-weight: 700;
+      color: #fef08a;
+      background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+      padding: 2px 5px;
+      border-radius: 3px;
+      animation: menu-pulse 2s ease-in-out infinite;
+    }
+
+    .menu-item-desc {
+      font-size: 12px;
+      color: rgba(255,255,255,0.5);
+      line-height: 1.2;
+    }
+
+    .menu-item-prices {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .menu-price-ask {
+      font-size: 14px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.5);
+      font-style: italic;
+    }
+
+    .menu-price-offer {
+      font-size: 15px;
+      font-weight: 700;
+      color: #4ade80;
+      min-width: 48px;
+      text-align: right;
+    }
+
+    .menu-price-normal {
+      font-size: 15px;
+      font-weight: 600;
+      color: #ffffff;
+      min-width: 48px;
+      text-align: right;
+    }
+
+    .menu-price-perhe {
+      font-size: 15px;
+      font-weight: 600;
+      color: #c4b5fd;
+      min-width: 48px;
+      text-align: right;
+    }
+
+    .loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      font-size: 24px;
+      color: rgba(255,255,255,0.5);
+    }
+  </style>
+</head>
+<body>
+  <div id="app" class="menu-display-page">
+    <div class="menu-display-bg">
+      <div class="menu-display-orb menu-display-orb-1"></div>
+      <div class="menu-display-orb menu-display-orb-2"></div>
+      <div class="menu-display-orb menu-display-orb-3"></div>
+    </div>
+
+    <header class="menu-display-header">
+      <div class="menu-display-header-inner">
+        <div class="menu-display-logo">
+          <img src="https://ravintolababylon.fi/logo.png" alt="Logo" class="menu-display-logo-img">
+          <span class="menu-display-name">Babylon</span>
+        </div>
+        <div class="menu-display-page-num">💎 3 / 3</div>
+        <div class="menu-display-time" id="clock">--:--</div>
+      </div>
+    </header>
+
+    <main class="menu-display-main">
+      <div class="menu-display-grid" id="menu-grid">
+        <div class="loading">Ladataan ruokalistaa...</div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://ssyhpqfdzbvrkvqdnxyy.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNzeWhwcWZkemJ2cmt2cWRueHl5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNTQ0ODcsImV4cCI6MjA3ODYzMDQ4N30.rplVZXLXaMl3x8e6UftdooztYVWFs6v91DLmg3jrorQ';
+    const PAGE_NUMBER = 3;
+    const PIZZA_CATEGORY_ID = 1;
+    const PERHE_EXTRA = 8;
+
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('clock').textContent = 
+        now.toLocaleTimeString('fi-FI', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function formatPrice(price) {
+      return parseFloat(price).toFixed(2) + '€';
+    }
+
+    function isPizzaCategory(categoryId) {
+      return categoryId === PIZZA_CATEGORY_ID;
+    }
+
+    async function fetchAndRenderMenu() {
+      try {
+        const { data: menuItems, error: menuError } = await sb
+          .from('menu_items')
+          .select('*')
+          .eq('is_available', true)
+          .order('display_order', { ascending: true });
+
+        if (menuError) throw menuError;
+
+        const { data: categories, error: catError } = await sb
+          .from('categories')
+          .select('*')
+          .order('display_order', { ascending: true });
+
+        if (catError) throw catError;
+
+        const categoryMap = new Map();
+        menuItems.forEach(item => {
+          const catId = item.category_id || 0;
+          if (!categoryMap.has(catId)) {
+            categoryMap.set(catId, []);
+          }
+          categoryMap.get(catId).push(item);
+        });
+
+        const allGroups = [];
+        categories.forEach(cat => {
+          if (categoryMap.has(cat.id) && categoryMap.get(cat.id).length > 0) {
+            allGroups.push({ category: cat, items: categoryMap.get(cat.id) });
+          }
+        });
+
+        const totalItems = menuItems.length;
+        const targetPerPage = Math.ceil(totalItems / 3);
+
+        const pages = [[], [], []];
+        let currentPage = 0;
+        let currentPageItems = 0;
+
+        allGroups.forEach(group => {
+          if (currentPageItems >= targetPerPage && currentPage < 2) {
+            currentPage++;
+            currentPageItems = 0;
+          }
+          pages[currentPage].push(group);
+          currentPageItems += group.items.length;
+        });
+
+        renderMenu(pages[PAGE_NUMBER - 1]);
+
+      } catch (err) {
+        console.error('Error fetching menu:', err);
+        document.getElementById('menu-grid').innerHTML = '<div class="loading">Virhe ladattaessa ruokalistaa</div>';
+      }
+    }
+
+    function renderMenu(groups) {
+      const grid = document.getElementById('menu-grid');
+      let html = '';
+
+      groups.forEach(group => {
+        html += '<div class="menu-category-group">';
+        html += '<div class="menu-category-header">';
+        html += '<span class="menu-category-name">' + escapeHtml(group.category.name) + '</span>';
+        if (isPizzaCategory(group.category.id)) {
+          html += '<div class="menu-category-prices">';
+          html += '<span class="menu-price-label">Norm</span>';
+          html += '<span class="menu-price-label">Perhe</span>';
+          html += '</div>';
+        }
+        html += '</div>';
+
+        group.items.forEach((item, idx) => {
+          const isLast = idx === group.items.length - 1;
+          html += '<div class="menu-item-row' + (isLast ? ' last-item' : '') + '">';
+          html += '<div class="menu-item-info">';
+          html += '<div class="menu-item-name">' + escapeHtml(item.name);
+          if (item.is_vegetarian) html += '<span class="menu-badge green">🌿</span>';
+          if (item.is_vegan) html += '<span class="menu-badge emerald">💚</span>';
+          if (item.is_gluten_free) html += '<span class="menu-badge amber">🌾</span>';
+          if (item.offer_percentage) {
+            html += '<span class="menu-discount-badge">🔥 -' + item.offer_percentage + '%</span>';
+          }
+          html += '</div>';
+          if (item.description) {
+            html += '<div class="menu-item-desc">' + escapeHtml(item.description) + '</div>';
+          }
+          html += '</div>';
+
+          html += '<div class="menu-item-prices">';
+          const price = parseFloat(item.price);
+          if (price === 0) {
+            html += '<span class="menu-price-ask">Kysy</span>';
+          } else if (item.offer_price) {
+            html += '<span class="menu-price-offer">' + formatPrice(item.offer_price) + '</span>';
+            if (isPizzaCategory(item.category_id)) {
+              html += '<span class="menu-price-perhe">' + formatPrice(parseFloat(item.offer_price) + PERHE_EXTRA) + '</span>';
+            }
+          } else {
+            html += '<span class="menu-price-normal">' + formatPrice(item.price) + '</span>';
+            if (isPizzaCategory(item.category_id)) {
+              html += '<span class="menu-price-perhe">' + formatPrice(price + PERHE_EXTRA) + '</span>';
+            }
+          }
+          html += '</div>';
+          html += '</div>';
+        });
+
+        html += '</div>';
+      });
+
+      grid.innerHTML = html;
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    updateClock();
+    setInterval(updateClock, 60000);
+    fetchAndRenderMenu();
+
+    sb
+      .channel('menu-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'menu_items' }, () => {
+        fetchAndRenderMenu();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'categories' }, () => {
+        fetchAndRenderMenu();
+      })
+      .subscribe();
+
+    setInterval(fetchAndRenderMenu, 300000);
+  </script>
+</body>
+</html>
