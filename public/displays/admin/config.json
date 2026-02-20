@@ -3,5 +3,42 @@
     "rotation_interval": 10,
     "slides": [],
     "show_offers": true,
-    "offer_duration": 6
+    "offer_duration": 6,
+    "theme": "light",
+    "theme_schedule": {
+        "enabled": false,
+        "light_start": "08:00",
+        "light_end": "20:00"
+    },
+    "qr_code": {
+        "enabled": true,
+        "url": "https://ravintolababylon.fi/",
+        "size": 150
+    },
+    "dark_theme_colors": {
+        "background_start": "#1a0505",
+        "background_mid": "#2d0a0a",
+        "background_end": "#3d1010",
+        "glow_primary": "#dc2626",
+        "glow_secondary": "#ea580c",
+        "glow_tertiary": "#f59e0b",
+        "text_primary": "#ffffff",
+        "text_secondary": "#aaaaaa",
+        "text_accent": "#fbbf24",
+        "accent_color": "#dc2626",
+        "footer_bg": "rgba(0,0,0,0.7)"
+    },
+    "light_theme_colors": {
+        "background_start": "#f8f9fa",
+        "background_mid": "#ffffff",
+        "background_end": "#f0f2f5",
+        "glow_primary": "#fecaca",
+        "glow_secondary": "#fed7aa",
+        "glow_tertiary": "#fef3c7",
+        "text_primary": "#1f2937",
+        "text_secondary": "#6b7280",
+        "text_accent": "#b45309",
+        "accent_color": "#dc2626",
+        "footer_bg": "rgba(255,255,255,0.9)"
+    }
 }

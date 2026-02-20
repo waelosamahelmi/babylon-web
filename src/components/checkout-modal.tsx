@@ -291,28 +291,42 @@ export function CheckoutModal({ isOpen, onClose, onBack, onOrderSuccess }: Check
     // Auto-detect branch based on city first, then use distance as fallback
     if (addressData.city && activeBranches.length > 0) {
       console.log('Detecting branch for city:', addressData.city);
-      console.log('Available branches:', activeBranches.map((b: any) => ({ id: b.id, city: b.city })));
+      console.log('Available branches:', activeBranches.map((b: any) => ({ id: b.id, city: b.city, serviceCities: b.serviceCities })));
       
-      // First try exact city match
-      const matchingBranch = activeBranches.find(
-        (branch: any) => branch.city.toLowerCase() === addressData.city.toLowerCase()
-      );
+      // First check if this city is in any branch's service_cities list
+      const serviceAreaBranch = activeBranches.find((branch: any) => {
+        if (branch.serviceCities) {
+          const cities = branch.serviceCities.split(',').map((c: string) => c.trim().toLowerCase());
+          return cities.includes(addressData.city.toLowerCase());
+        }
+        return false;
+      });
       
-      if (matchingBranch) {
-        console.log('Found matching branch by city:', matchingBranch.id, matchingBranch.name, matchingBranch.city);
-        setFormData(prev => ({ ...prev, branchId: matchingBranch.id }));
+      if (serviceAreaBranch) {
+        console.log('Found branch serving this city in service area:', serviceAreaBranch.id, serviceAreaBranch.name);
+        setFormData(prev => ({ ...prev, branchId: serviceAreaBranch.id }));
       } else {
-        // No exact city match - find nearest branch by distance
-        console.log('No exact city match, finding nearest branch by distance...');
-        const nearestBranch = await findNearestBranch(addressData.fullAddress);
+        // Then try exact city match
+        const matchingBranch = activeBranches.find(
+          (branch: any) => branch.city.toLowerCase() === addressData.city.toLowerCase()
+        );
         
-        if (nearestBranch) {
-          console.log('Found nearest branch:', nearestBranch.id, nearestBranch.name, nearestBranch.city);
-          setFormData(prev => ({ ...prev, branchId: nearestBranch.id }));
+        if (matchingBranch) {
+          console.log('Found matching branch by city:', matchingBranch.id, matchingBranch.name, matchingBranch.city);
+          setFormData(prev => ({ ...prev, branchId: matchingBranch.id }));
         } else {
-          // Fallback to first branch if geocoding fails
-          console.log('Geocoding failed, using first branch:', activeBranches[0].id);
-          setFormData(prev => ({ ...prev, branchId: activeBranches[0].id }));
+          // No exact city match - find nearest branch by distance
+          console.log('No exact city match, finding nearest branch by distance...');
+          const nearestBranch = await findNearestBranch(addressData.fullAddress);
+          
+          if (nearestBranch) {
+            console.log('Found nearest branch:', nearestBranch.id, nearestBranch.name, nearestBranch.city);
+            setFormData(prev => ({ ...prev, branchId: nearestBranch.id }));
+          } else {
+            // Fallback to first branch if geocoding fails
+            console.log('Geocoding failed, using first branch:', activeBranches[0].id);
+            setFormData(prev => ({ ...prev, branchId: activeBranches[0].id }));
+          }
         }
       }
     }

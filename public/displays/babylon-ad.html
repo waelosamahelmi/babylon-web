@@ -6,15 +6,59 @@
   <meta name="viewport" content="width=1920, height=1080">
   <title>Babylon - Tarjoukset</title>
   <style type="text/css">
+    :root {
+      /* Dark theme defaults */
+      --bg-start: #1a0505;
+      --bg-mid: #2d0a0a;
+      --bg-end: #3d1010;
+      --glow-primary: #dc2626;
+      --glow-secondary: #ea580c;
+      --glow-tertiary: #f59e0b;
+      --text-primary: #ffffff;
+      --text-secondary: #aaaaaa;
+      --text-accent: #fbbf24;
+      --accent-color: #dc2626;
+      --footer-bg: rgba(0,0,0,0.7);
+    }
+
     * { margin: 0; padding: 0; }
     
     html, body {
       width: 1920px;
       height: 1080px;
       overflow: hidden;
-      background: #000;
       font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg-start);
     }
+
+    .promo-display {
+      background: var(--bg-mid);
+      background: -webkit-linear-gradient(160deg, var(--bg-start) 0%, var(--bg-mid) 25%, var(--bg-end) 50%, var(--bg-mid) 75%, var(--bg-start) 100%);
+      background: -moz-linear-gradient(160deg, var(--bg-start) 0%, var(--bg-mid) 25%, var(--bg-end) 50%, var(--bg-mid) 75%, var(--bg-start) 100%);
+      background: linear-gradient(160deg, var(--bg-start) 0%, var(--bg-mid) 25%, var(--bg-end) 50%, var(--bg-mid) 75%, var(--bg-start) 100%);
+    }
+
+    .bg-glow { background: var(--glow-primary); opacity: 0.4; }
+    .bg-glow-2 { background: var(--glow-secondary); }
+    .bg-glow-3 { background: var(--glow-tertiary); opacity: 0.25; }
+    .promo-name { color: var(--text-primary); }
+    .promo-description { color: var(--text-secondary); }
+    .price-label { color: var(--text-accent); }
+    .old-price { color: var(--text-secondary); }
+    .footer { background: var(--footer-bg); }
+    .cta-text { color: var(--text-accent); }
+    .progress-dot { background: var(--text-secondary); opacity: 0.5; }
+    .progress-dot.active { background: var(--accent-color); opacity: 1; }
+    .loading-text { color: var(--text-secondary); }
+    .no-promos-title { color: var(--text-primary); }
+    .no-promos-subtitle { color: var(--text-secondary); }
+    .promo-slide .promo-title { color: var(--text-primary); }
+    .promo-slide .promo-text { color: var(--text-secondary); }
+    .full-image-card { background: var(--bg-start); }
+    .promo-image { border-color: var(--accent-color); }
+    .new-price-wrapper { background: var(--accent-color); }
+    .discount-badge { background: var(--accent-color); }
+    .promo-badge-big { background: var(--accent-color); }
 
     .rotation-wrapper {
       width: 1080px;
@@ -37,10 +81,6 @@
       height: 1920px;
       position: relative;
       overflow: hidden;
-      background: #2d0a0a;
-      background: -webkit-linear-gradient(160deg, #1a0505 0%, #2d0a0a 25%, #3d1010 50%, #2d0a0a 75%, #1a0505 100%);
-      background: -moz-linear-gradient(160deg, #1a0505 0%, #2d0a0a 25%, #3d1010 50%, #2d0a0a 75%, #1a0505 100%);
-      background: linear-gradient(160deg, #1a0505 0%, #2d0a0a 25%, #3d1010 50%, #2d0a0a 75%, #1a0505 100%);
     }
 
     .bg-glow {
@@ -49,8 +89,6 @@
       height: 700px;
       top: -200px;
       left: -150px;
-      background: #dc2626;
-      opacity: 0.4;
       -webkit-border-radius: 50%;
       -moz-border-radius: 50%;
       border-radius: 50%;
@@ -63,7 +101,6 @@
       left: auto;
       bottom: -150px;
       right: -150px;
-      background: #ea580c;
       width: 600px;
       height: 600px;
     }
@@ -76,8 +113,6 @@
       left: 50%;
       margin-top: -250px;
       margin-left: -250px;
-      background: #f59e0b;
-      opacity: 0.25;
       -webkit-border-radius: 50%;
       -moz-border-radius: 50%;
       border-radius: 50%;
@@ -123,7 +158,6 @@
       width: 1080px;
       height: 1920px;
       z-index: 1000;
-      background: #000;
     }
     
     .full-image-card.active {
@@ -135,29 +169,30 @@
     .full-image-card img {
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      object-fit: contain;
+      background: #000;
     }
 
     .image-wrapper {
       position: relative;
       display: inline-block;
-      margin-bottom: 40px;
+      margin-bottom: 30px;
     }
 
     .promo-image {
-      width: 500px;
-      height: 500px;
+      width: 450px;
+      height: 450px;
       -webkit-border-radius: 50%;
       -moz-border-radius: 50%;
       border-radius: 50%;
-      border: 8px solid #dc2626;
+      border: 8px solid var(--accent-color);
     }
 
     .discount-badge {
       position: absolute;
       top: 20px;
       right: 20px;
-      background: #dc2626;
+      background: var(--accent-color);
       color: #fff;
       font-size: 42px;
       font-weight: bold;
@@ -168,20 +203,18 @@
     }
 
     .promo-info {
-      margin-bottom: 30px;
+      margin-bottom: 20px;
     }
 
     .promo-name {
-      font-size: 64px;
+      font-size: 58px;
       font-weight: bold;
-      color: #fff;
-      margin-bottom: 15px;
+      margin-bottom: 12px;
     }
 
     .promo-description {
-      font-size: 28px;
-      color: #aaa;
-      margin-bottom: 20px;
+      font-size: 26px;
+      margin-bottom: 15px;
     }
 
     .price-container {
@@ -189,41 +222,39 @@
     }
 
     .price-label {
-      font-size: 28px;
+      font-size: 26px;
       font-weight: bold;
-      color: #fbbf24;
       text-transform: uppercase;
       letter-spacing: 3px;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
 
     .old-price {
-      font-size: 42px;
+      font-size: 38px;
       font-weight: bold;
-      color: #888;
       text-decoration: line-through;
-      margin-bottom: 15px;
+      margin-bottom: 12px;
     }
 
     .new-price-wrapper {
       display: inline-block;
-      background: #dc2626;
-      padding: 20px 50px;
+      background: var(--accent-color);
+      padding: 18px 45px;
       -webkit-border-radius: 15px;
       -moz-border-radius: 15px;
       border-radius: 15px;
-      margin-top: 20px;
+      margin-top: 15px;
     }
 
     .new-price {
-      font-size: 90px;
+      font-size: 80px;
       font-weight: bold;
       color: #fff;
     }
 
     .promo-badge-big {
       display: inline-block;
-      background: #dc2626;
+      background: var(--accent-color);
       padding: 30px 60px;
       -webkit-border-radius: 20px;
       -moz-border-radius: 20px;
@@ -245,6 +276,26 @@
       letter-spacing: 6px;
     }
 
+    /* QR Code styles */
+    .qr-code-container {
+      margin-top: 25px;
+      text-align: center;
+    }
+
+    .qr-code-container img {
+      background: #fff;
+      padding: 10px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    }
+
+    .qr-code-label {
+      font-size: 18px;
+      color: var(--text-secondary);
+      margin-top: 10px;
+      letter-spacing: 1px;
+    }
+
     /* Promo slide styles */
     .promo-slide {
       padding-top: 200px;
@@ -253,13 +304,11 @@
     .promo-slide .promo-title {
       font-size: 80px;
       font-weight: bold;
-      color: #fff;
       margin-bottom: 40px;
     }
     
     .promo-slide .promo-text {
       font-size: 36px;
-      color: #ddd;
       line-height: 1.6;
       max-width: 800px;
       margin: 0 auto;
@@ -272,14 +321,12 @@
       right: 0;
       z-index: 100;
       padding: 30px 60px;
-      background: rgba(0,0,0,0.7);
       text-align: center;
     }
 
     .cta-text {
       font-size: 22px;
       font-weight: bold;
-      color: #fbbf24;
       text-transform: uppercase;
       letter-spacing: 3px;
     }
@@ -294,14 +341,9 @@
       width: 12px;
       height: 12px;
       margin: 0 6px;
-      background: #444;
       -webkit-border-radius: 50%;
       -moz-border-radius: 50%;
       border-radius: 50%;
-    }
-
-    .progress-dot.active {
-      background: #dc2626;
     }
 
     .loading {
@@ -311,7 +353,6 @@
 
     .loading-text {
       font-size: 32px;
-      color: #888;
     }
 
     .no-promos {
@@ -327,13 +368,11 @@
     .no-promos-title {
       font-size: 56px;
       font-weight: bold;
-      color: #fff;
       margin-bottom: 20px;
     }
 
     .no-promos-subtitle {
       font-size: 32px;
-      color: #888;
     }
 
     /* Legacy-compatible animations */
@@ -486,17 +525,100 @@
     
     // Admin API URL - auto-detect based on current location
     var currentPath = window.location.pathname.replace(/\/[^\/]*$/, '');
-    var ADMIN_API_URL = currentPath + '/admin/api.php';
+    var ADMIN_API_URL = currentPath + '/admin/api.php?orientation=vertical';
     
     // Default values
     var ROTATION_INTERVAL = 6000;
     var displayMode = 'offers'; // offers, images, mixed
     var showOffers = true;
+    var currentTheme = 'dark'; // dark or light
+    var themeSchedule = null;
+    var qrCodeConfig = { enabled: true, url: 'https://ravintolababylon.fi/', size: 150 };
 
     var allSlides = [];
     var currentIndex = 0;
     var rotationTimer = null;
     var adminConfig = null;
+    var themeCheckTimer = null;
+
+    // Apply theme colors from config
+    function applyThemeColors(colors) {
+      if (!colors) return;
+      var root = document.documentElement;
+      root.style.setProperty('--bg-start', colors.background_start || '#1a0505');
+      root.style.setProperty('--bg-mid', colors.background_mid || '#2d0a0a');
+      root.style.setProperty('--bg-end', colors.background_end || '#3d1010');
+      root.style.setProperty('--glow-primary', colors.glow_primary || '#dc2626');
+      root.style.setProperty('--glow-secondary', colors.glow_secondary || '#ea580c');
+      root.style.setProperty('--glow-tertiary', colors.glow_tertiary || '#f59e0b');
+      root.style.setProperty('--text-primary', colors.text_primary || '#ffffff');
+      root.style.setProperty('--text-secondary', colors.text_secondary || '#aaaaaa');
+      root.style.setProperty('--text-accent', colors.text_accent || '#fbbf24');
+      root.style.setProperty('--accent-color', colors.accent_color || '#dc2626');
+      root.style.setProperty('--footer-bg', colors.footer_bg || 'rgba(0,0,0,0.7)');
+    }
+
+    // Theme management
+    function applyTheme(theme, config) {
+      currentTheme = theme;
+      var colors = null;
+      if (theme === 'light' && config && config.light_theme_colors) {
+        colors = config.light_theme_colors;
+      } else if (config && config.dark_theme_colors) {
+        colors = config.dark_theme_colors;
+      }
+      applyThemeColors(colors);
+    }
+
+    function checkThemeSchedule() {
+      if (!themeSchedule || !themeSchedule.enabled) {
+        return;
+      }
+
+      var now = new Date();
+      var currentHour = now.getHours();
+      var currentMinute = now.getMinutes();
+      var currentTime = currentHour * 60 + currentMinute;
+
+      // Parse schedule times
+      var lightStart = parseTimeToMinutes(themeSchedule.light_start || '08:00');
+      var lightEnd = parseTimeToMinutes(themeSchedule.light_end || '20:00');
+
+      // Check if current time is within light mode period
+      var isLightTime = false;
+      if (lightStart <= lightEnd) {
+        // Normal case: light mode during day (e.g., 08:00 - 20:00)
+        isLightTime = currentTime >= lightStart && currentTime < lightEnd;
+      } else {
+        // Inverted case: light mode spans midnight
+        isLightTime = currentTime >= lightStart || currentTime < lightEnd;
+      }
+
+      var targetTheme = isLightTime ? 'light' : 'dark';
+      if (currentTheme !== targetTheme) {
+        applyTheme(targetTheme, adminConfig);
+      }
+    }
+
+    function parseTimeToMinutes(timeStr) {
+      var parts = timeStr.split(':');
+      return parseInt(parts[0], 10) * 60 + parseInt(parts[1] || '0', 10);
+    }
+
+    // Generate QR code URL using Google Charts API
+    function getQRCodeUrl(url, size) {
+      return 'https://api.qrserver.com/v1/create-qr-code/?size=' + size + 'x' + size + '&data=' + encodeURIComponent(url) + '&bgcolor=ffffff&color=000000&margin=0';
+    }
+
+    function getQRCodeHtml() {
+      if (!qrCodeConfig || !qrCodeConfig.enabled) return '';
+      var size = qrCodeConfig.size || 150;
+      var url = qrCodeConfig.url || 'https://ravintolababylon.fi/';
+      return '<div class="qr-code-container">' +
+        '<img src="' + getQRCodeUrl(url, size) + '" alt="QR Code" width="' + size + '" height="' + size + '">' +
+        '<div class="qr-code-label">Tilaa netistä!</div>' +
+        '</div>';
+    }
 
     function formatPrice(price) {
       return parseFloat(price).toFixed(2) + '€';
@@ -556,8 +678,41 @@
         displayMode = data.mode || 'offers';
         showOffers = data.show_offers !== false;
         ROTATION_INTERVAL = data.rotation_interval || 6000;
+        
+        // Apply QR code settings
+        if (data.qr_code) {
+          qrCodeConfig = data.qr_code;
+        }
+        
+        // Apply theme settings
+        var activeTheme = data.theme || 'dark';
+        
+        // Setup theme schedule
+        if (data.theme_schedule) {
+          themeSchedule = data.theme_schedule;
+          if (themeSchedule.enabled) {
+            // Check schedule to determine active theme
+            var now = new Date();
+            var currentTime = now.getHours() * 60 + now.getMinutes();
+            var lightStart = parseTimeToMinutes(themeSchedule.light_start || '08:00');
+            var lightEnd = parseTimeToMinutes(themeSchedule.light_end || '20:00');
+            var isLightTime = lightStart <= lightEnd 
+              ? (currentTime >= lightStart && currentTime < lightEnd)
+              : (currentTime >= lightStart || currentTime < lightEnd);
+            activeTheme = isLightTime ? 'light' : 'dark';
+          }
+          // Check theme every minute
+          if (themeCheckTimer) clearInterval(themeCheckTimer);
+          themeCheckTimer = setInterval(checkThemeSchedule, 60000);
+        }
+        
+        // Apply theme with custom colors
+        applyTheme(activeTheme, data);
+        
         console.log('Admin config loaded:', data);
         console.log('Display mode:', displayMode);
+        console.log('Theme:', activeTheme);
+        console.log('QR Code enabled:', qrCodeConfig.enabled);
         console.log('Slides count:', data.slides ? data.slides.length : 0);
         if (data.slides && data.slides.length > 0) {
           console.log('First slide:', data.slides[0]);
@@ -671,6 +826,7 @@
                 name: config.slides[k].title,
                 description: config.slides[k].description,
                 image: config.slides[k].image,
+                html_url: config.slides[k].html_url,
                 originalPrice: config.slides[k].old_price,
                 offerPrice: config.slides[k].price,
                 discountPercent: config.slides[k].discount
@@ -705,6 +861,14 @@
       for (var i = 0; i < allSlides.length; i++) {
         var slide = allSlides[i];
         
+        // AI-generated HTML slide - load via iframe
+        if (slide.type === 'custom' && slide.slideType === 'ai' && slide.html_url) {
+          fullscreenHtml += '<div class="full-image-card" data-index="' + i + '" data-fullscreen="true">' +
+            '<iframe src="' + escapeHtml(slide.html_url) + '" style="width: 1080px; height: 1920px; border: none;"></iframe>' +
+            '</div>';
+          continue;
+        }
+        
         // Custom image-only slide - goes to fullscreen container
         if (slide.type === 'custom' && slide.slideType === 'image' && slide.image) {
           fullscreenHtml += '<div class="full-image-card" data-index="' + i + '" data-fullscreen="true">' +
@@ -735,12 +899,12 @@
             '<div class="price-label">Nyt vain</div>' +
             '<div class="new-price-wrapper">' +
             '<span class="new-price">' + formatPrice(slide.offerPrice) + '</span>' +
-            '</div>';
+            '</div>' + getQRCodeHtml();
         } else if (slide.offerPrice) {
           priceHtml = '<div class="price-label">Hinta</div>' +
             '<div class="new-price-wrapper">' +
             '<span class="new-price">' + formatPrice(slide.offerPrice) + '</span>' +
-            '</div>';
+            '</div>' + getQRCodeHtml();
         }
 
         var descHtml = slide.description ? '<div class="promo-description">' + escapeHtml(slide.description) + '</div>' : '';
