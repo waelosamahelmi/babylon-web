@@ -388,6 +388,8 @@
     const PIZZA_CATEGORY_ID = 1;
     const PERHE_EXTRA = 8;
     const PIZZA_TOPPINGS = "Kebab, Kinkku, Salami, Pekoni, Pepperonimakkara, Jauheliha, Kana, Aurajuusto, Fetajuusto, Mozzarella, Vuohijuusto, Cheddar, Salaattijuusto, Tuplajuusto, Tomaatti, Kirsikkatomaatti, Sipuli, Tuoreherkkusieni, Herkkusieni, Vihreä paprika, Tuore paprika, Jäävuorisalaatti, Kurkku, Oliivi, Rucola, Ananas, Jalapeno, Katkarapu, Simpukka, Tonnikala, Smetana, Majoneesi, BBQ-kastike, Tacokastike, Voikastike, Pesto, Curry-mangokastike, Kanamuna, Ranskalaiset";
+    const RULLAT_CATEGORY_ID = 2;
+    const RULLAT_TOPPINGS = "Lisää rullaasi: Aurajuusto, Fetajuusto, Jalapeno +1.50€";
     
     // Night menu settings (10 PM to 5 AM)
     const NIGHT_MENU_START_HOUR = 22; // 10 PM
@@ -414,6 +416,10 @@
 
     function isPizzaCategory(categoryId) {
       return categoryId === PIZZA_CATEGORY_ID;
+    }
+
+    function isRullatCategory(categoryId) {
+      return categoryId === RULLAT_CATEGORY_ID;
     }
 
     async function fetchAndRenderMenu() {
@@ -562,6 +568,14 @@
           html += '<div class="menu-toppings-section">';
           html += '<div class="menu-toppings-header">Lisätäytteet</div>';
           html += '<div class="menu-toppings-list">' + PIZZA_TOPPINGS + '</div>';
+          html += '</div>';
+        }
+
+        // Rullat toppings
+        if (isRullatCategory(group.category.id)) {
+          html += '<div class="menu-toppings-section">';
+          html += '<div class="menu-toppings-header">Lisätäytteet +1.50€</div>';
+          html += '<div class="menu-toppings-list">Aurajuusto, Fetajuusto, Jalapeno</div>';
           html += '</div>';
         }
 

@@ -295,6 +295,30 @@
       text-align: right;
     }
 
+    .menu-toppings-section {
+      padding: 5px 8px;
+      background: rgba(0,0,0,0.3);
+      border-left: 1px solid rgba(255,255,255,0.06);
+      border-right: 1px solid rgba(255,255,255,0.06);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      border-radius: 0 0 6px 6px;
+    }
+
+    .menu-toppings-header {
+      font-size: 16px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #fbbf24;
+      margin-bottom: 3px;
+    }
+
+    .menu-toppings-list {
+      font-size: 14px;
+      color: rgba(255,255,255,0.6);
+      line-height: 1.3;
+    }
+
     .loading {
       display: flex;
       align-items: center;
@@ -356,6 +380,8 @@
     const PAGE_NUMBER = 2;
     const PIZZA_CATEGORY_ID = 1;
     const PERHE_EXTRA = 8;
+    const RULLAT_CATEGORY_ID = 2;
+    const RULLAT_TOPPINGS = "Aurajuusto, Fetajuusto, Jalapeno";
     
     // Categories to exclude from display
     const EXCLUDED_CATEGORIES = ['SISÄÄNLEIVOTUT KEBAB'];
@@ -385,6 +411,10 @@
 
     function isPizzaCategory(categoryId) {
       return categoryId === PIZZA_CATEGORY_ID;
+    }
+
+    function isRullatCategory(categoryId) {
+      return categoryId === RULLAT_CATEGORY_ID;
     }
 
     async function fetchAndRenderMenu() {
@@ -515,6 +545,14 @@
           html += '</div>';
           html += '</div>';
         });
+
+        // Rullat toppings
+        if (isRullatCategory(group.category.id)) {
+          html += '<div class="menu-toppings-section">';
+          html += '<div class="menu-toppings-header">Lisätäytteet +1.50€</div>';
+          html += '<div class="menu-toppings-list">' + RULLAT_TOPPINGS + '</div>';
+          html += '</div>';
+        }
 
         html += '</div>';
       });
