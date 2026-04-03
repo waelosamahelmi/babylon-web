@@ -560,7 +560,7 @@
 
           html += '<div class="menu-item-prices">';
           let price = parseFloat(item.price);
-          if (nightMode && !isPizzaCategory(item.category_id)) price += NIGHT_MENU_PRICE_INCREASE;
+          // Night price increase disabled
           
           if (price === 0 || (parseFloat(item.price) === 0)) {
             html += '<span class="menu-price-ask">Kysy</span>';
