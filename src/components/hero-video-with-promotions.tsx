@@ -2,7 +2,7 @@ import { useLanguage } from "@/lib/language-context";
 import { useRestaurant } from "@/lib/restaurant-context";
 import { useHeroPromotions } from "@/hooks/use-promotions";
 import { Button } from "@/components/ui/button";
-import { UtensilsCrossed, Phone, ChevronDown, Sparkles, Tag, Percent } from "lucide-react";
+import { UtensilsCrossed, Phone, ChevronDown, Sparkles, Tag, Percent, MapPin, ChevronRight } from "lucide-react";
 import { Link } from "wouter";
 import { useState, useEffect } from "react";
 
@@ -154,7 +154,7 @@ export function HeroVideoWithPromotions() {
           )}
 
           {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-4">
             <Link href="/menu">
               <Button
                 size="lg"
@@ -179,6 +179,20 @@ export function HeroVideoWithPromotions() {
                 {t("Soita meille", "Call Us", "اتصل بنا")}
               </a>
             </Button>
+          </div>
+
+          {/* Lahti redirect — subtle but discoverable */}
+          <div className="flex justify-center mb-8">
+            <a
+              href="https://ravintolababylonlahti.fi"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold text-white/90 bg-white/10 backdrop-blur-md border border-white/20 hover:bg-gradient-to-r hover:from-orange-500 hover:to-red-500 hover:text-white hover:border-transparent transition-all duration-300 hover:scale-105 shadow-lg group"
+            >
+              <MapPin className="w-4 h-4 group-hover:animate-bounce" />
+              <span>{t("Tilaa Lahdesta", "Order from Lahti")}</span>
+              <ChevronRight className="w-4 h-4 opacity-70 group-hover:translate-x-1 transition-transform" />
+            </a>
           </div>
         </div>
       </div>
