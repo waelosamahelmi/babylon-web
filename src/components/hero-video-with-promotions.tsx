@@ -153,21 +153,26 @@ export function HeroVideoWithPromotions() {
             )
           )}
 
-          {/* Action Buttons */}
+        {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-4">
-            <Link href="/menu">
-              <Button
-                size="lg"
-                className="text-lg px-10 py-7 border-none shadow-2xl hover:shadow-red-500/50 transition-all duration-300 hover:scale-105 group"
-                style={{
-                  background: `linear-gradient(135deg, ${config.theme.primary}, ${config.theme.secondary})`,
-                  color: 'white'
-                }}
+            <Button
+              size="lg"
+              className="text-lg px-10 py-7 border-none shadow-2xl hover:shadow-red-500/50 transition-all duration-300 hover:scale-105 group"
+              style={{
+                background: `linear-gradient(135deg, #f97316, #dc2626)`,
+                color: 'white'
+              }}
+              asChild
+            >
+              <a
+                href="https://ravintolababylonlahti.fi"
+                target="_blank"
+                rel="noopener noreferrer"
               >
-                <UtensilsCrossed className="w-6 h-6 mr-3 group-hover:rotate-12 transition-transform" />
-                {t("Selaa menua", "Browse Menu", "تصفح القائمة")}
-              </Button>
-            </Link>
+                <MapPin className="w-6 h-6 mr-3 group-hover:animate-bounce transition-transform" />
+                {t("Tilaa Lahdesta", "Order from Lahti")}
+              </a>
+            </Button>
 
             <Button
               size="lg"
@@ -181,18 +186,16 @@ export function HeroVideoWithPromotions() {
             </Button>
           </div>
 
-          {/* Lahti redirect — subtle but discoverable */}
+          {/* Browse menu link — secondary */}
           <div className="flex justify-center mb-8">
-            <a
-              href="https://ravintolababylonlahti.fi"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold text-white/90 bg-white/10 backdrop-blur-md border border-white/20 hover:bg-gradient-to-r hover:from-orange-500 hover:to-red-500 hover:text-white hover:border-transparent transition-all duration-300 hover:scale-105 shadow-lg group"
+            <Link
+              href="/menu"
+              className="inline-flex items-center gap-2 text-white/70 hover:text-white text-sm font-medium transition-colors duration-300 group"
             >
-              <MapPin className="w-4 h-4 group-hover:animate-bounce" />
-              <span>{t("Tilaa Lahdesta", "Order from Lahti")}</span>
+              <UtensilsCrossed className="w-4 h-4 group-hover:rotate-12 transition-transform" />
+              <span>{t("Selaa menua", "Browse Menu")}</span>
               <ChevronRight className="w-4 h-4 opacity-70 group-hover:translate-x-1 transition-transform" />
-            </a>
+            </Link>
           </div>
         </div>
       </div>
