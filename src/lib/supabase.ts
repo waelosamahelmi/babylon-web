@@ -11,3 +11,4 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // Export types for TypeScript
 export type { User } from '@supabase/supabase-js';
+// Force rebuild Sat May 16 13:35:14 UTC 2026
