@@ -2,7 +2,7 @@ import { useLanguage } from "@/lib/language-context";
 import { useRestaurant } from "@/lib/restaurant-context";
 import { useHeroPromotions } from "@/hooks/use-promotions";
 import { Button } from "@/components/ui/button";
-import { UtensilsCrossed, Phone, ChevronDown, Sparkles, Tag, Percent, MapPin, ChevronRight } from "lucide-react";
+import { UtensilsCrossed, Phone, Sparkles, Tag, Percent, MapPin, ChevronRight } from "lucide-react";
 import { Link } from "wouter";
 import { useState, useEffect } from "react";
 
@@ -194,14 +194,6 @@ export function HeroVideoWithPromotions() {
               <ChevronRight className="w-4 h-4 opacity-70 group-hover:translate-x-1 transition-transform" />
             </a>
           </div>
-        </div>
-      </div>
-
-      {/* Modern Scroll indicator */}
-      <div className="absolute bottom-32 left-1/2 transform -translate-x-1/2 animate-bounce">
-        <div className="flex flex-col items-center gap-2">
-          <ChevronDown className="w-8 h-8 text-white/60 animate-pulse" />
-          <span className="text-xs text-white/60 uppercase tracking-wider">{t("Vieritä", "Scroll", "انتقل")}</span>
         </div>
       </div>
 
