@@ -1,5 +1,5 @@
 {
-  "buildCommand": "npm run build",
+  "buildCommand": "rm -rf node_modules/.cache dist && npm run build",
   "installCommand": "npm install",
   "framework": null,
   "outputDirectory": "dist"
