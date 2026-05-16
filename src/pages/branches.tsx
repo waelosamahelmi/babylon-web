@@ -5,8 +5,11 @@ import { usePageVariant } from "@/hooks/use-page-variant";
 import { useRestaurant } from "@/lib/restaurant-context";
 import { cn } from "@/lib/utils";
 import { Footer } from "@/components/footer";
+import { LahtiOrderCard } from "@/components/lahti-order-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Phone, Mail, MapPin, Clock, Loader2, Store } from "lucide-react";
+
+const LAHTI_URL = "https://ravintolababylonlahti.fi";
 
 const BranchCard = ({ branch }: { branch: Branch }) => {
   const { t, language } = useLanguage();
@@ -222,6 +225,8 @@ export default function Branches() {
               {branches.map((branch) => (
                 <BranchCard key={branch.id} branch={branch} />
               ))}
+              {/* Lahti redirect card */}
+              <LahtiOrderCard variant="card" />
             </div>
           ) : (
             <div className="text-center py-20 bg-white dark:bg-stone-800 rounded-2xl shadow-lg">

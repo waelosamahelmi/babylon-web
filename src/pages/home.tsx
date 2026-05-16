@@ -18,6 +18,7 @@ import { HeroVideoWithPromotions } from "@/components/hero-video-with-promotions
 import { MultiBranchStatusHeaderV2 } from "@/components/multi-branch-status-header-v2";
 import { AboutSection } from "@/components/about-section";
 import { Footer } from "@/components/footer";
+import { LahtiOrderCard } from "@/components/lahti-order-card";
 import { 
   UtensilsCrossed, 
   Phone, 
@@ -175,7 +176,8 @@ export default function Home() {
         </div>
       </section>
 
-
+      {/* Lahti CTA Banner */}
+      <LahtiOrderCard variant="banner" />
 
       {/* About Section */}
       <AboutSection />
