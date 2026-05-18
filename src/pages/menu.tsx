@@ -75,15 +75,8 @@ export default function Menu() {
   const [successOrderType, setSuccessOrderType] = useState<"delivery" | "pickup">("pickup");
   const [isOrderingAvailable, setIsOrderingAvailable] = useState(true); // Start optimistic
 
-  // Lahti popup state
-  const [showLahtiDialog, setShowLahtiDialog] = useState(() => {
-    // Show once per session
-    const dismissed = sessionStorage.getItem('lahti-dialog-dismissed');
-    return dismissed !== 'true';
-  });
-
-  // Lahti popup shown flag for announcement bar
-  const [lahtiPopupShown, setLahtiPopupShown] = useState(false);
+  // Lahti popup state — show every time user visits menu
+  const [showLahtiDialog, setShowLahtiDialog] = useState(true);
   // Check ordering availability based on branch hours
   useEffect(() => {
     const checkOrderingStatus = () => {
@@ -700,9 +693,7 @@ export default function Menu() {
               rel="noopener noreferrer"
               className="group"
               onClick={() => {
-                sessionStorage.setItem('lahti-dialog-dismissed', 'true');
                 setShowLahtiDialog(false);
-                setLahtiPopupShown(true);
               }}
             >
               <div className="flex items-center gap-4 p-5 rounded-2xl bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-950/30 dark:to-orange-950/30 border-2 border-red-200 dark:border-red-800 hover:border-red-400 dark:hover:border-red-600 transition-all hover:shadow-lg group-hover:scale-[1.02]">
@@ -724,9 +715,7 @@ export default function Menu() {
             <button
               className="group w-full text-left"
               onClick={() => {
-                sessionStorage.setItem('lahti-dialog-dismissed', 'true');
                 setShowLahtiDialog(false);
-                setLahtiPopupShown(true);
               }}
             >
               <div className="flex items-center gap-4 p-5 rounded-2xl bg-gradient-to-r from-gray-50 to-gray-100 dark:from-stone-800 dark:to-stone-700 border-2 border-gray-200 dark:border-stone-600 hover:border-gray-400 dark:hover:border-stone-400 transition-all hover:shadow-lg group-hover:scale-[1.02]">
