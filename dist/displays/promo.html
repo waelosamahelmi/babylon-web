@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1920, height=1080">
+  <title>Babylon - Tarjoukset</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    html, body {
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      background: #000;
+    }
+
+    /* Rotate entire content -90deg for portrait TV mounted landscape */
+    .rotation-wrapper {
+      width: 1080px;
+      height: 1920px;
+      transform: rotate(-90deg) translateX(-1080px);
+      transform-origin: top left;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    .promo-display {
+      width: 1080px;
+      height: 1920px;
+      position: relative;
+      overflow: hidden;
+      font-family: 'Outfit', system-ui, sans-serif;
+      background: linear-gradient(160deg, #0a0505 0%, #150808 25%, #1a0a0a 50%, #120606 75%, #080303 100%);
+    }
+
+    /* Animated background elements */
+    .bg-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .bg-glow {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(100px);
+      opacity: 0.4;
+    }
+
+    .bg-glow-1 {
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, #dc2626 0%, transparent 70%);
+      top: -200px;
+      left: -150px;
+      animation: glow-pulse 8s ease-in-out infinite;
+    }
+
+    .bg-glow-2 {
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, #ea580c 0%, transparent 70%);
+      bottom: -100px;
+      right: -100px;
+      animation: glow-pulse 8s ease-in-out infinite 2s;
+    }
+
+    .bg-glow-3 {
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, #f59e0b 0%, transparent 70%);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      animation: glow-pulse 8s ease-in-out infinite 4s;
+    }
+
+    @keyframes glow-pulse {
+      0%, 100% { opacity: 0.3; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.2); }
+    }
+
+    /* Floating particles */
+    .particle {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      animation: float-up 15s linear infinite;
+    }
+
+    @keyframes float-up {
+      0% { transform: translateY(1920px) scale(0); opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { transform: translateY(-100px) scale(1); opacity: 0; }
+    }
+
+    /* Header */
+    .header {
+      position: relative;
+      z-index: 100;
+      padding: 40px 60px 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(180deg, rgba(0,0,0,0.6) 0%, transparent 100%);
+    }
+
+    .logo-section {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo-img {
+      width: 350px;
+      height: 350px;
+      object-fit: contain;
+      filter: drop-shadow(0 0 80px rgba(220, 38, 38, 0.8));
+      animation: logo-glow 3s ease-in-out infinite;
+    }
+
+    @keyframes logo-glow {
+      0%, 100% { filter: drop-shadow(0 0 50px rgba(220, 38, 38, 0.7)); }
+      50% { filter: drop-shadow(0 0 80px rgba(220, 38, 38, 1)); }
+    }
+
+    .clock {
+      font-size: 36px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.6);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Main content area */
+    .main-content {
+      position: relative;
+      z-index: 10;
+      height: calc(1920px - 160px - 200px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 0 60px;
+    }
+
+    /* Promo card */
+    .promo-card {
+      position: absolute;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      opacity: 0;
+      transform: scale(0.9) translateY(50px);
+      transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .promo-card.active {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+
+    .promo-card.exit {
+      opacity: 0;
+      transform: scale(0.9) translateY(-50px);
+    }
+
+    /* Image container with fancy border */
+    .image-wrapper {
+      position: relative;
+      width: 550px;
+      height: 550px;
+      margin-bottom: 40px;
+    }
+
+    .image-border {
+      position: absolute;
+      inset: -15px;
+      border-radius: 50%;
+      background: conic-gradient(from 0deg, #dc2626, #ea580c, #f59e0b, #dc2626);
+      animation: rotate-border 6s linear infinite;
+      padding: 4px;
+    }
+
+    .image-border::before {
+      content: '';
+      position: absolute;
+      inset: 4px;
+      border-radius: 50%;
+      background: #0a0505;
+    }
+
+    @keyframes rotate-border {
+      to { transform: rotate(360deg); }
+    }
+
+    .promo-image {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 6px solid rgba(0,0,0,0.5);
+      box-shadow: 
+        0 0 60px rgba(220, 38, 38, 0.4),
+        inset 0 0 60px rgba(0,0,0,0.3);
+    }
+
+    /* Discount badge */
+    .discount-badge {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+      color: #fff;
+      font-size: 42px;
+      font-weight: 900;
+      padding: 20px 30px;
+      border-radius: 20px;
+      box-shadow: 
+        0 10px 40px rgba(220, 38, 38, 0.6),
+        0 0 0 4px rgba(255,255,255,0.2);
+      animation: badge-bounce 2s ease-in-out infinite;
+      z-index: 10;
+    }
+
+    @keyframes badge-bounce {
+      0%, 100% { transform: scale(1) rotate(-3deg); }
+      50% { transform: scale(1.1) rotate(3deg); }
+    }
+
+    /* Big promo badge for category-wide discounts */
+    .promo-badge-big {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+      padding: 30px 60px;
+      border-radius: 30px;
+      box-shadow: 
+        0 15px 50px rgba(220, 38, 38, 0.6),
+        0 0 0 5px rgba(255,255,255,0.15),
+        inset 0 2px 10px rgba(255,255,255,0.2);
+      animation: promo-badge-pulse 2s ease-in-out infinite;
+    }
+
+    .promo-badge-value {
+      font-size: 90px;
+      font-weight: 900;
+      color: #fff;
+      line-height: 1;
+      text-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    }
+
+    .promo-badge-label {
+      font-size: 28px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.9);
+      letter-spacing: 8px;
+      margin-top: 10px;
+    }
+
+    @keyframes promo-badge-pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    /* Promo info */
+    .promo-info {
+      text-align: center;
+      max-width: 900px;
+      margin-bottom: 100px;
+    }
+
+    .promo-name {
+      font-size: 72px;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 15px;
+      line-height: 1.1;
+      text-shadow: 0 4px 30px rgba(0,0,0,0.5);
+    }
+
+    .promo-description {
+      font-size: 32px;
+      font-weight: 400;
+      color: rgba(255,255,255,0.65);
+      margin-bottom: 0;
+      line-height: 1.5;
+    }
+
+    /* Price display - Ad style */
+    .price-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .price-row {
+      display: flex;
+      align-items: center;
+      gap: 30px;
+    }
+
+    .old-price {
+      position: relative;
+      font-size: 48px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.5);
+      padding: 5px 15px;
+    }
+
+    .old-price::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 50%;
+      height: 6px;
+      background: #dc2626;
+      transform: rotate(-8deg);
+      box-shadow: 0 0 20px rgba(220, 38, 38, 0.8);
+    }
+
+    .new-price-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .new-price-bg {
+      position: absolute;
+      inset: -20px -40px;
+      background: linear-gradient(135deg, #dc2626 0%, #b91c1c 50%, #991b1b 100%);
+      border-radius: 20px;
+      transform: rotate(-2deg);
+      box-shadow: 
+        0 10px 50px rgba(220, 38, 38, 0.6),
+        0 0 0 4px rgba(255,255,255,0.15),
+        inset 0 2px 0 rgba(255,255,255,0.2);
+      animation: price-bg-pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes price-bg-pulse {
+      0%, 100% { 
+        transform: rotate(-2deg) scale(1);
+        box-shadow: 0 10px 50px rgba(220, 38, 38, 0.6), 0 0 0 4px rgba(255,255,255,0.15);
+      }
+      50% { 
+        transform: rotate(-2deg) scale(1.03);
+        box-shadow: 0 15px 60px rgba(220, 38, 38, 0.8), 0 0 0 6px rgba(255,255,255,0.2);
+      }
+    }
+
+    .new-price {
+      position: relative;
+      z-index: 1;
+      font-size: 110px;
+      font-weight: 900;
+      color: #fff;
+      text-shadow: 
+        0 4px 0 rgba(0,0,0,0.3),
+        0 8px 30px rgba(0,0,0,0.4);
+      animation: price-bounce 2s ease-in-out infinite;
+    }
+
+    @keyframes price-bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+
+    .price-label {
+      font-size: 28px;
+      font-weight: 700;
+      color: #fbbf24;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      text-shadow: 0 2px 10px rgba(251, 191, 36, 0.5);
+      animation: label-glow 1.5s ease-in-out infinite;
+      margin-bottom: 30px;
+    }
+
+    @keyframes label-glow {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
+    /* Footer */
+    .footer {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 30px 60px;
+      background: linear-gradient(0deg, rgba(0,0,0,0.8) 0%, transparent 100%);
+      text-align: center;
+    }
+
+    .cta-text {
+      font-size: 22px;
+      font-weight: 600;
+      color: #fbbf24;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      animation: cta-glow 2s ease-in-out infinite;
+      opacity: 0.85;
+    }
+
+    @keyframes cta-glow {
+      0%, 100% { 
+        text-shadow: 0 0 10px rgba(251, 191, 36, 0.4);
+        opacity: 0.85;
+      }
+      50% { 
+        text-shadow: 0 0 20px rgba(251, 191, 36, 0.6);
+        opacity: 1;
+      }
+    }
+
+    .fire-emoji {
+      display: inline-block;
+      animation: fire-dance 0.5s ease-in-out infinite alternate;
+      font-size: 18px;
+    }
+
+    .fire-emoji:nth-child(2) {
+      animation-delay: 0.1s;
+    }
+
+    @keyframes fire-dance {
+      0% { transform: translateY(0) rotate(-5deg); }
+      100% { transform: translateY(-3px) rotate(5deg); }
+    }
+
+    /* Progress indicator */
+    .progress-dots {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .progress-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.2);
+      transition: all 0.3s ease;
+    }
+
+    .progress-dot.active {
+      background: #dc2626;
+      box-shadow: 0 0 20px rgba(220, 38, 38, 0.6);
+      transform: scale(1.3);
+    }
+
+    /* Loading state */
+    .loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      gap: 30px;
+    }
+
+    .loading-spinner {
+      width: 80px;
+      height: 80px;
+      border: 6px solid rgba(255,255,255,0.1);
+      border-top-color: #dc2626;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .loading-text {
+      font-size: 28px;
+      color: rgba(255,255,255,0.5);
+    }
+
+    /* No promos state */
+    .no-promos {
+      text-align: center;
+    }
+
+    .no-promos-icon {
+      font-size: 120px;
+      margin-bottom: 30px;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-20px); }
+    }
+
+    .no-promos-title {
+      font-size: 56px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 20px;
+    }
+
+    .no-promos-subtitle {
+      font-size: 32px;
+      color: rgba(255,255,255,0.5);
+    }
+  </style>
+</head>
+<body>
+  <div class="rotation-wrapper">
+    <div class="promo-display">
+      <!-- Background layer -->
+      <div class="bg-layer">
+        <div class="bg-glow bg-glow-1"></div>
+        <div class="bg-glow bg-glow-2"></div>
+        <div class="bg-glow bg-glow-3"></div>
+        <!-- Particles will be added by JS -->
+      </div>
+
+      <!-- Header -->
+      <header class="header">
+        <div class="logo-section">
+          <img src="https://ravintolababylon.fi/logo.png" alt="Logo" class="logo-img">
+        </div>
+      </header>
+
+      <!-- Main content -->
+      <main class="main-content" id="main-content">
+        <div class="loading">
+          <div class="loading-spinner"></div>
+          <div class="loading-text">Ladataan tarjouksia...</div>
+        </div>
+      </main>
+
+      <!-- Footer -->
+      <footer class="footer">
+        <div class="cta-text">
+          <span class="fire-emoji">🔥</span>
+          Tarjoukset voimassa rajoitetun ajan!
+          <span class="fire-emoji">🔥</span>
+        </div>
+        <div class="progress-dots" id="progress-dots"></div>
+      </footer>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://ssyhpqfdzbvrkvqdnxyy.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNzeWhwcWZkemJ2cmt2cWRueHl5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNTQ0ODcsImV4cCI6MjA3ODYzMDQ4N30.rplVZXLXaMl3x8e6UftdooztYVWFs6v91DLmg3jrorQ';
+    const ROTATION_INTERVAL = 6000;
+
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let promotions = [];
+    let currentIndex = 0;
+    let rotationTimer = null;
+
+    // Create floating particles
+    function createParticles() {
+      const bgLayer = document.querySelector('.bg-layer');
+      for (let i = 0; i < 20; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.animationDelay = Math.random() * 15 + 's';
+        particle.style.animationDuration = (10 + Math.random() * 10) + 's';
+        bgLayer.appendChild(particle);
+      }
+    }
+
+    function formatPrice(price) {
+      return parseFloat(price).toFixed(2) + '€';
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    async function fetchPromotions() {
+      try {
+        // Get items with offers (has offer_price OR offer_percentage)
+        const { data: offerItems, error: offerError } = await sb
+          .from('menu_items')
+          .select('*')
+          .eq('is_available', true)
+          .or('offer_price.not.is.null,offer_percentage.gt.0');
+
+        if (offerError) throw offerError;
+
+        // Get all menu items with images for fallback
+        const { data: allItems, error: allError } = await sb
+          .from('menu_items')
+          .select('category_id, image_url')
+          .eq('is_available', true)
+          .not('image_url', 'is', null);
+
+        if (allError) throw allError;
+
+        // Build category image map for fallbacks
+        const categoryImages = {};
+        if (allItems) {
+          allItems.forEach(item => {
+            if (item.image_url && item.category_id) {
+              if (!categoryImages[item.category_id]) {
+                categoryImages[item.category_id] = [];
+              }
+              categoryImages[item.category_id].push(item.image_url);
+            }
+          });
+        }
+
+        // Helper to get fallback image from category
+        function getFallbackImage(categoryId) {
+          const images = categoryImages[categoryId];
+          if (images && images.length > 0) {
+            return images[Math.floor(Math.random() * images.length)];
+          }
+          // Try any random image if category has none
+          const allImages = Object.values(categoryImages).flat();
+          if (allImages.length > 0) {
+            return allImages[Math.floor(Math.random() * allImages.length)];
+          }
+          return 'https://placehold.co/550x550/1a0a0a/dc2626?text=🍕';
+        }
+
+        // Get active promotions (check date range too)
+        const now = new Date().toISOString();
+        const { data: promos, error: promoError } = await sb
+          .from('promotions')
+          .select('*')
+          .eq('is_active', true)
+          .lte('start_date', now)
+          .gte('end_date', now);
+
+        if (promoError) throw promoError;
+
+        // Combine offers and promotions
+        promotions = [];
+
+        if (offerItems) {
+          offerItems.forEach(item => {
+            // Calculate discount percent if not set but offer_price exists
+            let discountPercent = item.offer_percentage;
+            if (!discountPercent && item.offer_price && item.price) {
+              discountPercent = Math.round((1 - item.offer_price / item.price) * 100);
+            }
+            
+            // Only add if there's actually a discount
+            if (item.offer_price || discountPercent > 0) {
+              promotions.push({
+                type: 'offer',
+                id: item.id,
+                name: item.name,
+                description: item.description,
+                image: item.image_url || getFallbackImage(item.category_id),
+                originalPrice: item.price,
+                offerPrice: item.offer_price || (item.price * (1 - discountPercent / 100)),
+                discountPercent: discountPercent
+              });
+            }
+          });
+        }
+
+        if (promos) {
+          promos.forEach(promo => {
+            // Calculate discount display based on discount_type
+            let discountDisplay = null;
+            if (promo.discount_type === 'percentage') {
+              discountDisplay = promo.discount_value;
+            }
+            
+            promotions.push({
+              type: 'promotion',
+              id: promo.id,
+              name: promo.name,
+              nameEn: promo.name_en,
+              description: promo.description,
+              descriptionEn: promo.description_en,
+              image: getFallbackImage(promo.category_id),
+              discountPercent: discountDisplay,
+              discountType: promo.discount_type,
+              discountValue: promo.discount_value,
+              categoryId: promo.category_id,
+              branchId: promo.branch_id,
+              startDate: promo.start_date,
+              endDate: promo.end_date,
+              minOrderAmount: promo.min_order_amount,
+              maxDiscountAmount: promo.max_discount_amount,
+              // For percentage discounts, we show the discount badge
+              // For fixed discounts, show the amount off
+              originalPrice: null, // Promotions don't have a specific price
+              offerPrice: promo.discount_type === 'fixed' ? promo.discount_value : null
+            });
+          });
+        }
+
+        renderPromotions();
+
+      } catch (err) {
+        console.error('Error fetching promotions:', err);
+        document.getElementById('main-content').innerHTML = `
+          <div class="loading">
+            <div class="loading-text">Virhe ladattaessa tarjouksia</div>
+          </div>
+        `;
+      }
+    }
+
+    function renderPromotions() {
+      const content = document.getElementById('main-content');
+      const dotsContainer = document.getElementById('progress-dots');
+
+      if (promotions.length === 0) {
+        content.innerHTML = `
+          <div class="no-promos">
+            <div class="no-promos-icon">🍕</div>
+            <div class="no-promos-title">Tervetuloa Babyloniin!</div>
+            <div class="no-promos-subtitle">Tutustu maukkaisiin ruokiimme</div>
+          </div>
+        `;
+        dotsContainer.innerHTML = '';
+        return;
+      }
+
+      // Render promo cards
+      let html = '';
+      promotions.forEach((promo, idx) => {
+        // Determine what discount badge to show (only for product offers, not general promotions)
+        let discountBadge = '';
+        if (promo.type === 'offer' && promo.discountPercent) {
+          discountBadge = `<div class="discount-badge">-${promo.discountPercent}%</div>`;
+        }
+
+        // Determine price display
+        let priceHtml = '';
+        if (promo.originalPrice && promo.offerPrice) {
+          // Product offer with before/after prices
+          priceHtml = `
+            <div class="price-label">Ennen</div>
+            <div class="price-row">
+              <span class="old-price">${formatPrice(promo.originalPrice)}</span>
+            </div>
+            <div class="price-label">Nyt vain</div>
+            <div class="new-price-wrapper">
+              <div class="new-price-bg"></div>
+              <span class="new-price">${formatPrice(promo.offerPrice)}</span>
+            </div>
+          `;
+        } else if (promo.type === 'promotion') {
+          // Category/general promotion - show discount info
+          if (promo.discountType === 'percentage') {
+            priceHtml = `
+              <div class="promo-badge-big">
+                <span class="promo-badge-value">-${promo.discountValue}%</span>
+                <span class="promo-badge-label">ALENNUS</span>
+              </div>
+            `;
+          } else if (promo.discountType === 'fixed') {
+            priceHtml = `
+              <div class="promo-badge-big">
+                <span class="promo-badge-value">-${formatPrice(promo.discountValue)}</span>
+                <span class="promo-badge-label">ALENNUS</span>
+              </div>
+            `;
+          }
+        } else if (promo.offerPrice) {
+          // Just offer price
+          priceHtml = `
+            <div class="price-label">Hinta</div>
+            <div class="new-price-wrapper">
+              <div class="new-price-bg"></div>
+              <span class="new-price">${formatPrice(promo.offerPrice)}</span>
+            </div>
+          `;
+        }
+
+        html += `
+          <div class="promo-card" data-index="${idx}">
+            <div class="image-wrapper">
+              <div class="image-border"></div>
+              <img src="${escapeHtml(promo.image)}" alt="${escapeHtml(promo.name)}" class="promo-image" 
+                   onerror="this.src='https://placehold.co/550x550/1a0a0a/dc2626?text=🍕'">
+              ${discountBadge}
+            </div>
+            <div class="promo-info">
+              <div class="promo-name">${escapeHtml(promo.name)}</div>
+              ${promo.description ? `<div class="promo-description">${escapeHtml(promo.description)}</div>` : ''}
+              <div class="price-container">
+                ${priceHtml}
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      content.innerHTML = html;
+
+      // Render progress dots
+      dotsContainer.innerHTML = promotions.map((_, idx) => 
+        `<div class="progress-dot" data-index="${idx}"></div>`
+      ).join('');
+
+      startRotation();
+    }
+
+    function startRotation() {
+      if (rotationTimer) clearInterval(rotationTimer);
+      
+      currentIndex = 0;
+      showPromo(currentIndex);
+
+      if (promotions.length > 1) {
+        rotationTimer = setInterval(() => {
+          currentIndex = (currentIndex + 1) % promotions.length;
+          showPromo(currentIndex);
+        }, ROTATION_INTERVAL);
+      }
+    }
+
+    function showPromo(index) {
+      const cards = document.querySelectorAll('.promo-card');
+      const dots = document.querySelectorAll('.progress-dot');
+
+      cards.forEach((card, i) => {
+        card.classList.remove('active', 'exit');
+        if (i === index) {
+          card.classList.add('active');
+        }
+      });
+
+      dots.forEach((dot, i) => {
+        dot.classList.toggle('active', i === index);
+      });
+    }
+
+    // Initialize
+    createParticles();
+    fetchPromotions();
+
+    // Realtime subscriptions
+    sb
+      .channel('promo-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'menu_items' }, () => {
+        fetchPromotions();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'promotions' }, () => {
+        fetchPromotions();
+      })
+      .subscribe();
+
+    // Refresh every 5 minutes
+    setInterval(fetchPromotions, 300000);
+  </script>
+</body>
+</html>

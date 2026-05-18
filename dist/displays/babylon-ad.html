@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=1920, height=1080">
+  <title>Babylon - Tarjoukset</title>
+  <style type="text/css">
+    :root {
+      /* Dark theme defaults */
+      --bg-start: #1a0505;
+      --bg-mid: #2d0a0a;
+      --bg-end: #3d1010;
+      --glow-primary: #dc2626;
+      --glow-secondary: #ea580c;
+      --glow-tertiary: #f59e0b;
+      --text-primary: #ffffff;
+      --text-secondary: #aaaaaa;
+      --text-accent: #fbbf24;
+      --accent-color: #dc2626;
+      --footer-bg: rgba(0,0,0,0.7);
+    }
+
+    * { margin: 0; padding: 0; }
+    
+    html, body {
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg-start);
+    }
+
+    .promo-display {
+      background: var(--bg-mid);
+      background: -webkit-linear-gradient(160deg, var(--bg-start) 0%, var(--bg-mid) 25%, var(--bg-end) 50%, var(--bg-mid) 75%, var(--bg-start) 100%);
+      background: -moz-linear-gradient(160deg, var(--bg-start) 0%, var(--bg-mid) 25%, var(--bg-end) 50%, var(--bg-mid) 75%, var(--bg-start) 100%);
+      background: linear-gradient(160deg, var(--bg-start) 0%, var(--bg-mid) 25%, var(--bg-end) 50%, var(--bg-mid) 75%, var(--bg-start) 100%);
+    }
+
+    .bg-glow { background: var(--glow-primary); opacity: 0.4; }
+    .bg-glow-2 { background: var(--glow-secondary); }
+    .bg-glow-3 { background: var(--glow-tertiary); opacity: 0.25; }
+    .promo-name { color: var(--text-primary); }
+    .promo-description { color: var(--text-secondary); }
+    .price-label { color: var(--text-accent); }
+    .old-price { color: var(--text-secondary); }
+    .footer { background: var(--footer-bg); }
+    .cta-text { color: var(--text-accent); }
+    .progress-dot { background: var(--text-secondary); opacity: 0.5; }
+    .progress-dot.active { background: var(--accent-color); opacity: 1; }
+    .loading-text { color: var(--text-secondary); }
+    .no-promos-title { color: var(--text-primary); }
+    .no-promos-subtitle { color: var(--text-secondary); }
+    .promo-slide .promo-title { color: var(--text-primary); }
+    .promo-slide .promo-text { color: var(--text-secondary); }
+    .full-image-card { background: var(--bg-start); }
+    .promo-image { border-color: var(--accent-color); }
+    .new-price-wrapper { background: var(--accent-color); }
+    .discount-badge { background: var(--accent-color); }
+    .promo-badge-big { background: var(--accent-color); }
+
+    .rotation-wrapper {
+      width: 1080px;
+      height: 1920px;
+      -webkit-transform: rotate(-90deg) translateX(-1080px);
+      -moz-transform: rotate(-90deg) translateX(-1080px);
+      -ms-transform: rotate(-90deg) translateX(-1080px);
+      transform: rotate(-90deg) translateX(-1080px);
+      -webkit-transform-origin: top left;
+      -moz-transform-origin: top left;
+      -ms-transform-origin: top left;
+      transform-origin: top left;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    .promo-display {
+      width: 1080px;
+      height: 1920px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .bg-glow {
+      position: absolute;
+      width: 700px;
+      height: 700px;
+      top: -200px;
+      left: -150px;
+      -webkit-border-radius: 50%;
+      -moz-border-radius: 50%;
+      border-radius: 50%;
+      -webkit-filter: blur(100px);
+      filter: blur(100px);
+    }
+
+    .bg-glow-2 {
+      top: auto;
+      left: auto;
+      bottom: -150px;
+      right: -150px;
+      width: 600px;
+      height: 600px;
+    }
+
+    .bg-glow-3 {
+      position: absolute;
+      width: 500px;
+      height: 500px;
+      top: 50%;
+      left: 50%;
+      margin-top: -250px;
+      margin-left: -250px;
+      -webkit-border-radius: 50%;
+      -moz-border-radius: 50%;
+      border-radius: 50%;
+      -webkit-filter: blur(120px);
+      filter: blur(120px);
+    }
+
+    .header {
+      position: relative;
+      z-index: 100;
+      padding: 40px 60px 20px;
+      text-align: center;
+    }
+
+    .logo-img {
+      width: 350px;
+      height: 350px;
+    }
+
+    .main-content {
+      position: relative;
+      z-index: 10;
+      height: 1300px;
+      text-align: center;
+      padding: 0 60px;
+    }
+
+    .promo-card {
+      display: none;
+      text-align: center;
+    }
+
+    .promo-card.active {
+      display: block;
+    }
+
+    /* Full image slide */
+    .full-image-card {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 1080px;
+      height: 1920px;
+      z-index: 1000;
+    }
+    
+    .full-image-card.active {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .full-image-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: #000;
+    }
+
+    .image-wrapper {
+      position: relative;
+      display: inline-block;
+      margin-bottom: 30px;
+    }
+
+    .promo-image {
+      width: 450px;
+      height: 450px;
+      -webkit-border-radius: 50%;
+      -moz-border-radius: 50%;
+      border-radius: 50%;
+      border: 8px solid var(--accent-color);
+    }
+
+    .discount-badge {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: var(--accent-color);
+      color: #fff;
+      font-size: 42px;
+      font-weight: bold;
+      padding: 20px 30px;
+      -webkit-border-radius: 15px;
+      -moz-border-radius: 15px;
+      border-radius: 15px;
+    }
+
+    .promo-info {
+      margin-bottom: 20px;
+    }
+
+    .promo-name {
+      font-size: 58px;
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+
+    .promo-description {
+      font-size: 26px;
+      margin-bottom: 15px;
+    }
+
+    .price-container {
+      text-align: center;
+    }
+
+    .price-label {
+      font-size: 26px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      margin-bottom: 8px;
+    }
+
+    .old-price {
+      font-size: 38px;
+      font-weight: bold;
+      text-decoration: line-through;
+      margin-bottom: 12px;
+    }
+
+    .new-price-wrapper {
+      display: inline-block;
+      background: var(--accent-color);
+      padding: 18px 45px;
+      -webkit-border-radius: 15px;
+      -moz-border-radius: 15px;
+      border-radius: 15px;
+      margin-top: 15px;
+    }
+
+    .new-price {
+      font-size: 80px;
+      font-weight: bold;
+      color: #fff;
+    }
+
+    .promo-badge-big {
+      display: inline-block;
+      background: var(--accent-color);
+      padding: 30px 60px;
+      -webkit-border-radius: 20px;
+      -moz-border-radius: 20px;
+      border-radius: 20px;
+      text-align: center;
+    }
+
+    .promo-badge-value {
+      font-size: 80px;
+      font-weight: bold;
+      color: #fff;
+      display: block;
+    }
+
+    .promo-badge-label {
+      font-size: 24px;
+      font-weight: bold;
+      color: #fef3c7;
+      letter-spacing: 6px;
+    }
+
+    /* QR Code styles */
+    .qr-code-container {
+      margin-top: 25px;
+      text-align: center;
+    }
+
+    .qr-code-container img {
+      background: #fff;
+      padding: 10px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    }
+
+    .qr-code-label {
+      font-size: 18px;
+      color: var(--text-secondary);
+      margin-top: 10px;
+      letter-spacing: 1px;
+    }
+
+    /* Promo slide styles */
+    .promo-slide {
+      padding-top: 200px;
+    }
+    
+    .promo-slide .promo-title {
+      font-size: 80px;
+      font-weight: bold;
+      margin-bottom: 40px;
+    }
+    
+    .promo-slide .promo-text {
+      font-size: 36px;
+      line-height: 1.6;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .footer {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 30px 60px;
+      text-align: center;
+    }
+
+    .cta-text {
+      font-size: 22px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+    }
+
+    .progress-dots {
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    .progress-dot {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      margin: 0 6px;
+      -webkit-border-radius: 50%;
+      -moz-border-radius: 50%;
+      border-radius: 50%;
+    }
+
+    .loading {
+      text-align: center;
+      padding-top: 200px;
+    }
+
+    .loading-text {
+      font-size: 32px;
+    }
+
+    .no-promos {
+      text-align: center;
+      padding-top: 150px;
+    }
+
+    .no-promos-icon {
+      font-size: 120px;
+      margin-bottom: 30px;
+    }
+
+    .no-promos-title {
+      font-size: 56px;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+
+    .no-promos-subtitle {
+      font-size: 32px;
+    }
+
+    /* Legacy-compatible animations */
+    @-webkit-keyframes pulse {
+      0%, 100% { -webkit-transform: scale(1); opacity: 1; }
+      50% { -webkit-transform: scale(1.05); opacity: 0.9; }
+    }
+    @-moz-keyframes pulse {
+      0%, 100% { -moz-transform: scale(1); opacity: 1; }
+      50% { -moz-transform: scale(1.05); opacity: 0.9; }
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.05); opacity: 0.9; }
+    }
+
+    @-webkit-keyframes glow {
+      0%, 100% { opacity: 0.2; }
+      50% { opacity: 0.35; }
+    }
+    @-moz-keyframes glow {
+      0%, 100% { opacity: 0.2; }
+      50% { opacity: 0.35; }
+    }
+    @keyframes glow {
+      0%, 100% { opacity: 0.2; }
+      50% { opacity: 0.35; }
+    }
+
+    @-webkit-keyframes bounce {
+      0%, 100% { -webkit-transform: translateY(0); }
+      50% { -webkit-transform: translateY(-10px); }
+    }
+    @-moz-keyframes bounce {
+      0%, 100% { -moz-transform: translateY(0); }
+      50% { -moz-transform: translateY(-10px); }
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    @-webkit-keyframes wiggle {
+      0%, 100% { -webkit-transform: rotate(-3deg); }
+      50% { -webkit-transform: rotate(3deg); }
+    }
+    @-moz-keyframes wiggle {
+      0%, 100% { -moz-transform: rotate(-3deg); }
+      50% { -moz-transform: rotate(3deg); }
+    }
+    @keyframes wiggle {
+      0%, 100% { transform: rotate(-3deg); }
+      50% { transform: rotate(3deg); }
+    }
+
+    @-webkit-keyframes fadeIn {
+      from { opacity: 0; -webkit-transform: scale(0.95); }
+      to { opacity: 1; -webkit-transform: scale(1); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .bg-glow {
+      -webkit-animation: glow 4s ease-in-out infinite;
+      -moz-animation: glow 4s ease-in-out infinite;
+      animation: glow 4s ease-in-out infinite;
+    }
+
+    .bg-glow-2 {
+      -webkit-animation-delay: 2s;
+      -moz-animation-delay: 2s;
+      animation-delay: 2s;
+    }
+
+    .logo-img {
+      -webkit-animation: pulse 3s ease-in-out infinite;
+      -moz-animation: pulse 3s ease-in-out infinite;
+      animation: pulse 3s ease-in-out infinite;
+    }
+
+    .discount-badge {
+      -webkit-animation: wiggle 1s ease-in-out infinite;
+      -moz-animation: wiggle 1s ease-in-out infinite;
+      animation: wiggle 1s ease-in-out infinite;
+    }
+
+    .new-price-wrapper {
+      -webkit-animation: pulse 2s ease-in-out infinite;
+      -moz-animation: pulse 2s ease-in-out infinite;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .promo-badge-big {
+      -webkit-animation: pulse 2s ease-in-out infinite;
+      -moz-animation: pulse 2s ease-in-out infinite;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .promo-card.active .promo-image {
+      -webkit-animation: pulse 4s ease-in-out infinite;
+      -moz-animation: pulse 4s ease-in-out infinite;
+      animation: pulse 4s ease-in-out infinite;
+    }
+    
+    .promo-card.active, .full-image-card.active, .promo-slide.active {
+      -webkit-animation: fadeIn 0.5s ease-out;
+      animation: fadeIn 0.5s ease-out;
+    }
+
+    .cta-text {
+      -webkit-animation: pulse 2s ease-in-out infinite;
+      -moz-animation: pulse 2s ease-in-out infinite;
+      animation: pulse 2s ease-in-out infinite;
+    }
+  </style>
+</head>
+<body>
+  <div class="rotation-wrapper">
+    <div class="promo-display">
+      <div class="bg-glow"></div>
+      <div class="bg-glow bg-glow-2"></div>
+      <div class="bg-glow-3"></div>
+
+      <div class="header" id="header">
+        <img src="https://ravintolababylon.fi/logo.png" alt="Logo" class="logo-img">
+      </div>
+
+      <div class="main-content" id="main-content">
+        <div class="loading">
+          <div class="loading-text">Ladataan tarjouksia...</div>
+        </div>
+      </div>
+
+      <div class="footer" id="footer">
+        <div class="cta-text">🔥 Tarjoukset voimassa rajoitetun ajan! 🔥</div>
+        <div class="progress-dots" id="progress-dots"></div>
+      </div>
+      
+      <!-- Full screen image container -->
+      <div id="fullscreen-container"></div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    // Configuration
+    var SUPABASE_URL = 'https://ssyhpqfdzbvrkvqdnxyy.supabase.co';
+    var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNzeWhwcWZkemJ2cmt2cWRueHl5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNTQ0ODcsImV4cCI6MjA3ODYzMDQ4N30.rplVZXLXaMl3x8e6UftdooztYVWFs6v91DLmg3jrorQ';
+    
+    // Admin API URL - auto-detect based on current location
+    var currentPath = window.location.pathname.replace(/\/[^\/]*$/, '');
+    var ADMIN_API_URL = currentPath + '/admin/api.php?orientation=vertical';
+    
+    // Default values
+    var ROTATION_INTERVAL = 6000;
+    var displayMode = 'offers'; // offers, images, mixed
+    var showOffers = true;
+    var currentTheme = 'dark'; // dark or light
+    var themeSchedule = null;
+    var qrCodeConfig = { enabled: true, url: 'https://ravintolababylon.fi/', size: 150 };
+
+    var allSlides = [];
+    var currentIndex = 0;
+    var rotationTimer = null;
+    var adminConfig = null;
+    var themeCheckTimer = null;
+
+    // Apply theme colors from config
+    function applyThemeColors(colors) {
+      if (!colors) return;
+      var root = document.documentElement;
+      root.style.setProperty('--bg-start', colors.background_start || '#1a0505');
+      root.style.setProperty('--bg-mid', colors.background_mid || '#2d0a0a');
+      root.style.setProperty('--bg-end', colors.background_end || '#3d1010');
+      root.style.setProperty('--glow-primary', colors.glow_primary || '#dc2626');
+      root.style.setProperty('--glow-secondary', colors.glow_secondary || '#ea580c');
+      root.style.setProperty('--glow-tertiary', colors.glow_tertiary || '#f59e0b');
+      root.style.setProperty('--text-primary', colors.text_primary || '#ffffff');
+      root.style.setProperty('--text-secondary', colors.text_secondary || '#aaaaaa');
+      root.style.setProperty('--text-accent', colors.text_accent || '#fbbf24');
+      root.style.setProperty('--accent-color', colors.accent_color || '#dc2626');
+      root.style.setProperty('--footer-bg', colors.footer_bg || 'rgba(0,0,0,0.7)');
+    }
+
+    // Theme management
+    function applyTheme(theme, config) {
+      currentTheme = theme;
+      var colors = null;
+      if (theme === 'light' && config && config.light_theme_colors) {
+        colors = config.light_theme_colors;
+      } else if (config && config.dark_theme_colors) {
+        colors = config.dark_theme_colors;
+      }
+      applyThemeColors(colors);
+    }
+
+    function checkThemeSchedule() {
+      if (!themeSchedule || !themeSchedule.enabled) {
+        return;
+      }
+
+      var now = new Date();
+      var currentHour = now.getHours();
+      var currentMinute = now.getMinutes();
+      var currentTime = currentHour * 60 + currentMinute;
+
+      // Parse schedule times
+      var lightStart = parseTimeToMinutes(themeSchedule.light_start || '08:00');
+      var lightEnd = parseTimeToMinutes(themeSchedule.light_end || '20:00');
+
+      // Check if current time is within light mode period
+      var isLightTime = false;
+      if (lightStart <= lightEnd) {
+        // Normal case: light mode during day (e.g., 08:00 - 20:00)
+        isLightTime = currentTime >= lightStart && currentTime < lightEnd;
+      } else {
+        // Inverted case: light mode spans midnight
+        isLightTime = currentTime >= lightStart || currentTime < lightEnd;
+      }
+
+      var targetTheme = isLightTime ? 'light' : 'dark';
+      if (currentTheme !== targetTheme) {
+        applyTheme(targetTheme, adminConfig);
+      }
+    }
+
+    function parseTimeToMinutes(timeStr) {
+      var parts = timeStr.split(':');
+      return parseInt(parts[0], 10) * 60 + parseInt(parts[1] || '0', 10);
+    }
+
+    // Generate QR code URL using Google Charts API
+    function getQRCodeUrl(url, size) {
+      return 'https://api.qrserver.com/v1/create-qr-code/?size=' + size + 'x' + size + '&data=' + encodeURIComponent(url) + '&bgcolor=ffffff&color=000000&margin=0';
+    }
+
+    function getQRCodeHtml() {
+      if (!qrCodeConfig || !qrCodeConfig.enabled) return '';
+      var size = qrCodeConfig.size || 150;
+      var url = qrCodeConfig.url || 'https://ravintolababylon.fi/';
+      return '<div class="qr-code-container">' +
+        '<img src="' + getQRCodeUrl(url, size) + '" alt="QR Code" width="' + size + '" height="' + size + '">' +
+        '<div class="qr-code-label">Tilaa netistä!</div>' +
+        '</div>';
+    }
+
+    function formatPrice(price) {
+      return parseFloat(price).toFixed(2) + '€';
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      var div = document.createElement('div');
+      div.appendChild(document.createTextNode(text));
+      return div.innerHTML;
+    }
+
+    function makeRequest(method, url, callback, isFullUrl) {
+      var xhr;
+      if (window.XMLHttpRequest) {
+        xhr = new XMLHttpRequest();
+      } else {
+        xhr = new ActiveXObject("Microsoft.XMLHTTP");
+      }
+      
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+          if (xhr.status === 200) {
+            try {
+              var data = JSON.parse(xhr.responseText);
+              callback(null, data);
+            } catch (e) {
+              callback(e, null);
+            }
+          } else {
+            callback(new Error('Request failed: ' + xhr.status), null);
+          }
+        }
+      };
+      
+      var finalUrl = isFullUrl ? url : SUPABASE_URL + '/rest/v1/' + url;
+      xhr.open(method, finalUrl, true);
+      
+      if (!isFullUrl) {
+        xhr.setRequestHeader('apikey', SUPABASE_ANON_KEY);
+        xhr.setRequestHeader('Authorization', 'Bearer ' + SUPABASE_ANON_KEY);
+      }
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.send();
+    }
+
+    // Fetch admin configuration
+    function fetchAdminConfig(callback) {
+      console.log('Fetching admin config from:', ADMIN_API_URL);
+      makeRequest('GET', ADMIN_API_URL, function(err, data) {
+        if (err) {
+          console.log('Admin config not available, using defaults. Error:', err);
+          callback(null);
+          return;
+        }
+        adminConfig = data;
+        displayMode = data.mode || 'offers';
+        showOffers = data.show_offers !== false;
+        ROTATION_INTERVAL = data.rotation_interval || 6000;
+        
+        // Apply QR code settings
+        if (data.qr_code) {
+          qrCodeConfig = data.qr_code;
+        }
+        
+        // Apply theme settings
+        var activeTheme = data.theme || 'dark';
+        
+        // Setup theme schedule
+        if (data.theme_schedule) {
+          themeSchedule = data.theme_schedule;
+          if (themeSchedule.enabled) {
+            // Check schedule to determine active theme
+            var now = new Date();
+            var currentTime = now.getHours() * 60 + now.getMinutes();
+            var lightStart = parseTimeToMinutes(themeSchedule.light_start || '08:00');
+            var lightEnd = parseTimeToMinutes(themeSchedule.light_end || '20:00');
+            var isLightTime = lightStart <= lightEnd 
+              ? (currentTime >= lightStart && currentTime < lightEnd)
+              : (currentTime >= lightStart || currentTime < lightEnd);
+            activeTheme = isLightTime ? 'light' : 'dark';
+          }
+          // Check theme every minute
+          if (themeCheckTimer) clearInterval(themeCheckTimer);
+          themeCheckTimer = setInterval(checkThemeSchedule, 60000);
+        }
+        
+        // Apply theme with custom colors
+        applyTheme(activeTheme, data);
+        
+        console.log('Admin config loaded:', data);
+        console.log('Display mode:', displayMode);
+        console.log('Theme:', activeTheme);
+        console.log('QR Code enabled:', qrCodeConfig.enabled);
+        console.log('Slides count:', data.slides ? data.slides.length : 0);
+        if (data.slides && data.slides.length > 0) {
+          console.log('First slide:', data.slides[0]);
+        }
+        callback(data);
+      }, true);
+    }
+
+    function fetchPromotions() {
+      // First fetch admin config
+      fetchAdminConfig(function(config) {
+        allSlides = [];
+        
+        // If mode is images only, skip Supabase fetch
+        if (displayMode === 'images') {
+          if (config && config.slides) {
+            for (var i = 0; i < config.slides.length; i++) {
+              allSlides.push({
+                type: 'custom',
+                slideType: config.slides[i].type,
+                id: config.slides[i].id,
+                name: config.slides[i].title,
+                description: config.slides[i].description,
+                image: config.slides[i].image,
+                originalPrice: config.slides[i].old_price,
+                offerPrice: config.slides[i].price,
+                discountPercent: config.slides[i].discount
+              });
+            }
+          }
+          renderPromotions();
+          return;
+        }
+        
+        // Fetch Supabase offers
+        makeRequest('GET', 'menu_items?is_available=eq.true&select=*', function(err, allMenuItems) {
+          if (err) {
+            console.log('Error fetching menu items:', err);
+            allMenuItems = [];
+          }
+
+          // Filter offer items
+          var offerItems = [];
+          for (var x = 0; x < allMenuItems.length; x++) {
+            var mi = allMenuItems[x];
+            if (mi.offer_price || (mi.offer_percentage && mi.offer_percentage > 0)) {
+              offerItems.push(mi);
+            }
+          }
+
+          // Build category image map for fallbacks
+          var categoryImages = {};
+          for (var i = 0; i < allMenuItems.length; i++) {
+            var item = allMenuItems[i];
+            if (item.image_url && item.category_id) {
+              if (!categoryImages[item.category_id]) {
+                categoryImages[item.category_id] = [];
+              }
+              categoryImages[item.category_id].push(item.image_url);
+            }
+          }
+
+          function getFallbackImage(categoryId) {
+            var images = categoryImages[categoryId];
+            if (images && images.length > 0) {
+              return images[Math.floor(Math.random() * images.length)];
+            }
+            var allImagesArr = [];
+            for (var key in categoryImages) {
+              if (categoryImages.hasOwnProperty(key)) {
+                for (var z = 0; z < categoryImages[key].length; z++) {
+                  allImagesArr.push(categoryImages[key][z]);
+                }
+              }
+            }
+            if (allImagesArr.length > 0) {
+              return allImagesArr[Math.floor(Math.random() * allImagesArr.length)];
+            }
+            return 'https://placehold.co/500x500/1a0a0a/dc2626?text=Tarjous';
+          }
+
+          // Process Supabase offer items
+          for (var j = 0; j < offerItems.length; j++) {
+            var oItem = offerItems[j];
+            var discountPercent = oItem.offer_percentage;
+            if (!discountPercent && oItem.offer_price && oItem.price) {
+              discountPercent = Math.round((1 - oItem.offer_price / oItem.price) * 100);
+            }
+            
+            if (oItem.offer_price || discountPercent > 0) {
+              allSlides.push({
+                type: 'offer',
+                id: oItem.id,
+                name: oItem.name,
+                description: oItem.description,
+                image: oItem.image_url || getFallbackImage(oItem.category_id),
+                originalPrice: oItem.price,
+                offerPrice: oItem.offer_price || (oItem.price * (1 - discountPercent / 100)),
+                discountPercent: discountPercent
+              });
+            }
+          }
+
+          // Add custom slides from admin panel
+          if (config && config.slides && (displayMode === 'mixed' || displayMode === 'images')) {
+            for (var k = 0; k < config.slides.length; k++) {
+              allSlides.push({
+                type: 'custom',
+                slideType: config.slides[k].type,
+                id: config.slides[k].id,
+                name: config.slides[k].title,
+                description: config.slides[k].description,
+                image: config.slides[k].image,
+                html_url: config.slides[k].html_url,
+                originalPrice: config.slides[k].old_price,
+                offerPrice: config.slides[k].price,
+                discountPercent: config.slides[k].discount
+              });
+            }
+          }
+
+          renderPromotions();
+        });
+      });
+    }
+
+    function renderPromotions() {
+      var content = document.getElementById('main-content');
+      var dotsContainer = document.getElementById('progress-dots');
+      var fullscreenContainer = document.getElementById('fullscreen-container');
+
+      if (allSlides.length === 0) {
+        content.innerHTML = '<div class="no-promos">' +
+          '<div class="no-promos-icon">🍕</div>' +
+          '<div class="no-promos-title">Tervetuloa Babyloniin!</div>' +
+          '<div class="no-promos-subtitle">Tutustu maukkaisiin ruokiimme</div>' +
+          '</div>';
+        dotsContainer.innerHTML = '';
+        fullscreenContainer.innerHTML = '';
+        return;
+      }
+
+      var html = '';
+      var fullscreenHtml = '';
+      
+      for (var i = 0; i < allSlides.length; i++) {
+        var slide = allSlides[i];
+        
+        // AI-generated HTML slide - load via iframe
+        if (slide.type === 'custom' && slide.slideType === 'ai' && slide.html_url) {
+          fullscreenHtml += '<div class="full-image-card" data-index="' + i + '" data-fullscreen="true">' +
+            '<iframe src="' + escapeHtml(slide.html_url) + '" style="width: 1080px; height: 1920px; border: none;"></iframe>' +
+            '</div>';
+          continue;
+        }
+        
+        // Custom image-only slide - goes to fullscreen container
+        if (slide.type === 'custom' && slide.slideType === 'image' && slide.image) {
+          fullscreenHtml += '<div class="full-image-card" data-index="' + i + '" data-fullscreen="true">' +
+            '<img src="' + escapeHtml(slide.image) + '" alt="Slide" onerror="this.src=\'https://placehold.co/1080x1920/1a0a0a/dc2626?text=Kuva\'">' +
+            '</div>';
+          continue;
+        }
+        
+        // Custom promo text slide
+        if (slide.type === 'custom' && slide.slideType === 'promo') {
+          html += '<div class="promo-slide promo-card" data-index="' + i + '">' +
+            '<div class="promo-title">' + escapeHtml(slide.name) + '</div>' +
+            '<div class="promo-text">' + escapeHtml(slide.description) + '</div>' +
+            '</div>';
+          continue;
+        }
+        
+        // Offer slide (from Supabase or custom)
+        var discountBadge = '';
+        if (slide.discountPercent) {
+          discountBadge = '<div class="discount-badge">-' + slide.discountPercent + '%</div>';
+        }
+
+        var priceHtml = '';
+        if (slide.originalPrice && slide.offerPrice) {
+          priceHtml = '<div class="price-label">Ennen</div>' +
+            '<div class="old-price">' + formatPrice(slide.originalPrice) + '</div>' +
+            '<div class="price-label">Nyt vain</div>' +
+            '<div class="new-price-wrapper">' +
+            '<span class="new-price">' + formatPrice(slide.offerPrice) + '</span>' +
+            '</div>' + getQRCodeHtml();
+        } else if (slide.offerPrice) {
+          priceHtml = '<div class="price-label">Hinta</div>' +
+            '<div class="new-price-wrapper">' +
+            '<span class="new-price">' + formatPrice(slide.offerPrice) + '</span>' +
+            '</div>' + getQRCodeHtml();
+        }
+
+        var descHtml = slide.description ? '<div class="promo-description">' + escapeHtml(slide.description) + '</div>' : '';
+
+        html += '<div class="promo-card" data-index="' + i + '">' +
+          '<div class="image-wrapper">' +
+          '<img src="' + escapeHtml(slide.image) + '" alt="' + escapeHtml(slide.name) + '" class="promo-image" onerror="this.src=\'https://placehold.co/500x500/1a0a0a/dc2626?text=🍕\'">' +
+          discountBadge +
+          '</div>' +
+          '<div class="promo-info">' +
+          '<div class="promo-name">' + escapeHtml(slide.name) + '</div>' +
+          descHtml +
+          '<div class="price-container">' + priceHtml + '</div>' +
+          '</div>' +
+          '</div>';
+      }
+
+      content.innerHTML = html;
+      fullscreenContainer.innerHTML = fullscreenHtml;
+
+      var dotsHtml = '';
+      for (var d = 0; d < allSlides.length; d++) {
+        dotsHtml += '<span class="progress-dot" data-index="' + d + '"></span>';
+      }
+      dotsContainer.innerHTML = dotsHtml;
+
+      startRotation();
+    }
+
+    function startRotation() {
+      if (rotationTimer) {
+        clearInterval(rotationTimer);
+      }
+      
+      currentIndex = 0;
+      showSlide(currentIndex);
+
+      if (allSlides.length > 1) {
+        rotationTimer = setInterval(function() {
+          currentIndex = (currentIndex + 1) % allSlides.length;
+          showSlide(currentIndex);
+        }, ROTATION_INTERVAL);
+      }
+    }
+
+    function showSlide(index) {
+      var cards = document.querySelectorAll('.promo-card, .full-image-card');
+      var dots = document.getElementsByClassName('progress-dot');
+      var header = document.getElementById('header');
+      var footer = document.getElementById('footer');
+      var isFullscreen = false;
+
+      for (var i = 0; i < cards.length; i++) {
+        var card = cards[i];
+        var cardIndex = parseInt(card.getAttribute('data-index'));
+        if (cardIndex === index) {
+          card.className = card.className.replace(' active', '') + ' active';
+          // Check if this is a fullscreen slide
+          if (card.getAttribute('data-fullscreen') === 'true') {
+            isFullscreen = true;
+          }
+        } else {
+          card.className = card.className.replace(' active', '');
+        }
+      }
+
+      // Hide header and footer for fullscreen images
+      if (header) header.style.display = isFullscreen ? 'none' : 'block';
+      if (footer) footer.style.display = isFullscreen ? 'none' : 'block';
+
+      for (var j = 0; j < dots.length; j++) {
+        if (j === index) {
+          dots[j].className = 'progress-dot active';
+        } else {
+          dots[j].className = 'progress-dot';
+        }
+      }
+    }
+
+    // Initialize when page loads
+    if (window.addEventListener) {
+      window.addEventListener('load', fetchPromotions, false);
+    } else if (window.attachEvent) {
+      window.attachEvent('onload', fetchPromotions);
+    } else {
+      window.onload = fetchPromotions;
+    }
+
+    // Refresh every 2 minutes to pick up changes
+    setInterval(fetchPromotions, 120000);
+  </script>
+</body>
+</html>

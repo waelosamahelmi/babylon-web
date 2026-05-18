@@ -35,12 +35,22 @@ import {
   Sandwich,
   AlertTriangle,
   Store,
-  MapPin
+  MapPin,
+  ExternalLink,
+  ChevronRight
 } from "lucide-react";
 import { Link } from "wouter";
 import { Input } from "@/components/ui/input";
 import { isAnyBranchOpen, isBranchOrderingAvailable } from "@/lib/branch-business-hours";
 import { useRestaurantSettings } from "@/hooks/use-restaurant-settings";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 export default function Menu() {
   const { t, language } = useLanguage();
@@ -65,6 +75,15 @@ export default function Menu() {
   const [successOrderType, setSuccessOrderType] = useState<"delivery" | "pickup">("pickup");
   const [isOrderingAvailable, setIsOrderingAvailable] = useState(true); // Start optimistic
 
+  // Lahti popup state
+  const [showLahtiDialog, setShowLahtiDialog] = useState(() => {
+    // Show once per session
+    const dismissed = sessionStorage.getItem('lahti-dialog-dismissed');
+    return dismissed !== 'true';
+  });
+
+  // Lahti popup shown flag for announcement bar
+  const [lahtiPopupShown, setLahtiPopupShown] = useState(false);
   // Check ordering availability based on branch hours
   useEffect(() => {
     const checkOrderingStatus = () => {
@@ -658,6 +677,85 @@ export default function Menu() {
         isOpen={showClosedModal}
         onClose={() => setShowClosedModal(false)}
       />
+
+      {/* Lahti / Other Branches Choice Dialog */}
+      <Dialog open={showLahtiDialog} onOpenChange={setShowLahtiDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-center text-2xl font-black">
+              {t("Mistä haluat tilata?", "Where do you want to order from?")}
+            </DialogTitle>
+            <DialogDescription className="text-center text-base">
+              {t(
+                "Valitse haluatko tilata Lahdesta vai muista toimipisteistä.",
+                "Choose whether to order from Lahti or the other branches."
+              )}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex flex-col gap-4 py-4">
+            <a
+              href="https://ravintolababylonlahti.fi"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group"
+              onClick={() => {
+                sessionStorage.setItem('lahti-dialog-dismissed', 'true');
+                setShowLahtiDialog(false);
+                setLahtiPopupShown(true);
+              }}
+            >
+              <div className="flex items-center gap-4 p-5 rounded-2xl bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-950/30 dark:to-orange-950/30 border-2 border-red-200 dark:border-red-800 hover:border-red-400 dark:hover:border-red-600 transition-all hover:shadow-lg group-hover:scale-[1.02]">
+                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-red-500 to-orange-600 flex items-center justify-center shadow-lg flex-shrink-0">
+                  <MapPin className="w-7 h-7 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                    Lahti
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {t("Tilaa Lahden omasta verkkokaupasta", "Order from Lahti's own webshop")}
+                  </p>
+                </div>
+                <ExternalLink className="w-5 h-5 text-red-500 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </a>
+
+            <button
+              className="group w-full text-left"
+              onClick={() => {
+                sessionStorage.setItem('lahti-dialog-dismissed', 'true');
+                setShowLahtiDialog(false);
+                setLahtiPopupShown(true);
+              }}
+            >
+              <div className="flex items-center gap-4 p-5 rounded-2xl bg-gradient-to-r from-gray-50 to-gray-100 dark:from-stone-800 dark:to-stone-700 border-2 border-gray-200 dark:border-stone-600 hover:border-gray-400 dark:hover:border-stone-400 transition-all hover:shadow-lg group-hover:scale-[1.02]">
+                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-gray-500 to-gray-700 flex items-center justify-center shadow-lg flex-shrink-0">
+                  <Store className="w-7 h-7 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                    {t("Muut toimipisteet", "Other branches")}
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {t("Selaa ravintolan yhteistä menua ja tilaa", "Browse the shared menu and order")}
+                  </p>
+                </div>
+                <ChevronRight className="w-5 h-5 text-gray-400 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </button>
+          </div>
+
+          <DialogFooter className="sm:justify-center">
+            <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+              {t(
+                "Voit vaihtaa valintaa milloin tahansi menestä.",
+                "You can change your choice anytime from the menu."
+              )}
+            </p>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

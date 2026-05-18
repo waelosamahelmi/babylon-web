@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLanguage } from "@/lib/language-context";
-import { Clock, MapPin } from "lucide-react";
+import { Clock, MapPin, ExternalLink } from "lucide-react";
 import { useBranches } from "@/hooks/use-branches";
 import { isBranchOpen } from "@/lib/branch-business-hours";
 
@@ -70,6 +70,22 @@ export function MultiBranchStatusHeaderV2() {
               })}
             </span>
           </div>
+        </div>
+
+        {/* Lahti Ordering Announcement */}
+        <div className="mt-3 flex items-center justify-center">
+          <a
+            href="https://ravintolababylonlahti.fi"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-red-100 to-orange-100 dark:from-red-900/30 dark:to-orange-900/30 border border-red-200 dark:border-red-800 hover:border-red-400 dark:hover:border-red-600 transition-all hover:shadow-md group"
+          >
+            <MapPin className="w-4 h-4 text-red-600 dark:text-red-400 group-hover:scale-110 transition-transform" />
+            <span className="text-sm font-bold text-red-700 dark:text-red-300 group-hover:text-red-800 dark:group-hover:text-red-200 transition-colors">
+              {t("Tilaa Lahdesta painamalla tästä", "Order from Lahti by pressing here")}
+            </span>
+            <ExternalLink className="w-3.5 h-3.5 text-red-500 group-hover:translate-x-0.5 transition-transform" />
+          </a>
         </div>
       </div>
     </div>
