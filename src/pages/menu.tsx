@@ -130,13 +130,7 @@ export default function Menu() {
     return () => clearInterval(interval);
   }, [showClosedModal, config, branches]);
 
-  const handleCartOpen = () => {
-    if (!isOrderingAvailable) {
-      setShowClosedModal(true);
-      return;
-    }
-    setIsCartOpen(true);
-  };
+  const handleCartOpen = () => setIsCartOpen(true);
   
   const handleCartClose = () => setIsCartOpen(false);
   const handleCheckoutOpen = () => {
@@ -236,19 +230,11 @@ export default function Menu() {
   }) || [];
 
   const handleItemClick = (item: any) => {
-    if (!isOrderingAvailable) {
-      setShowClosedModal(true);
-      return;
-    }
     setSelectedItem(item);
     setShowItemModal(true);
   };
 
   const handleAddToCart = (item: any, quantity: number, size?: string, toppings?: string[], specialInstructions?: string, toppingsPrice?: number, sizePrice?: number) => {
-    if (!isOrderingAvailable) {
-      setShowClosedModal(true);
-      return;
-    }
     addItem(item, quantity, size, toppings, specialInstructions, toppingsPrice, sizePrice);
     setShowItemModal(false);
   };
