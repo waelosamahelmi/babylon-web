@@ -63,7 +63,7 @@ export function MultiBranchStatusHeaderV2() {
               href="https://ravintolababylonlahti.fi"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center space-x-2 px-3 py-1.5 rounded-full text-xs font-semibold transition-all bg-gradient-to-r from-red-100 to-orange-100 dark:from-red-900/30 dark:to-orange-900/30 text-red-800 dark:text-red-200 border border-red-200 dark:border-red-700 hover:border-red-400 dark:hover:border-red-500 hover:shadow-md group"
+              className="flex items-center space-x-2 px-3 py-1.5 rounded-full text-xs font-semibold transition-all bg-gradient-to-r from-green-100 to-emerald-100 dark:from-green-900/30 dark:to-emerald-900/30 text-green-800 dark:text-green-200 border border-green-200 dark:border-green-700 hover:border-green-400 dark:hover:border-green-500 hover:shadow-md group"
             >
               <MapPin className="w-3 h-3 group-hover:scale-110 transition-transform" />
               <span>{t("Tilaa Lahdesta", "Order from Lahti")}</span>

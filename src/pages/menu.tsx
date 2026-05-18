@@ -380,7 +380,7 @@ export default function Menu() {
                     href="https://ravintolababylonlahti.fi"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium border border-red-200 dark:border-red-800 bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-950/30 dark:to-orange-950/30 text-red-700 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/50 hover:border-red-400 transition-all shadow-sm hover:shadow"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium border border-gray-200 dark:border-stone-600 bg-white dark:bg-stone-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-stone-700 hover:border-gray-400 dark:hover:border-stone-400 transition-all shadow-sm hover:shadow"
                   >
                     <MapPin className="w-3.5 h-3.5" />
                     Lahti
