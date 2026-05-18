@@ -539,11 +539,7 @@ export default function Menu() {
                 {filteredItems.map((item) => (
                   <Card 
                     key={item.id}
-                    className={`group overflow-hidden border-0 bg-white dark:bg-stone-800 hover:shadow-2xl transition-all duration-500 animate-scale-in relative ${
-                      isOrderingAvailable 
-                        ? 'cursor-pointer' 
-                        : 'opacity-60 cursor-not-allowed'
-                    }`}
+                    className="group overflow-hidden border-0 bg-white dark:bg-stone-800 hover:shadow-2xl transition-all duration-500 animate-scale-in relative cursor-pointer"
                     onClick={() => handleItemClick(item)}
                   >
                     <div className="absolute top-4 left-4 z-10 flex gap-2">
@@ -574,25 +570,10 @@ export default function Menu() {
                       <img
                         src={item.imageUrl || "/placeholder-food.jpg"}
                         alt={item.name}
-                        className={`w-full h-full object-cover transition-transform duration-700 ${
-                          !isOrderingAvailable ? 'grayscale' : 'group-hover:scale-110 group-hover:rotate-1'
-                        }`}
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 group-hover:rotate-1"
                         loading="lazy"
                       />
-                      <div className={`absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent ${
-                        isOrderingAvailable ? 'opacity-0 group-hover:opacity-100' : 'opacity-100'
-                      } transition-opacity duration-500`}></div>
-                      
-                      {!isOrderingAvailable && (
-                        <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                          <div className="text-white text-center">
-                            <AlertTriangle className="w-10 h-10 mx-auto mb-3" />
-                            <span className="text-base font-bold">
-                              {t("Tilaukset suljettu", "Orders closed")}
-                            </span>
-                          </div>
-                        </div>
-                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                     </div>
                     
                     <CardContent className="p-6">
