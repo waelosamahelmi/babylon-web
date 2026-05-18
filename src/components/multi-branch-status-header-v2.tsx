@@ -32,7 +32,7 @@ export function MultiBranchStatusHeaderV2() {
 
       <div className="max-w-7xl mx-auto px-4 py-3 relative">
         <div className="flex items-center justify-between flex-wrap gap-3">
-          {/* Branch Status Pills */}
+          {/* Branch Status Pills + Lahti Announcement */}
           <div className="flex items-center space-x-2 flex-wrap gap-2">
             {branches.map((branch) => {
               const isOpen = isBranchOpen(branch, currentTime);
@@ -57,6 +57,18 @@ export function MultiBranchStatusHeaderV2() {
                 </div>
               );
             })}
+
+            {/* Lahti Ordering Pill */}
+            <a
+              href="https://ravintolababylonlahti.fi"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center space-x-2 px-3 py-1.5 rounded-full text-xs font-semibold transition-all bg-gradient-to-r from-red-100 to-orange-100 dark:from-red-900/30 dark:to-orange-900/30 text-red-800 dark:text-red-200 border border-red-200 dark:border-red-700 hover:border-red-400 dark:hover:border-red-500 hover:shadow-md group"
+            >
+              <MapPin className="w-3 h-3 group-hover:scale-110 transition-transform" />
+              <span>{t("Tilaa Lahdesta", "Order from Lahti")}</span>
+              <ExternalLink className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+            </a>
           </div>
 
           {/* Current Time */}
@@ -70,22 +82,6 @@ export function MultiBranchStatusHeaderV2() {
               })}
             </span>
           </div>
-        </div>
-
-        {/* Lahti Ordering Announcement */}
-        <div className="mt-3 flex items-center justify-center">
-          <a
-            href="https://ravintolababylonlahti.fi"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-red-100 to-orange-100 dark:from-red-900/30 dark:to-orange-900/30 border border-red-200 dark:border-red-800 hover:border-red-400 dark:hover:border-red-600 transition-all hover:shadow-md group"
-          >
-            <MapPin className="w-4 h-4 text-red-600 dark:text-red-400 group-hover:scale-110 transition-transform" />
-            <span className="text-sm font-bold text-red-700 dark:text-red-300 group-hover:text-red-800 dark:group-hover:text-red-200 transition-colors">
-              {t("Tilaa Lahdesta painamalla tästä", "Order from Lahti by pressing here")}
-            </span>
-            <ExternalLink className="w-3.5 h-3.5 text-red-500 group-hover:translate-x-0.5 transition-transform" />
-          </a>
         </div>
       </div>
     </div>
