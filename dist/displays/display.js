@@ -5,11 +5,15 @@
 
   // ── Auto-scale the 1280×720 stage to fill the TV ──
   const portrait = stage.classList.contains("portrait");
+  const rotMatch = /[?&]rot=(-?\d+)/.exec(location.search);
+  const rot = rotMatch ? parseInt(rotMatch[1], 10) : (portrait ? -90 : 0);
+  const sideways = Math.abs(rot) === 90;
   function fit() {
-    const s = Math.min(window.innerWidth / 1280, window.innerHeight / 720);
-    stage.style.transform = portrait
-      ? `translate(-50%, -50%) rotate(-90deg) scale(${s})`
-      : `translate(-50%, -50%) scale(${s})`;
+    // when rotated ±90°, the stage's footprint swaps width/height
+    const fw = sideways ? stage.offsetHeight : stage.offsetWidth;
+    const fh = sideways ? stage.offsetWidth : stage.offsetHeight;
+    const s = Math.min(window.innerWidth / fw, window.innerHeight / fh);
+    stage.style.transform = "translate(-50%, -50%) rotate(" + rot + "deg) scale(" + s + ")";
   }
   window.addEventListener("resize", fit);
   fit();
@@ -20,8 +24,8 @@
     if (el) {
       const d = new Date();
       el.textContent =
-        String(d.getHours()).padStart(2, "0") + "." +
-        String(d.getMinutes()).padStart(2, "0");
+        ("0" + d.getHours()).slice(-2) + "." +
+        ("0" + d.getMinutes()).slice(-2);
     }
   }
   tick();
@@ -98,8 +102,8 @@
         <span class="pl">Perhe.</span><span class="pv">${r.perhe} €</span></span>
       </div>`).join("");
 
-    const fills = Object.entries(TAYTTEET).map(([g, items]) =>
-      `<div class="fillgroup"><h3>${g}</h3><p>${items.join(", ")}</p></div>`).join("");
+    const fills = Object.keys(TAYTTEET).map(g =>
+      `<div class="fillgroup"><h3>${g}</h3><p>${TAYTTEET[g].join(", ")}</p></div>`).join("");
 
     main.innerHTML = `
       <section class="pricing">
@@ -172,8 +176,8 @@
         <span class="bprices"><span class="pl">Norm.</span><span class="pv">${r.norm} €</span>
         <span class="pl">Perhe.</span><span class="pv">${r.perhe} €</span></span>
       </div>`).join("");
-    const fills = Object.entries(TAYTTEET).map(([g, items]) =>
-      `<div class="fillgroup"><h3>${g}</h3><p>${items.join(", ")}</p></div>`).join("");
+    const fills = Object.keys(TAYTTEET).map(g =>
+      `<div class="fillgroup"><h3>${g}</h3><p>${TAYTTEET[g].join(", ")}</p></div>`).join("");
     const viewBuild = `
       <section class="view" data-title="KOKOA OMA PIZZASI">
         <h2 class="vtitle">Kokoa oma pizzasi</h2>

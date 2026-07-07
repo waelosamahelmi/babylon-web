@@ -52,7 +52,7 @@ html, body {
 .bgp.pos-a { left: -180px; bottom: -220px; }
 .bgp.pos-b { right: -190px; top: -190px; animation-duration: 110s; animation-direction: reverse; }
 .bgp.cutout { border-radius: 0; object-fit: contain; filter: saturate(.85) brightness(.85) drop-shadow(0 0 40px rgba(0,0,0,.4)); }
-@keyframes bgspin { from { rotate: 0deg; } to { rotate: 360deg; } }
+@keyframes bgspin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .bgp { animation: none; } }
 
 
