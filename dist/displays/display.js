@@ -149,17 +149,18 @@
 
     const viewPizzas = `
       <section class="view" data-title="PIZZAT">
+        <h2 class="vtitle">Pizzat</h2>
         <div class="plist">
           ${PIZZAS.map(p => `
-            <div class="item">
-              <div class="line">
-                <span class="pname"><span class="num">${p.num}.</span>${p.name} <span class="size">(L)</span></span>
+            <div class="p-item">
+              <div class="p-name"><span class="num">${p.num}.</span>${p.name} <span class="size">(L)</span></div>
+              <div class="p-sub">
+                <span class="desc">${p.desc}</span>
                 <span class="prices-inline">
                   <span class="pl">Norm.</span><span class="pv">${p.norm}</span>
                   <span class="pl">Perhe.</span><span class="pv">${p.perhe}</span>
                 </span>
               </div>
-              <div class="desc">${p.desc}</div>
             </div>`).join("")}
         </div>
       </section>`;
@@ -175,7 +176,7 @@
       `<div class="fillgroup"><h3>${g}</h3><p>${items.join(", ")}</p></div>`).join("");
     const viewBuild = `
       <section class="view" data-title="KOKOA OMA PIZZASI">
-        <h2>Hinnat</h2>
+        <h2 class="vtitle">Kokoa oma pizzasi</h2>
         ${pricing}
         <div class="bigline extra">
           <span class="bname">Tuplaliha</span><span class="bdots"></span>
@@ -187,7 +188,7 @@
 
     const viewRest = `
       <section class="view" data-title="KEBABIT · ANNOKSET · BURGERIT">
-        <h2>Kebabit &amp; annokset</h2>
+        <h2 class="vtitle">Kebabit &amp; annokset</h2>
         ${ANNOKSET.map(a => priceline(a) + `<div class="subdesc">${a.desc}</div>`).join("")}
         <h2 class="mt">Sipit</h2>
         ${SIPIT.map(s => priceline(s)).join("")}

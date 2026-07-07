@@ -216,3 +216,41 @@ main.rotator .note { font-size: 15px; }
 #stage.portrait .item .desc { font-size: 20px; }
 #stage.portrait .prices-inline .pv { font-size: 23px; }
 #stage.portrait .subdesc { font-size: 18px; }
+
+/* portrait v2: fill the column */
+main.rotator .vtitle {
+  font-size: 46px; letter-spacing: .08em; text-align: left;
+  border-bottom: 2px solid rgba(217,166,63,.5);
+  padding-bottom: 8px; margin-bottom: 4px;
+}
+main.rotator .p-item { padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,.08); }
+main.rotator .p-item:last-child { border-bottom: none; }
+main.rotator .p-name {
+  font-family: 'Bebas Neue', 'Arial Narrow', Arial, sans-serif;
+  font-size: 38px; line-height: 1.02; letter-spacing: .03em; white-space: nowrap;
+  background: linear-gradient(180deg, var(--gold-hi), var(--gold) 60%, var(--gold-lo));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+main.rotator .p-name .size { font-size: 24px; }
+main.rotator .p-name .num { min-width: 1.4em; }
+main.rotator .p-sub { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; margin-top: 3px; }
+main.rotator .p-sub .desc { font-size: 21px; line-height: 1.22; }
+main.rotator .p-sub .prices-inline { flex-shrink: 0; }
+main.rotator .p-sub .pv { font-size: 26px; }
+main.rotator .p-sub .pl { font-size: 14px; }
+main.rotator h2:not(.vtitle) { font-size: 33px; }
+main.rotator .bigline { padding: 9px 0; }
+main.rotator .bigline .bname { font-size: 29px; }
+main.rotator .bigline .pv { font-size: 27px; }
+main.rotator .bigline .pl { font-size: 15px; }
+main.rotator .priceline { font-size: 27px; padding: 6px 0; }
+main.rotator .subdesc { font-size: 20px; margin-bottom: 8px; }
+main.rotator .fillgroup h3 { font-size: 21px; margin: 10px 0 3px; }
+main.rotator .fillgroup p { font-size: 19px; line-height: 1.35; }
+main.rotator .note { font-size: 18px; }
+main.rotator .priceline { font-size: 29px; }
+main.rotator .subdesc { font-size: 21px; }
+main.rotator .fillgroup p { font-size: 20px; }
+main.rotator .fillgroup h3 { font-size: 22px; }
+main.rotator .bigline .bname { font-size: 31px; }
+main.rotator .bigline .pv { font-size: 29px; }
