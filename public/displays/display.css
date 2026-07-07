@@ -37,7 +37,7 @@ html, body {
 #stage > header, #stage > main, #stage > footer { position: relative; z-index: 2; }
 
 /* ── Rotating background pizzas ─────────── */
-.bg-pizzas { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+.bg-pizzas { position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: 0; pointer-events: none; }
 .bgp {
   position: absolute;
   width: 620px; height: 620px;
@@ -184,7 +184,7 @@ footer .soc { color: var(--muted); font-weight: 600; letter-spacing: .04em; }
 #stage.portrait .bgp.pos-b { right: -210px; top: -140px; }
 main.rotator { flex: 1; position: relative; min-height: 0; }
 main.rotator .view {
-  position: absolute; inset: 0;
+  position: absolute; top: 0; right: 0; bottom: 0; left: 0;
   opacity: 0; transition: opacity 1.4s ease;
   display: flex; flex-direction: column; justify-content: space-evenly;
   padding-top: 8px;
@@ -254,3 +254,8 @@ main.rotator .fillgroup p { font-size: 20px; }
 main.rotator .fillgroup h3 { font-size: 22px; }
 main.rotator .bigline .bname { font-size: 31px; }
 main.rotator .bigline .pv { font-size: 29px; }
+
+/* portrait: stronger background visibility */
+#stage.portrait .bgp { filter: saturate(.9) brightness(1); }
+#stage.portrait .bgp.show { opacity: .18; }
+#stage.portrait .bgp.cutout { filter: saturate(.9) brightness(.95) drop-shadow(0 0 40px rgba(0,0,0,.4)); }
