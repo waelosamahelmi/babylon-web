@@ -51,6 +51,7 @@ html, body {
 .bgp.show { opacity: .11; }
 .bgp.pos-a { left: -180px; bottom: -220px; }
 .bgp.pos-b { right: -190px; top: -190px; animation-duration: 110s; animation-direction: reverse; }
+.bgp.cutout { border-radius: 0; object-fit: contain; filter: saturate(.85) brightness(.85) drop-shadow(0 0 40px rgba(0,0,0,.4)); }
 @keyframes bgspin { from { rotate: 0deg; } to { rotate: 360deg; } }
 @media (prefers-reduced-motion: reduce) { .bgp { animation: none; } }
 
@@ -114,7 +115,7 @@ main.grid10 {
 .prices-inline .pl { font-size: 12px; font-weight: 700; color: var(--muted); }
 .prices-inline .pv { font-size: 21px; font-weight: 800; color: var(--ink); font-variant-numeric: tabular-nums; }
 .prices-inline .pv:first-of-type { margin-right: 8px; }
-.item .desc { font-size: 15px; color: var(--muted); font-weight: 600; margin-top: 2px; line-height: 1.25; }
+.item .desc { font-size: 17px; color: var(--muted); font-weight: 600; margin-top: 2px; line-height: 1.25; }
 
 /* ── Screen 2: build your own + toppings ── */
 main.buildown {
@@ -142,7 +143,7 @@ main.buildown {
 .bigline.extra { margin-top: 8px; border-top: 1px solid rgba(255,255,255,.1); padding-top: 16px; }
 .fillgroup h3 { font-size: 19px; font-weight: 800; color: var(--gold-hi); margin: 11px 0 3px; letter-spacing: .03em; }
 .fillgroup:first-child h3 { margin-top: 0; }
-.fillgroup p { font-size: 16px; color: #e4ddcf; font-weight: 600; line-height: 1.4; }
+.fillgroup p { font-size: 18px; color: #e4ddcf; font-weight: 600; line-height: 1.4; }
 
 /* ── Screen 3: rest of the menu, big type ── */
 main.cols2 { flex: 1; display: grid; grid-template-columns: 1.15fr 1fr; gap: 64px; padding-top: 18px; min-height: 0; }
@@ -163,8 +164,8 @@ main.cols2 { flex: 1; display: grid; grid-template-columns: 1.15fr 1fr; gap: 64p
 .priceline .dots { flex: 1; border-bottom: 2px dotted rgba(255,255,255,.25); margin: 0 12px; transform: translateY(-5px); }
 .priceline .iname { font-weight: 800; white-space: nowrap; }
 .priceline .pr { color: var(--ink); font-weight: 800; white-space: nowrap; font-variant-numeric: tabular-nums; }
-.subdesc { font-size: 17px; color: var(--muted); font-weight: 600; margin: -2px 0 10px; line-height: 1.32; }
-.note { font-size: 16px; color: var(--muted); font-weight: 600; margin-top: 8px; line-height: 1.35; }
+.subdesc { font-size: 18.5px; color: var(--muted); font-weight: 600; margin: -2px 0 10px; line-height: 1.32; }
+.note { font-size: 17px; color: var(--muted); font-weight: 600; margin-top: 8px; line-height: 1.35; }
 
 /* ── Footer ─────────────────────────────── */
 footer {

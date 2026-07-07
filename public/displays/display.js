@@ -34,15 +34,15 @@
   })();
 
   // ── Rotating pizza background (screens 1 & 2) ──
-  function startBackground() {
+  function startBackground(order, cutout) {
     const bg = document.createElement("div");
     bg.className = "bg-pizzas";
+    const cls = "bgp" + (cutout ? " cutout" : "");
     bg.innerHTML = `
-      <img class="bgp pos-a" alt="">
-      <img class="bgp pos-b" alt="">`;
+      <img class="${cls} pos-a" alt="">
+      <img class="${cls} pos-b" alt="">`;
     stage.prepend(bg);
     const imgs = bg.querySelectorAll(".bgp");
-    const order = PIZZAS.map(p => p.img);
     let idx = [0, Math.floor(order.length / 2)];
 
     imgs.forEach((im, i) => { im.src = "images/" + order[idx[i]]; im.classList.add("show"); });
@@ -77,7 +77,7 @@
         </div>
         <div class="desc">${p.desc}</div>
       </div>`).join("");
-    startBackground();
+    startBackground(PIZZAS.map(p => p.img));
   }
 
   // ── Screen 2: build your own pizza + toppings ──
@@ -107,7 +107,7 @@
         <h2>Täytteet</h2>
         <div class="fillgroups">${fills}</div>
       </section>`;
-    startBackground();
+    startBackground(PIZZAS.map(p => p.img));
   }
 
   // ── Screen 3: rest of the menu, larger type ──
@@ -132,5 +132,6 @@
       </div>`;
 
     main.innerHTML = col1 + col2;
+    startBackground(["bg-burger.png", "bg-sipit.png", "bg-rulla.png", "bg-ranskalaiset.png"], true);
   }
 })();
