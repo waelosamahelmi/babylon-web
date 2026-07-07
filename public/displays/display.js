@@ -69,7 +69,7 @@
     main.innerHTML = PIZZAS.map(p => `
       <div class="item">
         <div class="line">
-          <span class="pname">${p.name} <span class="size">(L)</span></span>
+          <span class="pname"><span class="num">${p.num}.</span>${p.name} <span class="size">(L)</span></span>
           <span class="prices-inline">
             <span class="pl">Norm.</span><span class="pv">${p.norm}</span>
             <span class="pl">Perhe.</span><span class="pv">${p.perhe}</span>
@@ -113,22 +113,22 @@
   // ── Screen 3: rest of the menu, larger type ──
   if (screen === 3) {
     main.className = "cols2";
-    const priceline = (name, price, unit) =>
-      `<div class="priceline"><span>${name}</span><span class="dots"></span><span class="pr">${price}${unit || " €"}</span></div>`;
+    const priceline = (item, unit) =>
+      `<div class="priceline"><span class="iname">${item.num ? `<span class="num">${item.num}.</span>` : ""}${item.name}</span><span class="dots"></span><span class="pr">${item.price}${unit || " €"}</span></div>`;
 
     const col1 = `
       <div class="col">
         <h2>Kebabit &amp; annokset</h2>
-        ${ANNOKSET.map(a => priceline(a.name, a.price) + `<div class="subdesc">${a.desc}</div>`).join("")}
+        ${ANNOKSET.map(a => priceline(a) + `<div class="subdesc">${a.desc}</div>`).join("")}
       </div>`;
 
     const col2 = `
       <div class="col">
         <h2>Sipit</h2>
-        ${SIPIT.map(s => priceline(s.name, s.price)).join("")}
+        ${SIPIT.map(s => priceline(s)).join("")}
         <div class="note">${SIPIT_NOTE}</div>
         <h2 class="mt">Burgerit</h2>
-        ${BURGERIT.map(b => priceline(b.name, b.price) + `<div class="subdesc">${b.desc}</div>`).join("")}
+        ${BURGERIT.map(b => priceline(b) + `<div class="subdesc">${b.desc}</div>`).join("")}
       </div>`;
 
     main.innerHTML = col1 + col2;

@@ -54,6 +54,15 @@ html, body {
 @keyframes bgspin { from { rotate: 0deg; } to { rotate: 360deg; } }
 @media (prefers-reduced-motion: reduce) { .bgp { animation: none; } }
 
+
+/* Gold item names + numbers */
+.goldgrad, .item .pname, .bigline .bname, .priceline .iname {
+  background: linear-gradient(180deg, var(--gold-hi), var(--gold) 60%, var(--gold-lo));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.num { display: inline-block; min-width: 1.55em; font-weight: 800; }
+.item .pname .num { min-width: 1.35em; }
+
 /* ── Header ─────────────────────────────── */
 header {
   display: flex; align-items: baseline; justify-content: space-between;
@@ -84,26 +93,26 @@ header {
 main.grid10 {
   flex: 1;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0,1fr) minmax(0,1fr);
   grid-auto-rows: 1fr;
   column-gap: 56px;
   padding-top: 14px;
   align-items: center;
 }
-.item { padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,.07); }
+.item { min-width: 0; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,.07); }
 .item:nth-last-child(-n+2) { border-bottom: none; }
 .item .line { display: flex; justify-content: space-between; align-items: baseline; gap: 14px; }
 .item .pname {
   font-family: 'Bebas Neue', 'Arial Narrow', Arial, sans-serif;
-  font-size: 30px; letter-spacing: .04em; line-height: 1.05;
+  font-size: 27px; letter-spacing: .03em; line-height: 1.05;
   background: linear-gradient(180deg, var(--gold-hi), var(--gold) 60%, var(--gold-lo));
   -webkit-background-clip: text; background-clip: text; color: transparent;
   white-space: nowrap;
 }
-.item .size { font-size: 19px; letter-spacing: .02em; }
+.item .size { font-size: 17px; letter-spacing: .02em; }
 .prices-inline { display: flex; align-items: baseline; gap: 8px; white-space: nowrap; }
-.prices-inline .pl { font-size: 12.5px; font-weight: 700; color: var(--muted); }
-.prices-inline .pv { font-size: 23px; font-weight: 800; color: var(--ink); font-variant-numeric: tabular-nums; }
+.prices-inline .pl { font-size: 12px; font-weight: 700; color: var(--muted); }
+.prices-inline .pv { font-size: 21px; font-weight: 800; color: var(--ink); font-variant-numeric: tabular-nums; }
 .prices-inline .pv:first-of-type { margin-right: 8px; }
 .item .desc { font-size: 15px; color: var(--muted); font-weight: 600; margin-top: 2px; line-height: 1.25; }
 
@@ -152,6 +161,7 @@ main.cols2 { flex: 1; display: grid; grid-template-columns: 1.15fr 1fr; gap: 64p
   font-size: 26px; font-weight: 800; padding: 8px 0;
 }
 .priceline .dots { flex: 1; border-bottom: 2px dotted rgba(255,255,255,.25); margin: 0 12px; transform: translateY(-5px); }
+.priceline .iname { font-weight: 800; white-space: nowrap; }
 .priceline .pr { color: var(--ink); font-weight: 800; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .subdesc { font-size: 17px; color: var(--muted); font-weight: 600; margin: -2px 0 10px; line-height: 1.32; }
 .note { font-size: 16px; color: var(--muted); font-weight: 600; margin-top: 8px; line-height: 1.35; }
