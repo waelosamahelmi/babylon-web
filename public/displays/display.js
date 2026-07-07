@@ -33,66 +33,104 @@
     setTimeout(() => location.reload(true), next - now);
   })();
 
-  // ── Renderers ──
-  function pizzaRow(p) {
-    return `
-      <div class="row">
-        <img class="photo" src="images/${p.img}" alt="${p.name}">
-        <div class="txt">
-          <span class="pill">${p.name} <span class="size">(L)</span></span>
-          <div class="desc">${p.desc}</div>
-        </div>
-        <div class="prices">
-          <div class="p"><div class="lbl">Norm.</div><div class="val">${p.norm}</div></div>
-          <div class="p"><div class="lbl">Perhe.</div><div class="val">${p.perhe}</div></div>
-        </div>
-      </div>`;
-  }
+  // ── Rotating pizza background (screens 1 & 2) ──
+  function startBackground() {
+    const bg = document.createElement("div");
+    bg.className = "bg-pizzas";
+    bg.innerHTML = `
+      <img class="bgp pos-a" alt="">
+      <img class="bgp pos-b" alt="">`;
+    stage.prepend(bg);
+    const imgs = bg.querySelectorAll(".bgp");
+    const order = PIZZAS.map(p => p.img);
+    let idx = [0, Math.floor(order.length / 2)];
 
-  function priceline(name, price, unit) {
-    return `<div class="priceline"><span>${name}</span><span class="dots"></span><span class="pr">${price}${unit || " €"}</span></div>`;
+    imgs.forEach((im, i) => { im.src = "images/" + order[idx[i]]; im.classList.add("show"); });
+
+    function cycle(i) {
+      const im = imgs[i];
+      im.classList.remove("show");
+      setTimeout(() => {
+        idx[i] = (idx[i] + 1) % order.length;
+        im.src = "images/" + order[idx[i]];
+        im.onload = () => im.classList.add("show");
+      }, 2100);
+    }
+    // stagger the two slots so one is always fully visible
+    setInterval(() => cycle(0), 16000);
+    setTimeout(() => setInterval(() => cycle(1), 16000), 8000);
   }
 
   const main = document.querySelector("main");
 
-  if (screen === 1 || screen === 2) {
-    const slice = screen === 1 ? PIZZAS.slice(0, 5) : PIZZAS.slice(5, 10);
-    main.className = "rows";
-    main.innerHTML = slice.map(pizzaRow).join("");
+  // ── Screen 1: all ten pizzas ──
+  if (screen === 1) {
+    main.className = "grid10";
+    main.innerHTML = PIZZAS.map(p => `
+      <div class="item">
+        <div class="line">
+          <span class="pname">${p.name} <span class="size">(L)</span></span>
+          <span class="prices-inline">
+            <span class="pl">Norm.</span><span class="pv">${p.norm}</span>
+            <span class="pl">Perhe.</span><span class="pv">${p.perhe}</span>
+          </span>
+        </div>
+        <div class="desc">${p.desc}</div>
+      </div>`).join("");
+    startBackground();
   }
 
-  if (screen === 3) {
-    main.className = "cols";
-    const col1 = `
-      <div class="col">
-        <h2>Kokoa oma pizzasi</h2>
-        ${OMA_PIZZA.map(r => `
-          <div class="priceline"><span>${r.name}</span><span class="dots"></span>
-          <span class="pr">${r.norm} € · ${r.perhe} €</span></div>`).join("")}
-        <div class="note">Hinnat: Norm. · Perhe.</div>
-        ${priceline("Tuplaliha", MUUT[0].price)}
-        <h2 class="mt">Sipit</h2>
-        ${SIPIT.map(s => priceline(s.name, s.price)).join("")}
-        <div class="note">${SIPIT_NOTE}</div>
-      </div>`;
+  // ── Screen 2: build your own pizza + toppings ──
+  if (screen === 2) {
+    main.className = "buildown";
+    const pricing = OMA_PIZZA.map(r => `
+      <div class="bigline">
+        <span class="bname">${r.name}</span>
+        <span class="bdots"></span>
+        <span class="bprices"><span class="pl">Norm.</span><span class="pv">${r.norm} €</span>
+        <span class="pl">Perhe.</span><span class="pv">${r.perhe} €</span></span>
+      </div>`).join("");
 
-    const col2 = `
+    const fills = Object.entries(TAYTTEET).map(([g, items]) =>
+      `<div class="fillgroup"><h3>${g}</h3><p>${items.join(", ")}</p></div>`).join("");
+
+    main.innerHTML = `
+      <section class="pricing">
+        <h2>Hinnat</h2>
+        ${pricing}
+        <div class="bigline extra">
+          <span class="bname">Tuplaliha</span><span class="bdots"></span>
+          <span class="bprices"><span class="pv">${MUUT[0].price} €</span></span>
+        </div>
+      </section>
+      <section class="fills">
+        <h2>Täytteet</h2>
+        <div class="fillgroups">${fills}</div>
+      </section>`;
+    startBackground();
+  }
+
+  // ── Screen 3: rest of the menu, larger type ──
+  if (screen === 3) {
+    main.className = "cols2";
+    const priceline = (name, price, unit) =>
+      `<div class="priceline"><span>${name}</span><span class="dots"></span><span class="pr">${price}${unit || " €"}</span></div>`;
+
+    const col1 = `
       <div class="col">
         <h2>Kebabit &amp; annokset</h2>
         ${ANNOKSET.map(a => priceline(a.name, a.price) + `<div class="subdesc">${a.desc}</div>`).join("")}
       </div>`;
 
-    const fillHtml = Object.entries(TAYTTEET).map(([g, items]) =>
-      `<div class="fillgroup"><h3>${g}</h3><p>${items.join(", ")}</p></div>`).join("");
-
-    const col3 = `
+    const col2 = `
       <div class="col">
-        <h2>Burgerit</h2>
+        <h2>Sipit</h2>
+        ${SIPIT.map(s => priceline(s.name, s.price)).join("")}
+        <div class="note">${SIPIT_NOTE}</div>
+        <h2 class="mt">Burgerit</h2>
         ${BURGERIT.map(b => priceline(b.name, b.price) + `<div class="subdesc">${b.desc}</div>`).join("")}
-        <h2 class="mt">Täytteet</h2>
-        <div class="fillgroups">${fillHtml}</div>
       </div>`;
 
-    main.innerHTML = col1 + col2 + col3;
+    main.innerHTML = col1 + col2;
   }
 })();

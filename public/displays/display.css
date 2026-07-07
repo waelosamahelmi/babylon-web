@@ -6,7 +6,7 @@
   --bg2: #17130c;
   --gold: #d9a63f;
   --gold-hi: #f2d489;
-  --red: #e02318;
+  --gold-lo: #a67a24;
   --yellow: #ffd200;
   --ink: #ffffff;
   --muted: #b9b0a0;
@@ -28,11 +28,31 @@ html, body {
   width: 1280px; height: 720px;
   transform-origin: center center;
   background:
-    radial-gradient(1100px 520px at 50% -180px, rgba(217,166,63,.14), transparent 60%),
+    radial-gradient(1100px 520px at 50% -180px, rgba(217,166,63,.12), transparent 60%),
     linear-gradient(180deg, var(--bg2), var(--bg) 55%);
   display: flex; flex-direction: column;
   padding: 26px 44px 20px;
+  overflow: hidden;
 }
+#stage > header, #stage > main, #stage > footer { position: relative; z-index: 2; }
+
+/* ── Rotating background pizzas ─────────── */
+.bg-pizzas { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+.bgp {
+  position: absolute;
+  width: 620px; height: 620px;
+  border-radius: 50%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 2s ease;
+  animation: bgspin 90s linear infinite;
+  filter: saturate(.85) brightness(.9);
+}
+.bgp.show { opacity: .11; }
+.bgp.pos-a { left: -180px; bottom: -220px; }
+.bgp.pos-b { right: -190px; top: -190px; animation-duration: 110s; animation-direction: reverse; }
+@keyframes bgspin { from { rotate: 0deg; } to { rotate: 360deg; } }
+@media (prefers-reduced-motion: reduce) { .bgp { animation: none; } }
 
 /* ── Header ─────────────────────────────── */
 header {
@@ -45,7 +65,7 @@ header {
 .brand .name {
   font-family: 'Bebas Neue', 'Arial Narrow', Arial, sans-serif;
   font-size: 34px; letter-spacing: .05em; line-height: 1;
-  background: linear-gradient(180deg, var(--gold-hi), var(--gold) 60%, #a67a24);
+  background: linear-gradient(180deg, var(--gold-hi), var(--gold) 60%, var(--gold-lo));
   -webkit-background-clip: text; background-clip: text; color: transparent;
 }
 .brand .sub {
@@ -60,65 +80,81 @@ header {
 .meta .screen { font-size: 14px; font-weight: 700; color: var(--gold); letter-spacing: .08em; }
 .meta .clock { font-size: 24px; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--ink); }
 
-/* ── Pizza rows (screens 1 & 2) ─────────── */
-main.rows { flex: 1; display: flex; flex-direction: column; justify-content: space-evenly; padding-top: 6px; }
-.row {
+/* ── Screen 1: ten-pizza grid ───────────── */
+main.grid10 {
+  flex: 1;
   display: grid;
-  grid-template-columns: 108px 1fr auto;
-  align-items: center; gap: 26px;
-  padding: 5px 0;
+  grid-template-columns: 1fr 1fr;
+  grid-auto-rows: 1fr;
+  column-gap: 56px;
+  padding-top: 14px;
+  align-items: center;
 }
-.row + .row { border-top: 1px solid rgba(255,255,255,.07); }
-.row .photo {
-  width: 104px; height: 104px; border-radius: 50%;
-  object-fit: cover; display: block;
-  border: 3px solid var(--gold);
-  box-shadow: 0 0 0 3px rgba(0,0,0,.6), 0 6px 18px rgba(0,0,0,.55);
-  background: #fff;
+.item { padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,.07); }
+.item:nth-last-child(-n+2) { border-bottom: none; }
+.item .line { display: flex; justify-content: space-between; align-items: baseline; gap: 14px; }
+.item .pname {
+  font-family: 'Bebas Neue', 'Arial Narrow', Arial, sans-serif;
+  font-size: 30px; letter-spacing: .04em; line-height: 1.05;
+  background: linear-gradient(180deg, var(--gold-hi), var(--gold) 60%, var(--gold-lo));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  white-space: nowrap;
 }
-.row .txt { min-width: 0; }
-.row .pill {
-  display: inline-block;
-  background: var(--red);
-  color: var(--yellow);
-  font-weight: 800; font-size: 25px; line-height: 1;
-  padding: 8px 16px 9px; border-radius: 999px;
-  letter-spacing: .01em;
-}
-.row .pill .size { color: #fff; font-weight: 700; font-size: 19px; margin-left: 6px; }
-.row .desc { margin-top: 7px; font-size: 17.5px; color: var(--muted); font-weight: 600; }
-.prices {
-  display: flex; gap: 26px;
-  background: #fff; border-radius: 18px;
-  padding: 10px 22px 12px;
-  border: 3px solid var(--red);
-  min-width: 224px; justify-content: center;
-}
-.prices .p { text-align: center; }
-.prices .lbl { font-size: 13px; font-weight: 800; color: #1a1a1a; letter-spacing: .02em; }
-.prices .val { font-size: 26px; font-weight: 800; color: var(--red); line-height: 1.1; font-variant-numeric: tabular-nums; }
+.item .size { font-size: 19px; letter-spacing: .02em; }
+.prices-inline { display: flex; align-items: baseline; gap: 8px; white-space: nowrap; }
+.prices-inline .pl { font-size: 12.5px; font-weight: 700; color: var(--muted); }
+.prices-inline .pv { font-size: 23px; font-weight: 800; color: var(--ink); font-variant-numeric: tabular-nums; }
+.prices-inline .pv:first-of-type { margin-right: 8px; }
+.item .desc { font-size: 15px; color: var(--muted); font-weight: 600; margin-top: 2px; line-height: 1.25; }
 
-/* ── Screen 3: columns ──────────────────── */
-main.cols { flex: 1; display: grid; grid-template-columns: 1.05fr 1.15fr 1fr; gap: 30px; padding-top: 12px; min-height: 0; }
+/* ── Screen 2: build your own + toppings ── */
+main.buildown {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  column-gap: 64px;
+  padding-top: 18px;
+}
+.buildown h2 {
+  font-family: 'Bebas Neue', 'Arial Narrow', Arial, sans-serif;
+  font-size: 32px; letter-spacing: .09em;
+  background: linear-gradient(180deg, var(--gold-hi), var(--gold) 60%, var(--gold-lo));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  border-bottom: 1px solid rgba(217,166,63,.4);
+  padding-bottom: 6px; margin-bottom: 14px;
+}
+.bigline { display: flex; align-items: baseline; gap: 14px; padding: 10px 0; }
+.bigline .bname { font-size: 27px; font-weight: 800; white-space: nowrap; }
+.bigline .bdots { flex: 1; border-bottom: 2px dotted rgba(255,255,255,.25); transform: translateY(-6px); }
+.bigline .bprices { display: flex; align-items: baseline; gap: 9px; white-space: nowrap; }
+.bigline .pl { font-size: 14px; font-weight: 700; color: var(--muted); }
+.bigline .pv { font-size: 26px; font-weight: 800; color: var(--ink); font-variant-numeric: tabular-nums; }
+.bigline .pv:first-of-type { margin-right: 10px; }
+.bigline.extra { margin-top: 8px; border-top: 1px solid rgba(255,255,255,.1); padding-top: 16px; }
+.fillgroup h3 { font-size: 19px; font-weight: 800; color: var(--gold-hi); margin: 11px 0 3px; letter-spacing: .03em; }
+.fillgroup:first-child h3 { margin-top: 0; }
+.fillgroup p { font-size: 16px; color: #e4ddcf; font-weight: 600; line-height: 1.4; }
+
+/* ── Screen 3: rest of the menu, big type ── */
+main.cols2 { flex: 1; display: grid; grid-template-columns: 1.15fr 1fr; gap: 64px; padding-top: 18px; min-height: 0; }
 .col { min-width: 0; }
 .col h2 {
   font-family: 'Bebas Neue', 'Arial Narrow', Arial, sans-serif;
-  font-size: 23px; letter-spacing: .09em; color: var(--gold);
+  font-size: 32px; letter-spacing: .09em;
+  background: linear-gradient(180deg, var(--gold-hi), var(--gold) 60%, var(--gold-lo));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
   border-bottom: 1px solid rgba(217,166,63,.4);
-  padding-bottom: 4px; margin-bottom: 7px;
+  padding-bottom: 6px; margin-bottom: 12px;
 }
-.col h2.mt { margin-top: 14px; }
+.col h2.mt { margin-top: 30px; }
 .priceline {
   display: flex; justify-content: space-between; align-items: baseline;
-  font-size: 15.5px; font-weight: 700; padding: 3px 0;
+  font-size: 26px; font-weight: 800; padding: 8px 0;
 }
-.priceline .dots { flex: 1; border-bottom: 2px dotted rgba(255,255,255,.22); margin: 0 9px; transform: translateY(-4px); }
-.priceline .pr { color: var(--yellow); font-weight: 800; white-space: nowrap; font-variant-numeric: tabular-nums; }
-.subdesc { font-size: 12.5px; color: var(--muted); font-weight: 600; margin: -1px 0 5px; line-height: 1.3; }
-.fillgroups { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 16px; }
-.fillgroup h3 { font-size: 13.5px; font-weight: 800; color: var(--gold-hi); margin: 6px 0 2px; letter-spacing: .03em; }
-.fillgroup p { font-size: 12px; color: #ddd6c8; font-weight: 600; line-height: 1.38; }
-.note { font-size: 12px; color: var(--muted); font-weight: 600; margin-top: 4px; line-height: 1.3; }
+.priceline .dots { flex: 1; border-bottom: 2px dotted rgba(255,255,255,.25); margin: 0 12px; transform: translateY(-5px); }
+.priceline .pr { color: var(--ink); font-weight: 800; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.subdesc { font-size: 17px; color: var(--muted); font-weight: 600; margin: -2px 0 10px; line-height: 1.32; }
+.note { font-size: 16px; color: var(--muted); font-weight: 600; margin-top: 8px; line-height: 1.35; }
 
 /* ── Footer ─────────────────────────────── */
 footer {
