@@ -174,3 +174,45 @@ footer {
   font-size: 15px; font-weight: 700; letter-spacing: .06em; color: var(--gold);
 }
 footer .soc { color: var(--muted); font-weight: 600; letter-spacing: .04em; }
+
+/* ── Screen 4: portrait rotator ─────────── */
+#stage.portrait { width: 720px; height: 1280px; padding: 24px 34px 18px; }
+#stage.portrait .brand .name { font-size: 30px; }
+#stage.portrait .meta { gap: 14px; }
+#stage.portrait .meta .section-title { font-size: 20px; letter-spacing: .07em; }
+#stage.portrait .bgp.pos-a { left: -200px; bottom: -160px; }
+#stage.portrait .bgp.pos-b { right: -210px; top: -140px; }
+main.rotator { flex: 1; position: relative; min-height: 0; }
+main.rotator .view {
+  position: absolute; inset: 0;
+  opacity: 0; transition: opacity 1.4s ease;
+  display: flex; flex-direction: column; justify-content: space-evenly;
+  padding-top: 8px;
+}
+main.rotator .view.active { opacity: 1; }
+main.rotator .plist { display: flex; flex-direction: column; justify-content: space-evenly; flex: 1; }
+main.rotator .item { border-bottom: 1px solid rgba(255,255,255,.07); }
+main.rotator .item:last-child { border-bottom: none; }
+main.rotator h2 {
+  font-family: 'Bebas Neue', 'Arial Narrow', Arial, sans-serif;
+  font-size: 28px; letter-spacing: .09em;
+  background: linear-gradient(180deg, var(--gold-hi), var(--gold) 60%, var(--gold-lo));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  border-bottom: 1px solid rgba(217,166,63,.4);
+  padding-bottom: 5px; margin-bottom: 8px;
+}
+main.rotator h2.mt { margin-top: 14px; }
+main.rotator .bigline { padding: 6px 0; }
+main.rotator .bigline .bname { font-size: 24px; }
+main.rotator .bigline .pv { font-size: 23px; }
+main.rotator .priceline { font-size: 22px; padding: 4px 0; }
+main.rotator .subdesc { font-size: 17px; margin-bottom: 6px; }
+main.rotator .fillgroups { grid-template-columns: 1fr; display: grid; gap: 2px; }
+main.rotator .fillgroup h3 { font-size: 17px; margin: 7px 0 2px; }
+main.rotator .fillgroup p { font-size: 15.5px; }
+main.rotator .note { font-size: 15px; }
+/* portrait type bumps */
+#stage.portrait .item .pname { font-size: 29px; }
+#stage.portrait .item .desc { font-size: 20px; }
+#stage.portrait .prices-inline .pv { font-size: 23px; }
+#stage.portrait .subdesc { font-size: 18px; }
